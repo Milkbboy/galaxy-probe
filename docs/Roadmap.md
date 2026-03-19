@@ -5,7 +5,7 @@
 - ✅ 1단계 - 코어 시스템
 - ✅ 2단계 - 인게임 세션
 - ✅ 3단계 - UI
-- 🔲 4단계 - 데이터 시트
+- ✅ 4단계 - 데이터 시트
 - 🔲 5단계 - 아웃게임 (추후)
 
 ---
@@ -44,13 +44,16 @@
 
 ---
 
-## 🔲 4단계 - 데이터 시트
-- [ ] `BugData.cs` ScriptableObject
-- [ ] `WaveData.cs` ScriptableObject
-- [ ] `MachineData.cs` ScriptableObject
-- [ ] 각 벌레별 .asset 파일 생성
-- [ ] 웨이브별 .asset 파일 생성
-- [ ] 밸런스 초기값 세팅
+## ✅ 4단계 - 데이터 시트
+- [x] `BugData.cs` ScriptableObject
+- [x] `WaveData.cs` ScriptableObject
+- [x] `MachineData.cs` ScriptableObject
+- [x] `DataSetupEditor.cs` 에디터 스크립트 (자동 생성)
+- [x] 각 벌레별 .asset 파일 생성 (Beetle, Fly, Centipede, Spider, Wasp)
+- [x] 웨이브별 .asset 파일 생성 (Wave_01 ~ Wave_05)
+- [x] 머신별 .asset 파일 생성 (Default, Heavy, Speed)
+- [x] 기존 스크립트 연동 (BugBase, MachineController, WaveManager, BugSpawner)
+- [x] 밸런스 초기값 세팅
 
 ---
 

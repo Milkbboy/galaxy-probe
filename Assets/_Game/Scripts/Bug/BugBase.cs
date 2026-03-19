@@ -1,17 +1,22 @@
 using UnityEngine;
 using DrillCorp.Core;
 using DrillCorp.Machine;
+using DrillCorp.Data;
 
 namespace DrillCorp.Bug
 {
     public abstract class BugBase : MonoBehaviour, IDamageable
     {
-        [Header("Stats")]
+        [Header("Data")]
+        [SerializeField] protected BugData _bugData;
+
+        [Header("Stats (Override or from BugData)")]
         [SerializeField] protected int _bugId;
         [SerializeField] protected float _maxHealth = 10f;
         [SerializeField] protected float _moveSpeed = 2f;
         [SerializeField] protected float _attackDamage = 5f;
         [SerializeField] protected float _attackCooldown = 1f;
+        [SerializeField] protected float _attackRange = 1f;
 
         [Header("Health Bar")]
         [SerializeField] protected bool _showHealthBar = true;
@@ -28,9 +33,32 @@ namespace DrillCorp.Bug
 
         protected virtual void Awake()
         {
+            ApplyBugData();
             _currentHealth = _maxHealth;
             EnsureCollider();
             SetBugLayer();
+        }
+
+        /// <summary>
+        /// BugData가 있으면 데이터를 적용
+        /// </summary>
+        protected virtual void ApplyBugData()
+        {
+            if (_bugData != null)
+            {
+                _bugId = _bugData.BugId;
+                _maxHealth = _bugData.MaxHealth;
+                _moveSpeed = _bugData.MoveSpeed;
+                _attackDamage = _bugData.AttackDamage;
+                _attackCooldown = _bugData.AttackCooldown;
+                _attackRange = _bugData.AttackRange;
+
+                // Scale 적용
+                if (_bugData.Scale != 1f)
+                {
+                    transform.localScale = Vector3.one * _bugData.Scale;
+                }
+            }
         }
 
         protected virtual void EnsureCollider()
@@ -132,7 +160,7 @@ namespace DrillCorp.Bug
 
         protected virtual float GetAttackRange()
         {
-            return 1f;
+            return _attackRange;
         }
 
         protected virtual void Attack()
@@ -190,5 +218,27 @@ namespace DrillCorp.Bug
             _moveSpeed = speed;
             _attackDamage = damage;
         }
+
+        /// <summary>
+        /// BugData로 초기화 (스포너에서 사용)
+        /// </summary>
+        public void Initialize(BugData data, float healthMult = 1f, float damageMult = 1f, float speedMult = 1f)
+        {
+            _bugData = data;
+            _bugId = data.BugId;
+            _maxHealth = data.MaxHealth * healthMult;
+            _currentHealth = _maxHealth;
+            _moveSpeed = data.MoveSpeed * speedMult;
+            _attackDamage = data.AttackDamage * damageMult;
+            _attackCooldown = data.AttackCooldown;
+            _attackRange = data.AttackRange;
+
+            if (data.Scale != 1f)
+            {
+                transform.localScale = Vector3.one * data.Scale;
+            }
+        }
+
+        public BugData BugData => _bugData;
     }
 }

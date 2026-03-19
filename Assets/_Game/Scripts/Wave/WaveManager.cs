@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DrillCorp.Core;
 using DrillCorp.Bug;
+using DrillCorp.Data;
 
 namespace DrillCorp.Wave
 {
@@ -15,7 +16,7 @@ namespace DrillCorp.Wave
     }
 
     [System.Serializable]
-    public class WaveData
+    public class WaveConfig
     {
         public string WaveName;
         public List<WaveEntry> Entries = new List<WaveEntry>();
@@ -24,9 +25,13 @@ namespace DrillCorp.Wave
 
     public class WaveManager : MonoBehaviour
     {
-        [Header("Wave Settings")]
-        [SerializeField] private List<WaveData> _waves = new List<WaveData>();
+        [Header("Wave Data (ScriptableObject)")]
+        [SerializeField] private List<Data.WaveData> _waveDataAssets = new List<Data.WaveData>();
+
+        [Header("Wave Settings (Legacy)")]
+        [SerializeField] private List<WaveConfig> _waves = new List<WaveConfig>();
         [SerializeField] private bool _autoStartFirstWave = true;
+        [SerializeField] private bool _useScriptableObjects = true;
 
         [Header("References")]
         [SerializeField] private BugSpawner _bugSpawner;
@@ -37,9 +42,14 @@ namespace DrillCorp.Wave
         private Coroutine _waveCoroutine;
 
         public int CurrentWave => _currentWaveIndex + 1;
-        public int TotalWaves => _waves.Count;
+        public int TotalWaves => _useScriptableObjects ? _waveDataAssets.Count : _waves.Count;
         public bool IsWaveActive => _isWaveActive;
         public int RemainingBugs => _remainingBugs;
+
+        // Current wave multipliers (from ScriptableObject)
+        private float _currentHealthMult = 1f;
+        private float _currentDamageMult = 1f;
+        private float _currentSpeedMult = 1f;
 
         private void Start()
         {
@@ -62,16 +72,67 @@ namespace DrillCorp.Wave
 
             _currentWaveIndex++;
 
-            if (_currentWaveIndex >= _waves.Count)
+            int totalWaves = _useScriptableObjects ? _waveDataAssets.Count : _waves.Count;
+            if (_currentWaveIndex >= totalWaves)
             {
                 Debug.Log("[WaveManager] All waves completed");
                 return;
             }
 
-            _waveCoroutine = StartCoroutine(SpawnWaveCoroutine(_waves[_currentWaveIndex]));
+            if (_useScriptableObjects && _waveDataAssets.Count > 0)
+            {
+                _waveCoroutine = StartCoroutine(SpawnWaveFromDataCoroutine(_waveDataAssets[_currentWaveIndex]));
+            }
+            else
+            {
+                _waveCoroutine = StartCoroutine(SpawnWaveCoroutine(_waves[_currentWaveIndex]));
+            }
         }
 
-        private IEnumerator SpawnWaveCoroutine(WaveData wave)
+        private IEnumerator SpawnWaveFromDataCoroutine(Data.WaveData waveData)
+        {
+            _isWaveActive = true;
+            _remainingBugs = waveData.TotalBugCount;
+
+            // Store multipliers
+            _currentHealthMult = waveData.HealthMultiplier;
+            _currentDamageMult = waveData.DamageMultiplier;
+            _currentSpeedMult = waveData.SpeedMultiplier;
+
+            GameEvents.OnWaveStarted?.Invoke(_currentWaveIndex + 1);
+
+            // Spawn each group
+            foreach (var group in waveData.SpawnGroups)
+            {
+                if (group.BugData == null) continue;
+
+                yield return new WaitForSeconds(group.StartDelay);
+
+                for (int i = 0; i < group.Count; i++)
+                {
+                    _bugSpawner.SpawnBugFromData(group.BugData, _currentHealthMult, _currentDamageMult, _currentSpeedMult);
+                    yield return new WaitForSeconds(group.SpawnInterval);
+                }
+            }
+
+            // Wait until all bugs are killed
+            while (_remainingBugs > 0)
+            {
+                yield return null;
+            }
+
+            _isWaveActive = false;
+            GameEvents.OnWaveCompleted?.Invoke(_currentWaveIndex + 1);
+
+            // Auto-start next wave
+            if (_currentWaveIndex + 1 < _waveDataAssets.Count)
+            {
+                yield return new WaitForSeconds(waveData.DelayBeforeNextWave);
+                StartNextWave();
+            }
+        }
+
+        private IEnumerator SpawnWaveCoroutine(WaveConfig wave)
         {
             _isWaveActive = true;
             _remainingBugs = 0;
@@ -92,7 +153,7 @@ namespace DrillCorp.Wave
                 }
             }
 
-            // 모든 벌레가 처치될 때까지 대기
+            // Wait until all bugs are killed
             while (_remainingBugs > 0)
             {
                 yield return null;
@@ -101,7 +162,7 @@ namespace DrillCorp.Wave
             _isWaveActive = false;
             GameEvents.OnWaveCompleted?.Invoke(_currentWaveIndex + 1);
 
-            // 다음 웨이브 자동 시작
+            // Auto-start next wave
             if (_currentWaveIndex + 1 < _waves.Count)
             {
                 yield return new WaitForSeconds(wave.DelayBeforeNextWave);

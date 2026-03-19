@@ -1,12 +1,17 @@
 using UnityEngine;
 using DrillCorp.Core;
+using DrillCorp.Data;
 
 namespace DrillCorp.Machine
 {
     public class MachineController : MonoBehaviour, IDamageable
     {
+        [Header("Data")]
+        [SerializeField] private MachineData _machineData;
+
         [Header("Health")]
         [SerializeField] private float _maxHealth = 100f;
+        [SerializeField] private float _armor = 0f;
         private float _currentHealth;
 
         [Header("Fuel")]
@@ -15,9 +20,14 @@ namespace DrillCorp.Machine
         private float _currentFuel;
 
         [Header("Mining")]
-        [SerializeField] private float _miningRate = 10f;  // 초당 채굴량
+        [SerializeField] private float _miningRate = 10f;
         private int _totalMined;
         private float _miningAccumulator;
+
+        [Header("Weapon")]
+        [SerializeField] private float _attackDamage = 20f;
+        [SerializeField] private float _attackCooldown = 0.5f;
+        [SerializeField] private float _attackRange = 3f;
 
         public float CurrentHealth => _currentHealth;
         public float MaxHealth => _maxHealth;
@@ -29,11 +39,38 @@ namespace DrillCorp.Machine
 
         public int TotalMined => _totalMined;
 
+        // Weapon properties for AimController
+        public float AttackDamage => _attackDamage;
+        public float AttackCooldown => _attackCooldown;
+        public float AttackRange => _attackRange;
+
+        public MachineData MachineData => _machineData;
+
         private bool _isSessionActive;
+
+        private void Awake()
+        {
+            ApplyMachineData();
+        }
 
         private void Start()
         {
             InitializeSession();
+        }
+
+        private void ApplyMachineData()
+        {
+            if (_machineData != null)
+            {
+                _maxHealth = _machineData.MaxHealth;
+                _armor = _machineData.Armor;
+                _maxFuel = _machineData.MaxFuel;
+                _fuelConsumeRate = _machineData.FuelConsumeRate;
+                _miningRate = _machineData.TotalMiningRate;
+                _attackDamage = _machineData.AttackDamage;
+                _attackCooldown = _machineData.AttackCooldown;
+                _attackRange = _machineData.AttackRange;
+            }
         }
 
         private void Update()
@@ -99,9 +136,18 @@ namespace DrillCorp.Machine
         {
             if (IsDead || !_isSessionActive) return;
 
-            _currentHealth -= damage;
+            // Armor 적용
+            float actualDamage = CalculateDamageReceived(damage);
+            _currentHealth -= actualDamage;
             _currentHealth = Mathf.Max(0f, _currentHealth);
-            GameEvents.OnMachineDamaged?.Invoke(damage);
+            GameEvents.OnMachineDamaged?.Invoke(actualDamage);
+        }
+
+        private float CalculateDamageReceived(float rawDamage)
+        {
+            if (_armor <= 0f) return rawDamage;
+            float reduction = _armor / (_armor + 100f);
+            return rawDamage * (1f - reduction);
         }
 
         public void Heal(float amount)

@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9ee43dbe552f1d4dbb0a944763030c0, type: 3}
+  m_Name: Wave_04
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.WaveData
+  _waveNumber: 4
+  _waveName: Speed Rush
+  _spawnGroups:
+  - BugData: {fileID: 11400000, guid: 0979a09a05ba65f43aea855d3b473a6b, type: 2}
+    Count: 8
+    StartDelay: 0
+    SpawnInterval: 0.8
+    RandomPosition: 1
+  - BugData: {fileID: 11400000, guid: cd367503eebd8054d868a1ba2b80ae39, type: 2}
+    Count: 3
+    StartDelay: 8
+    SpawnInterval: 2
+    RandomPosition: 1
+  _waveDuration: 50
+  _delayBeforeNextWave: 3
+  _healthMultiplier: 1.1
+  _damageMultiplier: 1.1
+  _speedMultiplier: 1.1
