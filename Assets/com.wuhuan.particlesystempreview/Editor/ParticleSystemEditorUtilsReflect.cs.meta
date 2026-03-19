@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: 850c59d07692c844ebefae5434fe510e
+timeCreated: 1469584368
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 73346
+  packageName: Particle System Preview
+  packageVersion: 1.2
+  assetPath: Assets/com.wuhuan.particlesystempreview/Editor/ParticleSystemEditorUtilsReflect.cs
+  uploadId: 734330

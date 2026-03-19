@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 8e1319b391e0f15428d74aea6ec67d5d
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 73346
+  packageName: Particle System Preview
+  packageVersion: 1.2
+  assetPath: Assets/com.wuhuan.particlesystempreview/Editor/WuHuan.ParticleSystemPreview.Editor.asmdef
+  uploadId: 734330

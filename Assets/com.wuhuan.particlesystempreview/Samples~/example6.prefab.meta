@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: cb919381d9ae13a4c8265f9590616f60
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 73346
+  packageName: Particle System Preview
+  packageVersion: 1.2
+  assetPath: Assets/com.wuhuan.particlesystempreview/Samples~/example6.prefab
+  uploadId: 734330

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2f4c805c26426b841973afc98d75e079
+timeCreated: 1474798154
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 73346
+  packageName: Particle System Preview
+  packageVersion: 1.2
+  assetPath: Assets/com.wuhuan.particlesystempreview/Samples~/example3.prefab
+  uploadId: 734330

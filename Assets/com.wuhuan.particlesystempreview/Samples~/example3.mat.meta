@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 970ca87aaee450e4497838d70f5f688a
+timeCreated: 1474798200
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 73346
+  packageName: Particle System Preview
+  packageVersion: 1.2
+  assetPath: Assets/com.wuhuan.particlesystempreview/Samples~/example3.mat
+  uploadId: 734330
