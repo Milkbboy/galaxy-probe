@@ -26,5 +26,11 @@ namespace DrillCorp.Core
         // 채굴/재화
         public static Action<int> OnCurrencyChanged;        // 현재 재화량
         public static Action<int> OnMiningGained;           // 획득한 채굴량
+
+        // 강화 시스템
+        public static Action<string, int> OnUpgradePurchased;  // 업그레이드 ID, 새 레벨
+
+        // 머신 선택
+        public static Action<int> OnMachineSelected;          // 선택한 머신 ID
     }
 }

@@ -22,15 +22,22 @@ namespace DrillCorp.UI
 
         private MachineController _machine;
 
+        private bool _buttonsSetup = false;
+
         private void Awake()
         {
             _machine = FindFirstObjectByType<MachineController>();
+            SetupButtons();
+        }
 
+        private void Start()
+        {
             SetupButtons();
         }
 
         private void OnEnable()
         {
+            SetupButtons();
             GameEvents.OnSessionSuccess += ShowSuccess;
             GameEvents.OnSessionFailed += ShowFailed;
         }
@@ -43,6 +50,9 @@ namespace DrillCorp.UI
 
         private void SetupButtons()
         {
+            if (_buttonsSetup) return;
+            _buttonsSetup = true;
+
             if (_successContinueButton != null)
             {
                 _successContinueButton.onClick.AddListener(OnContinueClicked);
@@ -126,7 +136,7 @@ namespace DrillCorp.UI
 
         private void OnQuitClicked()
         {
-            GameManager.Instance?.LoadScene("TitleScene");
+            GameManager.Instance?.LoadTitleScene();
         }
     }
 }

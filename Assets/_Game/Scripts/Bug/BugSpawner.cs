@@ -1,84 +1,14 @@
-using System.Collections.Generic;
 using UnityEngine;
 using DrillCorp.Data;
 
 namespace DrillCorp.Bug
 {
-    public enum BugType
-    {
-        Beetle,
-        Fly,
-        Centipede
-    }
-
-    [System.Serializable]
-    public class BugSpawnData
-    {
-        public BugType Type;
-        public GameObject Prefab;
-        public float Health = 10f;
-        public float Speed = 2f;
-        public float Damage = 5f;
-    }
-
     public class BugSpawner : MonoBehaviour
     {
         [Header("Spawn Settings")]
         [SerializeField] private float _spawnRadius = 10f;
         [SerializeField] private Transform _centerPoint;
 
-        [Header("Bug Prefabs")]
-        [SerializeField] private List<BugSpawnData> _bugDataList = new List<BugSpawnData>();
-
-        private Dictionary<BugType, BugSpawnData> _bugDataDict = new Dictionary<BugType, BugSpawnData>();
-
-        private void Awake()
-        {
-            foreach (var data in _bugDataList)
-            {
-                _bugDataDict[data.Type] = data;
-            }
-        }
-
-        public BugBase SpawnBug(BugType type)
-        {
-            if (!_bugDataDict.TryGetValue(type, out var data) || data.Prefab == null)
-            {
-                Debug.LogWarning($"[BugSpawner] Bug type {type} not configured");
-                return null;
-            }
-
-            Vector3 spawnPosition = GetRandomSpawnPosition();
-            GameObject bugObj = Instantiate(data.Prefab, spawnPosition, Quaternion.identity);
-
-            var bug = bugObj.GetComponent<BugBase>();
-            if (bug != null)
-            {
-                bug.Initialize((int)type, data.Health, data.Speed, data.Damage);
-            }
-
-            return bug;
-        }
-
-        public void SpawnBugs(BugType type, int count)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                SpawnBug(type);
-            }
-        }
-
-        public void SpawnWave(List<(BugType type, int count)> waveData)
-        {
-            foreach (var (type, count) in waveData)
-            {
-                SpawnBugs(type, count);
-            }
-        }
-
-        /// <summary>
-        /// BugData ScriptableObject로 버그 스폰
-        /// </summary>
         public BugBase SpawnBugFromData(BugData bugData, float healthMult = 1f, float damageMult = 1f, float speedMult = 1f)
         {
             if (bugData == null)
@@ -88,17 +18,6 @@ namespace DrillCorp.Bug
             }
 
             GameObject prefab = bugData.Prefab;
-
-            // Prefab이 없으면 기본 프리팹 찾기 시도
-            if (prefab == null)
-            {
-                // BugType으로 매핑 시도
-                BugType mappedType = MapBugIdToType(bugData.BugId);
-                if (_bugDataDict.TryGetValue(mappedType, out var data) && data.Prefab != null)
-                {
-                    prefab = data.Prefab;
-                }
-            }
 
             if (prefab == null)
             {
@@ -116,17 +35,6 @@ namespace DrillCorp.Bug
             }
 
             return bug;
-        }
-
-        private BugType MapBugIdToType(int bugId)
-        {
-            return bugId switch
-            {
-                1 => BugType.Beetle,
-                2 => BugType.Fly,
-                3 => BugType.Centipede,
-                _ => BugType.Beetle
-            };
         }
 
         private Vector3 GetRandomSpawnPosition()

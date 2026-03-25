@@ -22,7 +22,7 @@ namespace DrillCorp.Core
         {
             if (Instance != null && Instance != this)
             {
-                Destroy(gameObject);
+                DestroyImmediate(gameObject);
                 return;
             }
 
@@ -83,6 +83,42 @@ namespace DrillCorp.Core
         {
             LoadScene(SceneManager.GetActiveScene().name);
             ChangeState(GameState.Playing);
+        }
+
+        // 씬 전환 헬퍼 메서드들
+        public void LoadTitleScene()
+        {
+            ChangeState(GameState.Title);
+            LoadScene("Title");
+        }
+
+        public void LoadGameScene()
+        {
+            ChangeState(GameState.Playing);
+            LoadScene("Game");
+        }
+
+        public void ReturnToTitle()
+        {
+            LoadTitleScene();
+        }
+
+        // 선택된 머신 ID 저장/로드
+        private int _selectedMachineId = 1;
+        public int SelectedMachineId
+        {
+            get => _selectedMachineId;
+            set
+            {
+                _selectedMachineId = value;
+                PlayerPrefs.SetInt("SelectedMachine", value);
+                PlayerPrefs.Save();
+            }
+        }
+
+        private void Start()
+        {
+            _selectedMachineId = PlayerPrefs.GetInt("SelectedMachine", 1);
         }
     }
 }

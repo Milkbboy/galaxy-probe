@@ -36,6 +36,10 @@ namespace DrillCorp.Editor
             GameObject successPanel = CreateSuccessPanel(canvasObj.transform);
             GameObject failedPanel = CreateFailedPanel(canvasObj.transform);
 
+            // SessionResultUI를 Canvas에 추가 (항상 활성화 상태 유지)
+            SessionResultUI sessionResultUI = canvasObj.AddComponent<SessionResultUI>();
+            ConnectSessionResultUI(sessionResultUI, successPanel, failedPanel);
+
             // UIManager 추가 및 연결
             UIManager uiManager = canvasObj.AddComponent<UIManager>();
             SerializedObject so = new SerializedObject(uiManager);
@@ -178,8 +182,6 @@ namespace DrillCorp.Editor
         {
             GameObject panel = CreateResultPanel("SuccessPanel", parent, "세션 성공!", new Color(0.1f, 0.5f, 0.1f, 0.9f));
 
-            RectTransform panelRect = panel.GetComponent<RectTransform>();
-
             // Mining Text
             GameObject miningText = CreateText("MiningText", panel.transform, "채굴량: 0", 28);
             RectTransform miningRect = miningText.GetComponent<RectTransform>();
@@ -191,16 +193,7 @@ namespace DrillCorp.Editor
             currencyRect.anchoredPosition = new Vector2(0, -20);
 
             // Continue Button
-            GameObject continueBtn = CreateButton("ContinueButton", panel.transform, "계속하기", new Vector2(0, -80));
-
-            // SessionResultUI 컴포넌트 추가
-            SessionResultUI resultUI = panel.AddComponent<SessionResultUI>();
-            SerializedObject so = new SerializedObject(resultUI);
-            so.FindProperty("_successPanel").objectReferenceValue = panel;
-            so.FindProperty("_successMiningText").objectReferenceValue = miningText.GetComponent<TextMeshProUGUI>();
-            so.FindProperty("_successCurrencyText").objectReferenceValue = currencyText.GetComponent<TextMeshProUGUI>();
-            so.FindProperty("_successContinueButton").objectReferenceValue = continueBtn.GetComponent<Button>();
-            so.ApplyModifiedProperties();
+            CreateButton("ContinueButton", panel.transform, "계속하기", new Vector2(0, -80));
 
             panel.SetActive(false);
             return panel;
@@ -216,25 +209,32 @@ namespace DrillCorp.Editor
             miningRect.anchoredPosition = new Vector2(0, 10);
 
             // Retry Button
-            GameObject retryBtn = CreateButton("RetryButton", panel.transform, "다시하기", new Vector2(-100, -70));
+            CreateButton("RetryButton", panel.transform, "다시하기", new Vector2(-100, -70));
 
             // Quit Button
-            GameObject quitBtn = CreateButton("QuitButton", panel.transform, "나가기", new Vector2(100, -70));
-
-            // SessionResultUI에 연결 (SuccessPanel에 있는 컴포넌트 찾아서)
-            SessionResultUI resultUI = parent.GetComponentInChildren<SessionResultUI>(true);
-            if (resultUI != null)
-            {
-                SerializedObject so = new SerializedObject(resultUI);
-                so.FindProperty("_failedPanel").objectReferenceValue = panel;
-                so.FindProperty("_failedMiningText").objectReferenceValue = miningText.GetComponent<TextMeshProUGUI>();
-                so.FindProperty("_failedRetryButton").objectReferenceValue = retryBtn.GetComponent<Button>();
-                so.FindProperty("_failedQuitButton").objectReferenceValue = quitBtn.GetComponent<Button>();
-                so.ApplyModifiedProperties();
-            }
+            CreateButton("QuitButton", panel.transform, "나가기", new Vector2(100, -70));
 
             panel.SetActive(false);
             return panel;
+        }
+
+        private static void ConnectSessionResultUI(SessionResultUI resultUI, GameObject successPanel, GameObject failedPanel)
+        {
+            SerializedObject so = new SerializedObject(resultUI);
+
+            // Success Panel
+            so.FindProperty("_successPanel").objectReferenceValue = successPanel;
+            so.FindProperty("_successMiningText").objectReferenceValue = successPanel.transform.Find("MiningText")?.GetComponent<TextMeshProUGUI>();
+            so.FindProperty("_successCurrencyText").objectReferenceValue = successPanel.transform.Find("CurrencyText")?.GetComponent<TextMeshProUGUI>();
+            so.FindProperty("_successContinueButton").objectReferenceValue = successPanel.transform.Find("ContinueButton")?.GetComponent<Button>();
+
+            // Failed Panel
+            so.FindProperty("_failedPanel").objectReferenceValue = failedPanel;
+            so.FindProperty("_failedMiningText").objectReferenceValue = failedPanel.transform.Find("MiningText")?.GetComponent<TextMeshProUGUI>();
+            so.FindProperty("_failedRetryButton").objectReferenceValue = failedPanel.transform.Find("RetryButton")?.GetComponent<Button>();
+            so.FindProperty("_failedQuitButton").objectReferenceValue = failedPanel.transform.Find("QuitButton")?.GetComponent<Button>();
+
+            so.ApplyModifiedProperties();
         }
 
         private static GameObject CreatePanel(string name, Transform parent)

@@ -7,31 +7,11 @@ using DrillCorp.Data;
 
 namespace DrillCorp.Wave
 {
-    [System.Serializable]
-    public class WaveEntry
-    {
-        public BugType BugType;
-        public int Count;
-        public float SpawnDelay = 0.5f;
-    }
-
-    [System.Serializable]
-    public class WaveConfig
-    {
-        public string WaveName;
-        public List<WaveEntry> Entries = new List<WaveEntry>();
-        public float DelayBeforeNextWave = 3f;
-    }
-
     public class WaveManager : MonoBehaviour
     {
-        [Header("Wave Data (ScriptableObject)")]
+        [Header("Wave Data")]
         [SerializeField] private List<Data.WaveData> _waveDataAssets = new List<Data.WaveData>();
-
-        [Header("Wave Settings (Legacy)")]
-        [SerializeField] private List<WaveConfig> _waves = new List<WaveConfig>();
         [SerializeField] private bool _autoStartFirstWave = true;
-        [SerializeField] private bool _useScriptableObjects = true;
 
         [Header("References")]
         [SerializeField] private BugSpawner _bugSpawner;
@@ -42,7 +22,7 @@ namespace DrillCorp.Wave
         private Coroutine _waveCoroutine;
 
         public int CurrentWave => _currentWaveIndex + 1;
-        public int TotalWaves => _useScriptableObjects ? _waveDataAssets.Count : _waves.Count;
+        public int TotalWaves => _waveDataAssets.Count;
         public bool IsWaveActive => _isWaveActive;
         public int RemainingBugs => _remainingBugs;
 
@@ -72,24 +52,16 @@ namespace DrillCorp.Wave
 
             _currentWaveIndex++;
 
-            int totalWaves = _useScriptableObjects ? _waveDataAssets.Count : _waves.Count;
-            if (_currentWaveIndex >= totalWaves)
+            if (_currentWaveIndex >= _waveDataAssets.Count)
             {
                 Debug.Log("[WaveManager] All waves completed");
                 return;
             }
 
-            if (_useScriptableObjects && _waveDataAssets.Count > 0)
-            {
-                _waveCoroutine = StartCoroutine(SpawnWaveFromDataCoroutine(_waveDataAssets[_currentWaveIndex]));
-            }
-            else
-            {
-                _waveCoroutine = StartCoroutine(SpawnWaveCoroutine(_waves[_currentWaveIndex]));
-            }
+            _waveCoroutine = StartCoroutine(SpawnWaveCoroutine(_waveDataAssets[_currentWaveIndex]));
         }
 
-        private IEnumerator SpawnWaveFromDataCoroutine(Data.WaveData waveData)
+        private IEnumerator SpawnWaveCoroutine(Data.WaveData waveData)
         {
             _isWaveActive = true;
             _remainingBugs = waveData.TotalBugCount;
@@ -132,43 +104,6 @@ namespace DrillCorp.Wave
             }
         }
 
-        private IEnumerator SpawnWaveCoroutine(WaveConfig wave)
-        {
-            _isWaveActive = true;
-            _remainingBugs = 0;
-
-            foreach (var entry in wave.Entries)
-            {
-                _remainingBugs += entry.Count;
-            }
-
-            GameEvents.OnWaveStarted?.Invoke(_currentWaveIndex + 1);
-
-            foreach (var entry in wave.Entries)
-            {
-                for (int i = 0; i < entry.Count; i++)
-                {
-                    _bugSpawner.SpawnBug(entry.BugType);
-                    yield return new WaitForSeconds(entry.SpawnDelay);
-                }
-            }
-
-            // Wait until all bugs are killed
-            while (_remainingBugs > 0)
-            {
-                yield return null;
-            }
-
-            _isWaveActive = false;
-            GameEvents.OnWaveCompleted?.Invoke(_currentWaveIndex + 1);
-
-            // Auto-start next wave
-            if (_currentWaveIndex + 1 < _waves.Count)
-            {
-                yield return new WaitForSeconds(wave.DelayBeforeNextWave);
-                StartNextWave();
-            }
-        }
 
         private void OnBugKilled(int bugId)
         {

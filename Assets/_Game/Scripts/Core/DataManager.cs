@@ -19,6 +19,8 @@ namespace DrillCorp.Core
 
         public PlayerData Data { get; private set; }
 
+        public int Currency => Data?.Currency ?? 0;
+
         private string _savePath;
         private const string SaveFileName = "playerdata.json";
 
@@ -26,7 +28,7 @@ namespace DrillCorp.Core
         {
             if (Instance != null && Instance != this)
             {
-                Destroy(gameObject);
+                DestroyImmediate(gameObject);
                 return;
             }
 

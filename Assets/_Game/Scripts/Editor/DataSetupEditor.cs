@@ -14,6 +14,7 @@ namespace DrillCorp.Editor
             CreateBugAssets();
             CreateWaveAssets();
             CreateMachineAssets();
+            CreateUpgradeAssets();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -36,6 +37,9 @@ namespace DrillCorp.Editor
 
             if (!AssetDatabase.IsValidFolder(dataPath + "/Machines"))
                 AssetDatabase.CreateFolder(dataPath, "Machines");
+
+            if (!AssetDatabase.IsValidFolder(dataPath + "/Upgrades"))
+                AssetDatabase.CreateFolder(dataPath, "Upgrades");
         }
 
         private static void CreateBugAssets()
@@ -275,6 +279,91 @@ namespace DrillCorp.Editor
             so.FindProperty("_miningBonus").floatValue = 0f;
             so.FindProperty("_critChance").floatValue = 0f;
             so.FindProperty("_critMultiplier").floatValue = 1.5f;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void CreateUpgradeAssets()
+        {
+            string path = "Assets/_Game/Data/Upgrades/";
+
+            // Upgrade_MaxHealth
+            if (!File.Exists(path + "Upgrade_MaxHealth.asset"))
+            {
+                var upgrade = ScriptableObject.CreateInstance<UpgradeData>();
+                SetUpgradeData(upgrade, "max_health", "Max HP", "Increase maximum health",
+                    UpgradeType.MaxHealth, maxLevel: 10, baseValue: 0f, valuePerLevel: 10f,
+                    isPercent: false, baseCost: 100, costMult: 1.5f);
+                AssetDatabase.CreateAsset(upgrade, path + "Upgrade_MaxHealth.asset");
+            }
+
+            // Upgrade_Armor
+            if (!File.Exists(path + "Upgrade_Armor.asset"))
+            {
+                var upgrade = ScriptableObject.CreateInstance<UpgradeData>();
+                SetUpgradeData(upgrade, "armor", "Armor", "Reduce damage taken",
+                    UpgradeType.Armor, maxLevel: 10, baseValue: 0f, valuePerLevel: 5f,
+                    isPercent: false, baseCost: 150, costMult: 1.6f);
+                AssetDatabase.CreateAsset(upgrade, path + "Upgrade_Armor.asset");
+            }
+
+            // Upgrade_MiningRate
+            if (!File.Exists(path + "Upgrade_MiningRate.asset"))
+            {
+                var upgrade = ScriptableObject.CreateInstance<UpgradeData>();
+                SetUpgradeData(upgrade, "mining_rate", "Mining", "Increase mining rate",
+                    UpgradeType.MiningRate, maxLevel: 10, baseValue: 0f, valuePerLevel: 5f,
+                    isPercent: true, baseCost: 100, costMult: 1.4f);
+                AssetDatabase.CreateAsset(upgrade, path + "Upgrade_MiningRate.asset");
+            }
+
+            // Upgrade_AttackDamage
+            if (!File.Exists(path + "Upgrade_AttackDamage.asset"))
+            {
+                var upgrade = ScriptableObject.CreateInstance<UpgradeData>();
+                SetUpgradeData(upgrade, "attack_damage", "Damage", "Increase attack damage",
+                    UpgradeType.AttackDamage, maxLevel: 10, baseValue: 0f, valuePerLevel: 5f,
+                    isPercent: true, baseCost: 120, costMult: 1.5f);
+                AssetDatabase.CreateAsset(upgrade, path + "Upgrade_AttackDamage.asset");
+            }
+
+            // Upgrade_AttackSpeed
+            if (!File.Exists(path + "Upgrade_AttackSpeed.asset"))
+            {
+                var upgrade = ScriptableObject.CreateInstance<UpgradeData>();
+                SetUpgradeData(upgrade, "attack_speed", "Attack Speed", "Increase attack speed",
+                    UpgradeType.AttackSpeed, maxLevel: 10, baseValue: 0f, valuePerLevel: 5f,
+                    isPercent: true, baseCost: 120, costMult: 1.5f);
+                AssetDatabase.CreateAsset(upgrade, path + "Upgrade_AttackSpeed.asset");
+            }
+
+            // Upgrade_FuelEfficiency
+            if (!File.Exists(path + "Upgrade_FuelEfficiency.asset"))
+            {
+                var upgrade = ScriptableObject.CreateInstance<UpgradeData>();
+                SetUpgradeData(upgrade, "fuel_efficiency", "Fuel Efficiency", "Reduce fuel consumption",
+                    UpgradeType.FuelEfficiency, maxLevel: 10, baseValue: 0f, valuePerLevel: 3f,
+                    isPercent: true, baseCost: 80, costMult: 1.4f);
+                AssetDatabase.CreateAsset(upgrade, path + "Upgrade_FuelEfficiency.asset");
+            }
+
+            Debug.Log("[DataSetupEditor] Upgrade assets created");
+        }
+
+        private static void SetUpgradeData(UpgradeData upgrade, string id, string displayName, string desc,
+            UpgradeType type, int maxLevel, float baseValue, float valuePerLevel,
+            bool isPercent, int baseCost, float costMult)
+        {
+            var so = new SerializedObject(upgrade);
+            so.FindProperty("_upgradeId").stringValue = id;
+            so.FindProperty("_displayName").stringValue = displayName;
+            so.FindProperty("_description").stringValue = desc;
+            so.FindProperty("_upgradeType").enumValueIndex = (int)type;
+            so.FindProperty("_maxLevel").intValue = maxLevel;
+            so.FindProperty("_baseValue").floatValue = baseValue;
+            so.FindProperty("_valuePerLevel").floatValue = valuePerLevel;
+            so.FindProperty("_isPercentage").boolValue = isPercent;
+            so.FindProperty("_baseCost").intValue = baseCost;
+            so.FindProperty("_costMultiplier").floatValue = costMult;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
     }

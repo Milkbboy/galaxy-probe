@@ -18,9 +18,6 @@ namespace DrillCorp.Bug
         [SerializeField] protected float _attackCooldown = 1f;
         [SerializeField] protected float _attackRange = 1f;
 
-        [Header("Health Bar")]
-        [SerializeField] protected bool _showHealthBar = true;
-
         protected float _currentHealth;
         protected Transform _target;
         protected float _lastAttackTime;
@@ -91,10 +88,50 @@ namespace DrillCorp.Bug
 
         protected virtual void CreateHealthBar()
         {
-            if (_showHealthBar)
+            // BugData에 offset이 있으면 사용, 없으면 자동 계산
+            Vector3 offset = (_bugData != null && _bugData.HealthBarOffset != Vector3.zero)
+                ? _bugData.HealthBarOffset
+                : CalculateHealthBarOffset();
+
+            // 이미 자식에 HealthBar가 있으면 사용
+            _healthBar = GetComponentInChildren<BugHealthBar>();
+            if (_healthBar != null)
             {
-                _healthBar = BugHealthBar.Create(transform);
+                _healthBar.Initialize(transform, offset);
+                return;
             }
+
+            // 없으면 동적 생성
+            _healthBar = BugHealthBar.Create(transform, offset);
+        }
+
+        /// <summary>
+        /// Renderer 또는 Collider 기준으로 HP바 위치 자동 계산
+        /// </summary>
+        protected virtual Vector3 CalculateHealthBarOffset()
+        {
+            float topZ = 0.5f; // 기본값
+
+            // Renderer bounds 확인
+            var renderer = GetComponentInChildren<Renderer>();
+            if (renderer != null)
+            {
+                // 로컬 좌표로 변환하여 Z 상단 계산
+                Vector3 localMax = transform.InverseTransformPoint(renderer.bounds.max);
+                topZ = localMax.z + 0.2f; // 약간의 여유
+            }
+            // Collider bounds 확인
+            else
+            {
+                var col = GetComponent<Collider>();
+                if (col != null)
+                {
+                    Vector3 localMax = transform.InverseTransformPoint(col.bounds.max);
+                    topZ = localMax.z + 0.2f;
+                }
+            }
+
+            return new Vector3(0f, 0.1f, topZ);
         }
 
         protected virtual void Update()

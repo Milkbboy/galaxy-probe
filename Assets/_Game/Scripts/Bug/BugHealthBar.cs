@@ -9,8 +9,8 @@ namespace DrillCorp.Bug
         [SerializeField] private SpriteRenderer _fillRenderer;
 
         [Header("Settings")]
-        [SerializeField] private Vector3 _offset = new Vector3(0f, 0.1f, 0.8f);
-        [SerializeField] private Vector2 _barSize = new Vector2(0.5f, 0.08f);
+        [SerializeField] private Vector3 _offset = new Vector3(0f, 1.5f, 0f);
+        [SerializeField] private Vector2 _barSize = new Vector2(1f, 0.15f);
         [SerializeField] private Color _fullColor = Color.green;
         [SerializeField] private Color _lowColor = Color.red;
         [SerializeField] private float _lowHealthThreshold = 0.3f;
@@ -18,24 +18,25 @@ namespace DrillCorp.Bug
         private Transform _target;
         private float _currentRatio = 1f;
 
-        public void Initialize(Transform target)
+        public void Initialize(Transform target, Vector3? customOffset = null)
         {
             _target = target;
-            UpdatePosition();
+            if (customOffset.HasValue)
+            {
+                _offset = customOffset.Value;
+            }
             SetHealth(1f);
         }
 
         private void LateUpdate()
         {
-            UpdatePosition();
-        }
+            if (_target == null) return;
 
-        private void UpdatePosition()
-        {
-            if (_target != null)
-            {
-                transform.position = _target.position + _offset;
-            }
+            // Bug 위치 기준 월드 좌표로 따라가기 (회전 무시)
+            transform.position = _target.position + _offset;
+
+            // 회전 고정 (자식 스프라이트가 이미 90도 회전되어 있으므로 루트는 고정)
+            transform.rotation = Quaternion.identity;
         }
 
         public void SetHealth(float ratio)
@@ -72,7 +73,7 @@ namespace DrillCorp.Bug
         /// <summary>
         /// 코드로 HP바 생성 (프리팹 없이)
         /// </summary>
-        public static BugHealthBar Create(Transform bugTransform)
+        public static BugHealthBar Create(Transform bugTransform, Vector3? customOffset = null)
         {
             GameObject hpBarObj = new GameObject("HealthBar");
             BugHealthBar healthBar = hpBarObj.AddComponent<BugHealthBar>();
@@ -86,7 +87,7 @@ namespace DrillCorp.Bug
             bgRenderer.sprite = CreateSquareSprite();
             bgRenderer.color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
             bgRenderer.sortingOrder = 100;
-            bgObj.transform.localScale = new Vector3(0.5f, 0.08f, 1f);
+            bgObj.transform.localScale = new Vector3(1f, 0.15f, 1f);
 
             // Fill
             GameObject fillObj = new GameObject("Fill");
@@ -97,11 +98,11 @@ namespace DrillCorp.Bug
             fillRenderer.sprite = CreateSquareSprite();
             fillRenderer.color = Color.green;
             fillRenderer.sortingOrder = 101;
-            fillObj.transform.localScale = new Vector3(0.5f, 0.08f, 1f);
+            fillObj.transform.localScale = new Vector3(1f, 0.15f, 1f);
 
             healthBar._backgroundRenderer = bgRenderer;
             healthBar._fillRenderer = fillRenderer;
-            healthBar.Initialize(bugTransform);
+            healthBar.Initialize(bugTransform, customOffset);
 
             return healthBar;
         }

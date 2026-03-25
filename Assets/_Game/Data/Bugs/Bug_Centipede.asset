@@ -20,7 +20,7 @@ MonoBehaviour:
   _attackDamage: 10
   _attackCooldown: 2
   _attackRange: 1.5
-  _prefab: {fileID: 0}
+  _prefab: {fileID: 9179523251256105512, guid: d7d091dd31ca4b443adfd241295228c0, type: 3}
   _tintColor: {r: 1, g: 1, b: 1, a: 1}
   _scale: 1
   _currencyReward: 3
