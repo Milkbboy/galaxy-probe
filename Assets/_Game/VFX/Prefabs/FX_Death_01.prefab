@@ -9887,7 +9887,7 @@ GameObject:
   - component: {fileID: 6832334564900267839}
   - component: {fileID: 8647185184981502910}
   m_Layer: 0
-  m_Name: MiniExploAcid
+  m_Name: FX_Death_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
