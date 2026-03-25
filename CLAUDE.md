@@ -40,6 +40,7 @@ Assets/
 - **Input System**: New Input System (UnityEngine.InputSystem) - 레거시 사용 금지
 - **카메라**: Orthographic, 탑다운
 - **저장 방식**: JSON (PlayerPrefs 최소화)
+- **기본 폰트**: D2Coding-Ver1.3 (TextMeshPro 사용 시 이 폰트 적용)
 
 ## 코딩 컨벤션
 - 언어: C#

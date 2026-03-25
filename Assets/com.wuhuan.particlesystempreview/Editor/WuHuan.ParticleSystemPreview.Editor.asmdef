@@ -1,9 +1,0 @@
-{
-    "name": "WuHuan.ParticleSystemPreview.Editor",
-    "references": [],
-    "optionalUnityReferences": [],
-    "includePlatforms": [
-        "Editor"
-    ],
-    "excludePlatforms": []
-}
