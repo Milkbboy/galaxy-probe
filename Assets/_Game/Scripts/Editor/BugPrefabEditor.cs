@@ -7,10 +7,10 @@ namespace DrillCorp.Editor
 {
     public class BugPrefabEditor : UnityEditor.Editor
     {
-        private const string HealthBarPrefabPath = "Assets/_Game/Prefabs/UI/BugHealthBar.prefab";
+        private const string HpBarPrefabPath = "Assets/_Game/Prefabs/UI/BugHpBar.prefab";
 
-        [MenuItem("Tools/Drill-Corp/Bug/1. Create HealthBar Prefab")]
-        public static void CreateHealthBarPrefab()
+        [MenuItem("Tools/Drill-Corp/Bug/1. Create HpBar Prefab")]
+        public static void CreateHpBarPrefab()
         {
             string prefabPath = "Assets/_Game/Prefabs/UI";
 
@@ -21,17 +21,17 @@ namespace DrillCorp.Editor
             if (!AssetDatabase.IsValidFolder(prefabPath))
                 AssetDatabase.CreateFolder("Assets/_Game/Prefabs", "UI");
 
-            string fullPath = $"{prefabPath}/BugHealthBar.prefab";
+            string fullPath = $"{prefabPath}/BugHpBar.prefab";
 
             if (System.IO.File.Exists(fullPath))
             {
-                Debug.Log("[BugPrefabEditor] BugHealthBar.prefab already exists, skipping.");
+                Debug.Log("[BugPrefabEditor] BugHpBar.prefab already exists, skipping.");
                 return;
             }
 
-            // HealthBar 오브젝트 생성
-            GameObject hpBarObj = new GameObject("BugHealthBar");
-            BugHealthBar healthBar = hpBarObj.AddComponent<BugHealthBar>();
+            // HpBar 오브젝트 생성
+            GameObject hpBarObj = new GameObject("BugHpBar");
+            BugHpBar hpBar = hpBarObj.AddComponent<BugHpBar>();
 
             // Background
             GameObject bgObj = new GameObject("Background");
@@ -55,8 +55,8 @@ namespace DrillCorp.Editor
             fillRenderer.sortingOrder = 101;
             fillObj.transform.localScale = new Vector3(1f, 0.15f, 1f);
 
-            // BugHealthBar 컴포넌트 연결
-            var so = new SerializedObject(healthBar);
+            // BugHpBar 컴포넌트 연결
+            var so = new SerializedObject(hpBar);
             so.FindProperty("_backgroundRenderer").objectReferenceValue = bgRenderer;
             so.FindProperty("_fillRenderer").objectReferenceValue = fillRenderer;
             so.ApplyModifiedPropertiesWithoutUndo();
@@ -73,16 +73,16 @@ namespace DrillCorp.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log($"[BugPrefabEditor] Created: BugHealthBar.prefab");
+            Debug.Log($"[BugPrefabEditor] Created: BugHpBar.prefab");
         }
 
         [MenuItem("Tools/Drill-Corp/Bug/2. Create Bug Prefabs")]
         public static void CreateBugPrefabs()
         {
-            // HealthBar 프리팹 확인
-            if (!System.IO.File.Exists(HealthBarPrefabPath))
+            // HpBar 프리팹 확인
+            if (!System.IO.File.Exists(HpBarPrefabPath))
             {
-                Debug.LogError("[BugPrefabEditor] BugHealthBar.prefab not found! Run 'Tools > Drill-Corp > Bug > 1. Create HealthBar Prefab' first.");
+                Debug.LogError("[BugPrefabEditor] BugHpBar.prefab not found! Run 'Tools > Drill-Corp > Bug > 1. Create HpBar Prefab' first.");
                 return;
             }
 
@@ -173,15 +173,14 @@ namespace DrillCorp.Editor
                 AssetDatabase.CreateAsset(mat, matPath);
             }
 
-            // HealthBar 프리팹 인스턴스 추가 (자식으로)
-            GameObject healthBarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(HealthBarPrefabPath);
-            if (healthBarPrefab != null)
+            // HpBar 프리팹 인스턴스 추가 (자식으로)
+            GameObject hpBarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(HpBarPrefabPath);
+            if (hpBarPrefab != null)
             {
-                GameObject healthBar = (GameObject)PrefabUtility.InstantiatePrefab(healthBarPrefab);
-                healthBar.transform.SetParent(bugObj.transform);
-                healthBar.transform.localPosition = new Vector3(0f, 0.1f, 0.8f);
+                GameObject hpBar = (GameObject)PrefabUtility.InstantiatePrefab(hpBarPrefab);
+                hpBar.transform.SetParent(bugObj.transform);
+                hpBar.transform.localPosition = new Vector3(0f, 0.1f, 0.8f);
             }
-
 
             // 프리팹으로 저장
             var prefab = PrefabUtility.SaveAsPrefabAsset(bugObj, fullPath);
@@ -197,15 +196,23 @@ namespace DrillCorp.Editor
 
         private static Sprite CreateSquareSprite()
         {
-            // 기존 스프라이트가 있는지 확인
-            string spritePath = "Assets/_Game/Sprites/UI/Square_White.png";
+            // 월드 스페이스용 스프라이트 사용 (PPU 4)
+            string spritePath = "Assets/_Game/Sprites/UI/Square_White_World.png";
             Sprite existingSprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
             if (existingSprite != null)
             {
                 return existingSprite;
             }
 
-            // 없으면 새로 생성
+            // 폴백: UI용 스프라이트
+            spritePath = "Assets/_Game/Sprites/UI/Square_White.png";
+            existingSprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
+            if (existingSprite != null)
+            {
+                return existingSprite;
+            }
+
+            // 없으면 새로 생성 (PPU 4로 월드 스페이스에 적합)
             Texture2D texture = new Texture2D(4, 4);
             for (int x = 0; x < 4; x++)
             {

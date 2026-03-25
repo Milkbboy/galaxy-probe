@@ -21,7 +21,7 @@ namespace DrillCorp.Data
         [SerializeField] private GameObject _prefab;
         [SerializeField] private Color _tintColor = Color.white;
         [SerializeField] private float _scale = 1f;
-        [SerializeField] private Vector3 _healthBarOffset = new Vector3(0f, 0.1f, 0.8f);
+        [SerializeField] private Vector3 _hpBarOffset = new Vector3(0f, 0.1f, 0.8f);
 
         [Header("Rewards")]
         [SerializeField] private int _currencyReward = 1;
@@ -39,7 +39,7 @@ namespace DrillCorp.Data
         public GameObject Prefab => _prefab;
         public Color TintColor => _tintColor;
         public float Scale => _scale;
-        public Vector3 HealthBarOffset => _healthBarOffset;
+        public Vector3 HpBarOffset => _hpBarOffset;
         public int CurrencyReward => _currencyReward;
         public float DropChance => _dropChance;
     }

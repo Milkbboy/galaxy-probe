@@ -2,14 +2,14 @@ using UnityEngine;
 
 namespace DrillCorp.Bug
 {
-    public class BugHealthBar : MonoBehaviour
+    public class BugHpBar : MonoBehaviour
     {
         [Header("Sprites")]
         [SerializeField] private SpriteRenderer _backgroundRenderer;
         [SerializeField] private SpriteRenderer _fillRenderer;
 
         [Header("Settings")]
-        [SerializeField] private Vector3 _offset = new Vector3(0f, 1.5f, 0f);
+        [SerializeField] private Vector3 _offset = new Vector3(0f, 0.1f, 0.8f);
         [SerializeField] private Vector2 _barSize = new Vector2(1f, 0.15f);
         [SerializeField] private Color _fullColor = Color.green;
         [SerializeField] private Color _lowColor = Color.red;
@@ -45,12 +45,12 @@ namespace DrillCorp.Bug
 
             if (_fillRenderer != null)
             {
-                // Scale X로 HP 표현
+                // Scale X로 HP 표현 (스프라이트가 90도 회전되어 있어도 localScale.x가 가로 크기)
                 Vector3 scale = _fillRenderer.transform.localScale;
                 scale.x = _barSize.x * _currentRatio;
                 _fillRenderer.transform.localScale = scale;
 
-                // 위치 조정 (왼쪽 정렬)
+                // 위치 조정 (왼쪽 정렬) - 스프라이트가 X축 90도 회전이므로 localPosition.x 사용
                 Vector3 pos = _fillRenderer.transform.localPosition;
                 pos.x = -(_barSize.x - scale.x) / 2f;
                 _fillRenderer.transform.localPosition = pos;
@@ -73,10 +73,10 @@ namespace DrillCorp.Bug
         /// <summary>
         /// 코드로 HP바 생성 (프리팹 없이)
         /// </summary>
-        public static BugHealthBar Create(Transform bugTransform, Vector3? customOffset = null)
+        public static BugHpBar Create(Transform bugTransform, Vector3? customOffset = null)
         {
-            GameObject hpBarObj = new GameObject("HealthBar");
-            BugHealthBar healthBar = hpBarObj.AddComponent<BugHealthBar>();
+            GameObject hpBarObj = new GameObject("HpBar");
+            BugHpBar hpBar = hpBarObj.AddComponent<BugHpBar>();
 
             // Background
             GameObject bgObj = new GameObject("Background");
@@ -100,11 +100,11 @@ namespace DrillCorp.Bug
             fillRenderer.sortingOrder = 101;
             fillObj.transform.localScale = new Vector3(1f, 0.15f, 1f);
 
-            healthBar._backgroundRenderer = bgRenderer;
-            healthBar._fillRenderer = fillRenderer;
-            healthBar.Initialize(bugTransform, customOffset);
+            hpBar._backgroundRenderer = bgRenderer;
+            hpBar._fillRenderer = fillRenderer;
+            hpBar.Initialize(bugTransform, customOffset);
 
-            return healthBar;
+            return hpBar;
         }
 
         private static Sprite CreateSquareSprite()

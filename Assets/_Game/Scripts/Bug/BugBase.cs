@@ -21,7 +21,7 @@ namespace DrillCorp.Bug
         protected float _currentHealth;
         protected Transform _target;
         protected float _lastAttackTime;
-        protected BugHealthBar _healthBar;
+        protected BugHpBar _hpBar;
 
         public int BugId => _bugId;
         public float CurrentHealth => _currentHealth;
@@ -83,32 +83,32 @@ namespace DrillCorp.Bug
         protected virtual void Start()
         {
             FindTarget();
-            CreateHealthBar();
+            CreateHpBar();
         }
 
-        protected virtual void CreateHealthBar()
+        protected virtual void CreateHpBar()
         {
             // BugData에 offset이 있으면 사용, 없으면 자동 계산
-            Vector3 offset = (_bugData != null && _bugData.HealthBarOffset != Vector3.zero)
-                ? _bugData.HealthBarOffset
-                : CalculateHealthBarOffset();
+            Vector3 offset = (_bugData != null && _bugData.HpBarOffset != Vector3.zero)
+                ? _bugData.HpBarOffset
+                : CalculateHpBarOffset();
 
-            // 이미 자식에 HealthBar가 있으면 사용
-            _healthBar = GetComponentInChildren<BugHealthBar>();
-            if (_healthBar != null)
+            // 이미 자식에 HpBar가 있으면 사용
+            _hpBar = GetComponentInChildren<BugHpBar>();
+            if (_hpBar != null)
             {
-                _healthBar.Initialize(transform, offset);
+                _hpBar.Initialize(transform, offset);
                 return;
             }
 
             // 없으면 동적 생성
-            _healthBar = BugHealthBar.Create(transform, offset);
+            _hpBar = BugHpBar.Create(transform, offset);
         }
 
         /// <summary>
         /// Renderer 또는 Collider 기준으로 HP바 위치 자동 계산
         /// </summary>
-        protected virtual Vector3 CalculateHealthBarOffset()
+        protected virtual Vector3 CalculateHpBarOffset()
         {
             float topZ = 0.5f; // 기본값
 
@@ -213,7 +213,7 @@ namespace DrillCorp.Bug
             _currentHealth -= damage;
             _currentHealth = Mathf.Max(0f, _currentHealth);
 
-            UpdateHealthBar();
+            UpdateHpBar();
 
             if (IsDead)
             {
@@ -221,11 +221,11 @@ namespace DrillCorp.Bug
             }
         }
 
-        protected virtual void UpdateHealthBar()
+        protected virtual void UpdateHpBar()
         {
-            if (_healthBar != null)
+            if (_hpBar != null)
             {
-                _healthBar.SetHealth(_currentHealth / _maxHealth);
+                _hpBar.SetHealth(_currentHealth / _maxHealth);
             }
         }
 
@@ -239,9 +239,9 @@ namespace DrillCorp.Bug
 
         protected virtual void Die()
         {
-            if (_healthBar != null)
+            if (_hpBar != null)
             {
-                Destroy(_healthBar.gameObject);
+                Destroy(_hpBar.gameObject);
             }
             GameEvents.OnBugKilled?.Invoke(_bugId);
             Destroy(gameObject);
