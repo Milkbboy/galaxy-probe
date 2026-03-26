@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using DrillCorp.Core;
 using DrillCorp.Machine;
 using DrillCorp.Data;
@@ -18,10 +19,18 @@ namespace DrillCorp.Bug
         [SerializeField] protected float _attackCooldown = 1f;
         [SerializeField] protected float _attackRange = 1f;
 
+        [Header("VFX")]
+        [SerializeField] protected Transform _fxSocket;
+        [SerializeField] protected GameObject _deathVfxPrefab;
+        [SerializeField] protected float _hitFlashDuration = 0.1f;
+
         protected float _currentHealth;
         protected Transform _target;
         protected float _lastAttackTime;
         protected BugHpBar _hpBar;
+        protected Renderer[] _renderers;
+        protected MaterialPropertyBlock _propBlock;
+        protected bool _isFlashing;
 
         public int BugId => _bugId;
         public float CurrentHealth => _currentHealth;
@@ -34,6 +43,8 @@ namespace DrillCorp.Bug
             _currentHealth = _maxHealth;
             EnsureCollider();
             SetBugLayer();
+            CacheRenderers();
+            FindFxSocket();
         }
 
         /// <summary>
@@ -77,6 +88,25 @@ namespace DrillCorp.Bug
             if (bugLayer != -1)
             {
                 gameObject.layer = bugLayer;
+            }
+        }
+
+        protected virtual void CacheRenderers()
+        {
+            _renderers = GetComponentsInChildren<Renderer>();
+            _propBlock = new MaterialPropertyBlock();
+        }
+
+        protected virtual void FindFxSocket()
+        {
+            if (_fxSocket == null)
+            {
+                // FX_Socket 자식 오브젝트 찾기
+                Transform socket = transform.Find("FX_Socket");
+                if (socket != null)
+                {
+                    _fxSocket = socket;
+                }
             }
         }
 
@@ -214,11 +244,51 @@ namespace DrillCorp.Bug
             _currentHealth = Mathf.Max(0f, _currentHealth);
 
             UpdateHpBar();
+            PlayHitFlash();
 
             if (IsDead)
             {
                 Die();
             }
+        }
+
+        /// <summary>
+        /// 피격 시 흰색 깜빡임 효과
+        /// </summary>
+        protected virtual void PlayHitFlash()
+        {
+            if (!_isFlashing && _renderers != null && _renderers.Length > 0)
+            {
+                StartCoroutine(HitFlashCoroutine());
+            }
+        }
+
+        protected virtual IEnumerator HitFlashCoroutine()
+        {
+            _isFlashing = true;
+
+            // 흰색으로 변경
+            foreach (var renderer in _renderers)
+            {
+                if (renderer == null) continue;
+                renderer.GetPropertyBlock(_propBlock);
+                _propBlock.SetColor("_BaseColor", Color.white);
+                _propBlock.SetColor("_Color", Color.white); // Fallback for different shaders
+                renderer.SetPropertyBlock(_propBlock);
+            }
+
+            yield return new WaitForSeconds(_hitFlashDuration);
+
+            // 원래 색상으로 복원
+            foreach (var renderer in _renderers)
+            {
+                if (renderer == null) continue;
+                renderer.GetPropertyBlock(_propBlock);
+                _propBlock.Clear();
+                renderer.SetPropertyBlock(_propBlock);
+            }
+
+            _isFlashing = false;
         }
 
         protected virtual void UpdateHpBar()
@@ -239,12 +309,41 @@ namespace DrillCorp.Bug
 
         protected virtual void Die()
         {
+            // HP바 제거
             if (_hpBar != null)
             {
                 Destroy(_hpBar.gameObject);
             }
+
+            // 데스 VFX 재생
+            PlayDeathVfx();
+
             GameEvents.OnBugKilled?.Invoke(_bugId);
             Destroy(gameObject);
+        }
+
+        /// <summary>
+        /// 죽을 때 FX_Socket 위치에 데스 이펙트 생성
+        /// </summary>
+        protected virtual void PlayDeathVfx()
+        {
+            if (_deathVfxPrefab == null) return;
+
+            Vector3 spawnPos = _fxSocket != null ? _fxSocket.position : transform.position;
+            Quaternion spawnRot = _fxSocket != null ? _fxSocket.rotation : Quaternion.identity;
+
+            GameObject vfx = Instantiate(_deathVfxPrefab, spawnPos, spawnRot);
+
+            // VFX 자동 파괴 (ParticleSystem 기준)
+            var ps = vfx.GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                Destroy(vfx, ps.main.duration + ps.main.startLifetime.constantMax);
+            }
+            else
+            {
+                Destroy(vfx, 2f); // 기본 2초 후 파괴
+            }
         }
 
         public void Initialize(int id, float health, float speed, float damage)

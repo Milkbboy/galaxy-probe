@@ -64,8 +64,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
-        m_Scale: {x: 0.48176864, y: 1}
-        m_Offset: {x: -426.1672, y: 0}
+        m_Scale: {x: 0.5598972, y: 1}
+        m_Offset: {x: -10.646572, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -95,7 +95,9 @@ Material:
     - Intensity: 4.53
     - SoftParticleToggle_: 1
     - SoftParticle_: 8
+    - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
+    - _AlphaToMask: 0
     - _Blend: 0
     - _BlendColor: 0
     - _BlendOp: 0
@@ -112,6 +114,7 @@ Material:
     - _DistortionStrength: 1
     - _DistortionStrengthScaled: 0
     - _DstBlend: 10
+    - _DstBlendAlpha: 10
     - _EmissionEnabled: 0
     - _FlipbookBlending: 0
     - _FlipbookMode: 0
@@ -128,6 +131,7 @@ Material:
     - _Parallax: 0.02
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _SampleGI: 0
     - _Saturation: 1
     - _SmoothnessTextureChannel: 0
     - _SoftParticlesEnabled: 1
@@ -135,14 +139,16 @@ Material:
     - _SoftParticlesNearFadeDistance: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 5
+    - _SrcBlendAlpha: 1
     - _Surface: 1
     - _UVSec: 0
+    - _XRMotionVectorsPass: 1
     - _ZWrite: 0
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColorAddSubDiff: {r: 1, g: 0, b: 0, a: 0}
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}
-    - _Color: {r: 1.8880861, g: 1.8880861, b: 1.8880861, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _ColorAddSubDiff: {r: 1, g: 0, b: 0, a: 0}
     - _EmisColor: {r: 0.4852941, g: 0.4852941, b: 0.4852941, a: 0}
     - _EmissionColor: {r: 0.7490196, g: 0.7490196, b: 0.7490196, a: 1}

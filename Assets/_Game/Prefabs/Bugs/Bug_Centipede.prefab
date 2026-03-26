@@ -85,6 +85,9 @@ MonoBehaviour:
   _attackDamage: 5
   _attackCooldown: 1
   _attackRange: 1
+  _fxSocket: {fileID: 8105409176002292665}
+  _deathVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
+  _hitFlashDuration: 0.1
   _chargeDistance: 3
   _chargeSpeedMultiplier: 2
 --- !u!1 &7894280524745800871
