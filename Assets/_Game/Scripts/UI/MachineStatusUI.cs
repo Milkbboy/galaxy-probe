@@ -23,7 +23,7 @@ namespace DrillCorp.UI
         {
             if (_machine == null)
             {
-                _machine = FindFirstObjectByType<MachineController>();
+                _machine = FindAnyObjectByType<MachineController>();
             }
         }
 

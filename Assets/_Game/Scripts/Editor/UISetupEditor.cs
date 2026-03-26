@@ -12,7 +12,7 @@ namespace DrillCorp.Editor
         public static void SetupInGameUI()
         {
             // 기존 Canvas 확인
-            Canvas existingCanvas = FindFirstObjectByType<Canvas>();
+            Canvas existingCanvas = FindAnyObjectByType<Canvas>();
             if (existingCanvas != null)
             {
                 if (!EditorUtility.DisplayDialog("UI Setup",
@@ -68,7 +68,7 @@ namespace DrillCorp.Editor
             canvasObj.AddComponent<GraphicRaycaster>();
 
             // EventSystem 확인
-            if (FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
+            if (FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
             {
                 GameObject eventSystem = new GameObject("EventSystem");
                 eventSystem.AddComponent<UnityEngine.EventSystems.EventSystem>();

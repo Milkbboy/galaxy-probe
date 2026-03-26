@@ -26,7 +26,7 @@ namespace DrillCorp.UI
 
         private void Awake()
         {
-            _machine = FindFirstObjectByType<MachineController>();
+            _machine = FindAnyObjectByType<MachineController>();
             SetupButtons();
         }
 

@@ -32,7 +32,7 @@ namespace DrillCorp.UI
 
             if (_aimController == null)
             {
-                _aimController = FindFirstObjectByType<AimController>();
+                _aimController = FindAnyObjectByType<AimController>();
             }
         }
 

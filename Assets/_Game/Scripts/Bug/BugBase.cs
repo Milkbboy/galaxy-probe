@@ -174,7 +174,7 @@ namespace DrillCorp.Bug
 
         protected virtual void FindTarget()
         {
-            var machine = FindFirstObjectByType<MachineController>();
+            var machine = FindAnyObjectByType<MachineController>();
             if (machine != null)
             {
                 _target = machine.transform;

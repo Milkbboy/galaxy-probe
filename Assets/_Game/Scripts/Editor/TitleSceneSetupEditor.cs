@@ -20,7 +20,7 @@ namespace DrillCorp.Editor
             }
 
             // EventSystem 확인/생성 (New Input System 사용)
-            if (Object.FindFirstObjectByType<EventSystem>() == null)
+            if (Object.FindAnyObjectByType<EventSystem>() == null)
             {
                 var eventSystem = new GameObject("EventSystem");
                 eventSystem.AddComponent<EventSystem>();
@@ -144,7 +144,7 @@ namespace DrillCorp.Editor
             string prefabPath = "Assets/_Game/Prefabs/UI";
 
             // UpgradeUI에 프리팹 연결
-            var upgradeUI = Object.FindFirstObjectByType<OutGame.UpgradeUI>();
+            var upgradeUI = Object.FindAnyObjectByType<OutGame.UpgradeUI>();
             if (upgradeUI != null)
             {
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{prefabPath}/UpgradeItem.prefab");
@@ -154,7 +154,7 @@ namespace DrillCorp.Editor
             }
 
             // MachineSelectUI에 프리팹 및 데이터 연결
-            var machineUI = Object.FindFirstObjectByType<OutGame.MachineSelectUI>();
+            var machineUI = Object.FindAnyObjectByType<OutGame.MachineSelectUI>();
             if (machineUI != null)
             {
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{prefabPath}/MachineItem.prefab");
@@ -883,7 +883,7 @@ namespace DrillCorp.Editor
             // DontDestroyOnLoad는 루트 오브젝트에서만 동작하므로 각각 루트에 생성
 
             // UpgradeManager
-            if (Object.FindFirstObjectByType<OutGame.UpgradeManager>() == null)
+            if (Object.FindAnyObjectByType<OutGame.UpgradeManager>() == null)
             {
                 var upgradeManagerObj = new GameObject("UpgradeManager");
                 var upgradeManager = upgradeManagerObj.AddComponent<OutGame.UpgradeManager>();
@@ -912,14 +912,14 @@ namespace DrillCorp.Editor
             }
 
             // GameManager (TitleScene에서 시작할 경우 필요) - 루트에 생성
-            if (Object.FindFirstObjectByType<Core.GameManager>() == null)
+            if (Object.FindAnyObjectByType<Core.GameManager>() == null)
             {
                 var gameManagerObj = new GameObject("GameManager");
                 gameManagerObj.AddComponent<Core.GameManager>();
             }
 
             // DataManager - 루트에 생성
-            if (Object.FindFirstObjectByType<Core.DataManager>() == null)
+            if (Object.FindAnyObjectByType<Core.DataManager>() == null)
             {
                 var dataManagerObj = new GameObject("DataManager");
                 dataManagerObj.AddComponent<Core.DataManager>();
