@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.BugData
   _bugId: 1
   _bugName: Beetle
-  _description: Basic melee bug
-  _maxHealth: 15
-  _moveSpeed: 2
-  _attackDamage: 5
-  _attackCooldown: 1
+  _description: "\uB290\uB9AC\uACE0 \uB2E8\uB2E8\uD55C \uAC11\uCDA9"
+  _maxHealth: 20
+  _moveSpeed: 1.5
+  _attackDamage: 8
+  _attackCooldown: 1.5
   _attackRange: 1
   _prefab: {fileID: 8779006998046517225, guid: f2354471f422968499e6bb49825e0230, type: 3}
   _tintColor: {r: 1, g: 1, b: 1, a: 1}
   _scale: 1
   _hpBarOffset: {x: 0, y: 0.1, z: 0.8}
-  _currencyReward: 1
+  _currencyReward: 2
   _dropChance: 1

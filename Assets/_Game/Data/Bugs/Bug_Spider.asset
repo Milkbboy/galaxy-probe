@@ -14,14 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.BugData
   _bugId: 4
   _bugName: Spider
-  _description: Balanced stats
-  _maxHealth: 20
+  _description: "\uADE0\uD615 \uC7A1\uD78C \uAC70\uBBF8"
+  _maxHealth: 15
   _moveSpeed: 2.5
-  _attackDamage: 7
-  _attackCooldown: 1.2
-  _attackRange: 1.2
+  _attackDamage: 6
+  _attackCooldown: 1
+  _attackRange: 1.5
   _prefab: {fileID: 0}
   _tintColor: {r: 1, g: 1, b: 1, a: 1}
-  _scale: 1
+  _scale: 1.2
+  _hpBarOffset: {x: 0, y: 0.12, z: 0.9}
   _currencyReward: 2
   _dropChance: 1

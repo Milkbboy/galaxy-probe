@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.BugData
   _bugId: 2
   _bugName: Fly
-  _description: Fast but weak
+  _description: "\uBE60\uB974\uACE0 \uC57D\uD55C \uB0A0\uBC8C\uB808"
   _maxHealth: 8
   _moveSpeed: 4
   _attackDamage: 3
@@ -22,7 +22,7 @@ MonoBehaviour:
   _attackRange: 1
   _prefab: {fileID: 5321672167020227983, guid: c465e412070045441a0392c5325413c1, type: 3}
   _tintColor: {r: 1, g: 1, b: 1, a: 1}
-  _scale: 1
-  _hpBarOffset: {x: 0, y: 0.1, z: 0.8}
+  _scale: 0.8
+  _hpBarOffset: {x: 0, y: 0.1, z: 0.7}
   _currencyReward: 1
   _dropChance: 1
