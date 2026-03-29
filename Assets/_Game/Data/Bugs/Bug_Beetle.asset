@@ -16,7 +16,7 @@ MonoBehaviour:
   _bugName: Beetle
   _description: "\uD0F1\uCEE4"
   _maxHealth: 20
-  _moveSpeed: 1.5
+  _moveSpeed: 0.5
   _attackDamage: 8
   _attackCooldown: 1.5
   _attackRange: 1

@@ -16,7 +16,7 @@ MonoBehaviour:
   _bugName: Fly
   _description: "\uBE60\uB974\uACE0 \uC57D\uD55C \uB0A0\uBC8C\uB808"
   _maxHealth: 8
-  _moveSpeed: 4
+  _moveSpeed: 2
   _attackDamage: 3
   _attackCooldown: 0.5
   _attackRange: 1

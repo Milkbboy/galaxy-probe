@@ -13,20 +13,25 @@ MonoBehaviour:
   m_Name: Wave_04
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.WaveData
   _waveNumber: 4
-  _waveName: Speed Rush
+  _waveName: 'Wave 4: Reinforced'
   _spawnGroups:
+  - BugData: {fileID: 11400000, guid: bef216b0fcfb72040a8953a8c85286c1, type: 2}
+    Count: 5
+    StartDelay: 0
+    SpawnInterval: 1.5
+    RandomPosition: 1
   - BugData: {fileID: 11400000, guid: 0979a09a05ba65f43aea855d3b473a6b, type: 2}
     Count: 8
-    StartDelay: 0
+    StartDelay: 5
     SpawnInterval: 0.8
     RandomPosition: 1
   - BugData: {fileID: 11400000, guid: cd367503eebd8054d868a1ba2b80ae39, type: 2}
-    Count: 3
-    StartDelay: 8
-    SpawnInterval: 2
+    Count: 2
+    StartDelay: 15
+    SpawnInterval: 5
     RandomPosition: 1
   _waveDuration: 50
   _delayBeforeNextWave: 3
-  _healthMultiplier: 1.1
+  _healthMultiplier: 1.2
   _damageMultiplier: 1.1
-  _speedMultiplier: 1.1
+  _speedMultiplier: 1

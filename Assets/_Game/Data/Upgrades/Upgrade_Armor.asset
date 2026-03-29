@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.UpgradeData
   _upgradeId: armor
   _displayName: Armor
-  _description: Reduce damage taken
+  _description: "\uBA38\uC2E0\uC758 \uBC29\uC5B4\uB825\uC744 \uC99D\uAC00\uC2DC\uD0B5\uB2C8\uB2E4."
   _icon: {fileID: 0}
   _upgradeType: 1
   _maxLevel: 10
   _baseValue: 0
   _valuePerLevel: 5
   _isPercentage: 0
-  _baseCost: 150
-  _costMultiplier: 1.6
+  _baseCost: 120
+  _costMultiplier: 1.5

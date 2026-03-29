@@ -13,20 +13,20 @@ MonoBehaviour:
   m_Name: Wave_02
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.WaveData
   _waveNumber: 2
-  _waveName: Swarm Incoming
+  _waveName: 'Wave 2: Mixed Assault'
   _spawnGroups:
   - BugData: {fileID: 11400000, guid: bef216b0fcfb72040a8953a8c85286c1, type: 2}
-    Count: 5
+    Count: 15
     StartDelay: 0
-    SpawnInterval: 1.5
+    SpawnInterval: 0.4
     RandomPosition: 1
   - BugData: {fileID: 11400000, guid: 0979a09a05ba65f43aea855d3b473a6b, type: 2}
-    Count: 3
+    Count: 5
     StartDelay: 5
-    SpawnInterval: 1
+    SpawnInterval: 0.3
     RandomPosition: 1
-  _waveDuration: 40
-  _delayBeforeNextWave: 3
+  _waveDuration: 45
+  _delayBeforeNextWave: 2
   _healthMultiplier: 1
   _damageMultiplier: 1
   _speedMultiplier: 1

@@ -13,25 +13,25 @@ MonoBehaviour:
   m_Name: Wave_05
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.WaveData
   _waveNumber: 5
-  _waveName: Final Stand
+  _waveName: 'Wave 5: Centipede Boss'
   _spawnGroups:
-  - BugData: {fileID: 11400000, guid: bef216b0fcfb72040a8953a8c85286c1, type: 2}
-    Count: 6
+  - BugData: {fileID: 11400000, guid: 0979a09a05ba65f43aea855d3b473a6b, type: 2}
+    Count: 10
     StartDelay: 0
     SpawnInterval: 1
     RandomPosition: 1
-  - BugData: {fileID: 11400000, guid: 38fd4dcdeef657245871bb4772756ab5, type: 2}
-    Count: 4
-    StartDelay: 5
+  - BugData: {fileID: 11400000, guid: bef216b0fcfb72040a8953a8c85286c1, type: 2}
+    Count: 5
+    StartDelay: 10
     SpawnInterval: 2
     RandomPosition: 1
   - BugData: {fileID: 11400000, guid: 2b0904ed477de7c4daf5e24c6bba6bd2, type: 2}
-    Count: 3
-    StartDelay: 10
-    SpawnInterval: 4
-    RandomPosition: 1
+    Count: 1
+    StartDelay: 20
+    SpawnInterval: 0
+    RandomPosition: 0
   _waveDuration: 60
-  _delayBeforeNextWave: 3
-  _healthMultiplier: 1.2
+  _delayBeforeNextWave: 5
+  _healthMultiplier: 1.3
   _damageMultiplier: 1.2
-  _speedMultiplier: 1
+  _speedMultiplier: 1.1

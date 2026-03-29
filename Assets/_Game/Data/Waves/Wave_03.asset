@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: Wave_03
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.WaveData
   _waveNumber: 3
-  _waveName: Heavy Hitters
+  _waveName: 'Wave 3: Fly Rush'
   _spawnGroups:
-  - BugData: {fileID: 11400000, guid: bef216b0fcfb72040a8953a8c85286c1, type: 2}
-    Count: 4
+  - BugData: {fileID: 11400000, guid: 0979a09a05ba65f43aea855d3b473a6b, type: 2}
+    Count: 10
     StartDelay: 0
-    SpawnInterval: 1.5
+    SpawnInterval: 0.5
     RandomPosition: 1
-  - BugData: {fileID: 11400000, guid: 2b0904ed477de7c4daf5e24c6bba6bd2, type: 2}
-    Count: 2
-    StartDelay: 3
-    SpawnInterval: 5
+  - BugData: {fileID: 11400000, guid: bef216b0fcfb72040a8953a8c85286c1, type: 2}
+    Count: 3
+    StartDelay: 5
+    SpawnInterval: 3
     RandomPosition: 1
   _waveDuration: 45
   _delayBeforeNextWave: 3

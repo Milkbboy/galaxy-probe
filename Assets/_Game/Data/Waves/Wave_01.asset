@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: Wave_01
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.WaveData
   _waveNumber: 1
-  _waveName: First Contact
+  _waveName: 'Wave 1: First Raid'
   _spawnGroups:
   - BugData: {fileID: 11400000, guid: bef216b0fcfb72040a8953a8c85286c1, type: 2}
-    Count: 5
+    Count: 15
     StartDelay: 0
-    SpawnInterval: 2
+    SpawnInterval: 0.3
     RandomPosition: 1
   _waveDuration: 30
-  _delayBeforeNextWave: 3
+  _delayBeforeNextWave: 2
   _healthMultiplier: 1
   _damageMultiplier: 1
   _speedMultiplier: 1
