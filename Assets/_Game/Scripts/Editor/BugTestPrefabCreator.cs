@@ -20,6 +20,8 @@ namespace DrillCorp.Editor
         /// <summary>
         /// 테스트 Bug 정의
         /// </summary>
+        private const string ModelsPath = "Assets/_Game/Models";
+
         private static readonly TestBugDefinition[] TestBugs = new TestBugDefinition[]
         {
             // Movement 테스트
@@ -30,7 +32,9 @@ namespace DrillCorp.Editor
                 MovementType = "Linear",
                 AttackType = "Melee",
                 Passives = new string[0],
-                Color = new Color(1f, 0.3f, 0.3f) // 빨강
+                Color = new Color(1f, 0.3f, 0.3f), // 빨강
+                ModelName = "SM_Bug_A_01",
+                Scale = 0.2f
             },
             new TestBugDefinition
             {
@@ -39,7 +43,9 @@ namespace DrillCorp.Editor
                 MovementType = "Hover",
                 AttackType = "Melee",
                 Passives = new string[0],
-                Color = new Color(0.3f, 0.5f, 1f) // 파랑
+                Color = new Color(0.3f, 0.5f, 1f), // 파랑
+                ModelName = "SM_Bug_B_01",
+                Scale = 0.22f
             },
             new TestBugDefinition
             {
@@ -48,7 +54,9 @@ namespace DrillCorp.Editor
                 MovementType = "Burst",
                 AttackType = "Melee",
                 Passives = new string[0],
-                Color = new Color(0.3f, 1f, 0.3f) // 초록
+                Color = new Color(0.3f, 1f, 0.3f), // 초록
+                ModelName = "SM_Bug_C_01",
+                Scale = 0.18f
             },
             new TestBugDefinition
             {
@@ -57,7 +65,9 @@ namespace DrillCorp.Editor
                 MovementType = "Ranged",
                 AttackType = "Projectile",
                 Passives = new string[0],
-                Color = new Color(1f, 1f, 0.3f) // 노랑
+                Color = new Color(1f, 1f, 0.3f), // 노랑
+                ModelName = "SM_Bug_A_01",
+                Scale = 0.25f
             },
 
             // Passive 테스트
@@ -68,7 +78,9 @@ namespace DrillCorp.Editor
                 MovementType = "Linear",
                 AttackType = "Melee",
                 Passives = new string[] { "Armor" },
-                Color = new Color(0.6f, 0.6f, 0.6f) // 회색
+                Color = new Color(0.6f, 0.6f, 0.6f), // 회색
+                ModelName = "SM_Bug_B_01",
+                Scale = 0.3f // Armor는 크게
             },
             new TestBugDefinition
             {
@@ -77,7 +89,9 @@ namespace DrillCorp.Editor
                 MovementType = "Linear",
                 AttackType = "Melee",
                 Passives = new string[] { "Dodge" },
-                Color = new Color(0f, 1f, 1f) // 청록
+                Color = new Color(0f, 1f, 1f), // 청록
+                ModelName = "SM_Bug_C_01",
+                Scale = 0.15f // Dodge는 작게
             },
             new TestBugDefinition
             {
@@ -86,7 +100,9 @@ namespace DrillCorp.Editor
                 MovementType = "Linear",
                 AttackType = "Melee",
                 Passives = new string[] { "Armor", "Dodge" },
-                Color = new Color(0.8f, 0.3f, 1f) // 보라
+                Color = new Color(0.8f, 0.3f, 1f), // 보라
+                ModelName = "SM_Bug_A_01",
+                Scale = 0.28f
             },
 
             // 복합 테스트
@@ -97,7 +113,9 @@ namespace DrillCorp.Editor
                 MovementType = "Ranged",
                 AttackType = "Projectile",
                 Passives = new string[] { "Armor" },
-                Color = new Color(1f, 0.5f, 0f) // 주황
+                Color = new Color(1f, 0.5f, 0f), // 주황
+                ModelName = "SM_Bug_B_01",
+                Scale = 0.35f // 원거리 Armor는 제일 크게
             },
         };
 
@@ -395,37 +413,70 @@ namespace DrillCorp.Editor
                 so.ApplyModifiedPropertiesWithoutUndo();
             }
 
-            // Visual (Capsule)
-            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            visual.name = "Visual";
-            visual.transform.SetParent(bugObj.transform);
-            visual.transform.localPosition = new Vector3(0f, 0.5f, 0f);
-            visual.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            // Visual (FBX 모델 사용)
+            GameObject visual = null;
+            string modelPath = $"{ModelsPath}/{def.ModelName}.fbx";
+            var modelPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
 
-            // Collider 제거 (BugController에서 자동 추가)
-            Object.DestroyImmediate(visual.GetComponent<Collider>());
-
-            // Visual 색상 설정
-            var renderer = visual.GetComponent<MeshRenderer>();
-            if (renderer != null)
+            if (modelPrefab != null)
             {
-                Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-                mat.color = def.Color;
-                renderer.sharedMaterial = mat;
+                // FBX 모델 인스턴스화
+                visual = (GameObject)PrefabUtility.InstantiatePrefab(modelPrefab);
+                visual.name = "Visual";
+                visual.transform.SetParent(bugObj.transform);
+                visual.transform.localPosition = Vector3.zero;
+                // 탑뷰용 회전: FBX 기본 -90도 → 추가로 -90도 해서 바닥에 눕힘
+                visual.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
+                visual.transform.localScale = Vector3.one * def.Scale;
 
-                // Material 저장
+                // FBX에 있는 Collider 제거
+                foreach (var col in visual.GetComponentsInChildren<Collider>())
+                {
+                    Object.DestroyImmediate(col);
+                }
+
+                // 모델 크기에 맞는 SphereCollider 추가 (Root에)
+                var collider = bugObj.AddComponent<SphereCollider>();
+                collider.center = new Vector3(0f, 0.3f, 0f);
+                collider.radius = 0.5f * def.Scale;
+            }
+            else
+            {
+                // 폴백: 모델이 없으면 Capsule 사용
+                Debug.LogWarning($"[BugTestPrefabCreator] Model not found: {modelPath}, using Capsule fallback");
+                visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                visual.name = "Visual";
+                visual.transform.SetParent(bugObj.transform);
+                visual.transform.localPosition = new Vector3(0f, 0.5f, 0f);
+                visual.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f) * def.Scale;
+
+                // Collider 제거
+                Object.DestroyImmediate(visual.GetComponent<Collider>());
+            }
+
+            // Visual 색상 설정 (모든 Renderer에 적용)
+            var renderers = visual.GetComponentsInChildren<MeshRenderer>();
+            if (renderers.Length > 0)
+            {
+                // Material 생성/로드
                 string matPath = $"{PrefabPath}/Bug_{def.Name}_Mat.mat";
+                Material mat;
+
                 if (!System.IO.File.Exists(matPath))
                 {
+                    mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                    mat.color = def.Color;
                     AssetDatabase.CreateAsset(mat, matPath);
                 }
                 else
                 {
-                    var existingMat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
-                    if (existingMat != null)
-                    {
-                        renderer.sharedMaterial = existingMat;
-                    }
+                    mat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+                }
+
+                // 모든 Renderer에 Material 적용
+                foreach (var renderer in renderers)
+                {
+                    renderer.sharedMaterial = mat;
                 }
             }
 
@@ -439,16 +490,18 @@ namespace DrillCorp.Editor
             controllerSo.FindProperty("_fxSocket").objectReferenceValue = fxSocket.transform;
             controllerSo.ApplyModifiedPropertiesWithoutUndo();
 
-            // HpBar 프리팹 인스턴스 추가
+            // HpBar 프리팹 인스턴스 추가 (스케일에 맞게 위치 조정)
+            float hpBarZ = 0.6f + (def.Scale * 0.4f); // 스케일에 비례하여 Z 위치
             GameObject hpBarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(HpBarPrefabPath);
             if (hpBarPrefab != null)
             {
                 GameObject hpBar = (GameObject)PrefabUtility.InstantiatePrefab(hpBarPrefab);
                 hpBar.transform.SetParent(bugObj.transform);
-                hpBar.transform.localPosition = new Vector3(0f, 0.1f, 0.8f);
+                hpBar.transform.localPosition = new Vector3(0f, 0.1f, hpBarZ);
             }
 
             // 라벨 추가 (BugLabel 컴포넌트 사용 - 월드 좌표 고정)
+            float labelZ = hpBarZ + 0.4f; // HP 바 위에 라벨
             GameObject labelObj = new GameObject("BugLabel");
             labelObj.transform.SetParent(bugObj.transform);
 
@@ -456,7 +509,7 @@ namespace DrillCorp.Editor
 
             // BugLabel 필드 설정 (SerializedObject 사용)
             var bugLabelSo = new SerializedObject(bugLabel);
-            bugLabelSo.FindProperty("_offset").vector3Value = new Vector3(0f, 0.1f, 1.2f);
+            bugLabelSo.FindProperty("_offset").vector3Value = new Vector3(0f, 0.1f, labelZ);
             bugLabelSo.ApplyModifiedPropertiesWithoutUndo();
 
             // TextMeshPro 추가
@@ -516,6 +569,8 @@ namespace DrillCorp.Editor
             public string AttackType;
             public string[] Passives;
             public Color Color;
+            public string ModelName; // SM_Bug_A_01, SM_Bug_B_01, SM_Bug_C_01
+            public float Scale = 1f;
         }
     }
 }
