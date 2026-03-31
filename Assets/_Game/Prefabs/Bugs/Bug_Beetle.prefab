@@ -130,7 +130,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8774029419386604783}
-  - component: {fileID: 8410960321159356104}
+  - component: {fileID: 6715379429640969810}
   m_Layer: 0
   m_Name: Bug_Beetle
   m_TagString: Untagged
@@ -157,7 +157,7 @@ Transform:
   - {fileID: 5522823474112119315}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8410960321159356104
+--- !u!114 &6715379429640969810
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -166,16 +166,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 8779006998046517225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 60af9f48916250248b3844b2107c65a0, type: 3}
+  m_Script: {fileID: 11500000, guid: 48fa8fa4f2ab2ac40b111e852bfe266e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.BeetleBug
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.BugController
   _bugData: {fileID: 11400000, guid: bef216b0fcfb72040a8953a8c85286c1, type: 2}
-  _bugId: 0
-  _maxHealth: 10
-  _moveSpeed: 2
-  _attackDamage: 5
-  _attackCooldown: 1
-  _attackRange: 1
+  _behaviorData: {fileID: 11400000, guid: 7fe21eefa01e2ee4d879ca2577daa23f, type: 2}
   _fxSocket: {fileID: 6351300253361132931}
   _deathVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
   _hitFlashDuration: 0.1

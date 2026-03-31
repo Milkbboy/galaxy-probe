@@ -3,11 +3,13 @@ using System;
 using System.Collections.Generic;
 using DrillCorp.Core;
 using DrillCorp.Data;
+using DrillCorp.Machine;
 using DrillCorp.Bug.Behaviors;
 using DrillCorp.Bug.Behaviors.Data;
 using DrillCorp.Bug.Behaviors.Movement;
 using DrillCorp.Bug.Behaviors.Attack;
 using DrillCorp.Bug.Behaviors.Passive;
+using DrillCorp.VFX;
 
 namespace DrillCorp.Bug
 {
@@ -86,6 +88,28 @@ namespace DrillCorp.Bug
         {
             CacheRenderers();
             FindFxSocket();
+            EnsureCollider();
+            SetBugLayer();
+        }
+
+        private void EnsureCollider()
+        {
+            if (GetComponent<Collider>() == null)
+            {
+                var capsule = gameObject.AddComponent<CapsuleCollider>();
+                capsule.height = 1f;
+                capsule.radius = 0.3f;
+                capsule.center = new Vector3(0f, 0.5f, 0f);
+            }
+        }
+
+        private void SetBugLayer()
+        {
+            int bugLayer = LayerMask.NameToLayer("Bug");
+            if (bugLayer != -1)
+            {
+                gameObject.layer = bugLayer;
+            }
         }
 
         private void Start()
@@ -121,6 +145,7 @@ namespace DrillCorp.Bug
             if (_currentAttack != null && _target != null)
             {
                 float distance = GetDistanceTo(_target);
+                // Debug.Log($"[BugController] {name} distance: {distance:F2}, attackRange: {_currentAttack.AttackRange:F2}");
                 if (distance <= _currentAttack.AttackRange)
                 {
                     if (_currentAttack.TryAttack(_target))
@@ -260,7 +285,8 @@ namespace DrillCorp.Bug
                     atkData.Type,
                     atkData.Param1,
                     atkData.Param2,
-                    atkData.ProjectilePrefab
+                    atkData.ProjectilePrefab,
+                    atkData.HitVfxPrefab
                 );
                 _defaultAttack?.Initialize(this);
             }
@@ -383,10 +409,11 @@ namespace DrillCorp.Bug
             if (_hpBar != null)
             {
                 _hpBar.Initialize(transform, offset);
-                return;
             }
-
-            _hpBar = BugHpBar.Create(transform, offset);
+            else
+            {
+                _hpBar = BugHpBar.Create(transform, offset);
+            }
         }
 
         private Vector3 CalculateHpBarOffset()
@@ -485,6 +512,7 @@ namespace DrillCorp.Bug
 
             UpdateHpBar();
             PlayHitFlash();
+            PlayHitVfx();
 
             if (_currentHealth <= 0f)
             {
@@ -576,6 +604,12 @@ namespace DrillCorp.Bug
             }
         }
 
+        private void PlayHitVfx()
+        {
+            Vector3 hitPos = _fxSocket != null ? _fxSocket.position : transform.position;
+            SimpleVFX.PlayBugHit(hitPos);
+        }
+
         #endregion
 
         #region Visual Effects
@@ -619,7 +653,7 @@ namespace DrillCorp.Bug
         #region Utility
 
         /// <summary>
-        /// XZ 평면 거리 계산
+        /// XZ 평면 거리 계산 (콜라이더 경계 기준)
         /// </summary>
         public float GetDistanceTo(Transform target)
         {
@@ -627,18 +661,60 @@ namespace DrillCorp.Bug
 
             Vector3 myPos = new Vector3(transform.position.x, 0f, transform.position.z);
             Vector3 targetPos = new Vector3(target.position.x, 0f, target.position.z);
-            return Vector3.Distance(myPos, targetPos);
+            float centerDistance = Vector3.Distance(myPos, targetPos);
+
+            // 타겟의 콜라이더 반경 빼기 (머신 스케일 고려)
+            float targetRadius = GetColliderRadius(target);
+            float myRadius = GetColliderRadius(transform);
+
+            return Mathf.Max(0f, centerDistance - targetRadius - myRadius);
         }
 
         /// <summary>
-        /// 외부에서 초기화 (스포너에서 사용)
+        /// 콜라이더의 XZ 평면 반경 계산
         /// </summary>
-        public void Initialize(BugData data, BugBehaviorData behaviorData = null,
+        private float GetColliderRadius(Transform t)
+        {
+            var collider = t.GetComponent<Collider>();
+            if (collider == null) return 0f;
+
+            // Bounds의 XZ 크기에서 반경 추정
+            Vector3 size = collider.bounds.size;
+            return Mathf.Max(size.x, size.z) * 0.5f;
+        }
+
+        /// <summary>
+        /// 외부에서 초기화 (스포너에서 사용) - 프리펩의 BehaviorData 유지
+        /// </summary>
+        public void Initialize(BugData data, float healthMult = 1f, float damageMult = 1f, float speedMult = 1f)
+        {
+            _bugData = data;
+            // _behaviorData는 프리펩에 설정된 값 유지
+
+            ApplyStats(data, healthMult, damageMult, speedMult);
+            InitializeBehaviors();
+        }
+
+        /// <summary>
+        /// 외부에서 초기화 (BehaviorData 지정)
+        /// </summary>
+        public void Initialize(BugData data, BugBehaviorData behaviorData,
             float healthMult = 1f, float damageMult = 1f, float speedMult = 1f)
         {
             _bugData = data;
-            _behaviorData = behaviorData;
 
+            // behaviorData가 지정되면 덮어쓰기, null이면 프리펩 설정 유지
+            if (behaviorData != null)
+            {
+                _behaviorData = behaviorData;
+            }
+
+            ApplyStats(data, healthMult, damageMult, speedMult);
+            InitializeBehaviors();
+        }
+
+        private void ApplyStats(BugData data, float healthMult, float damageMult, float speedMult)
+        {
             _bugId = data.BugId;
             _maxHealth = data.MaxHealth * healthMult;
             _currentHealth = _maxHealth;
@@ -651,8 +727,6 @@ namespace DrillCorp.Bug
             {
                 transform.localScale = Vector3.one * data.Scale;
             }
-
-            InitializeBehaviors();
         }
 
         #endregion

@@ -76,6 +76,9 @@ namespace DrillCorp.Bug.Behaviors.Movement
                 case MovementType.Burst:
                     return new BurstMovement(param1, param2);
 
+                case MovementType.Ranged:
+                    return new RangedMovement(param1, param2);
+
                 // TODO: Phase 2에서 추가
                 // case MovementType.Retreat:
                 // case MovementType.SlowStart:

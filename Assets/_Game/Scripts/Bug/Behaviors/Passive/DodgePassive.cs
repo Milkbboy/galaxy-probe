@@ -1,4 +1,6 @@
 using UnityEngine;
+using DrillCorp.UI;
+using DrillCorp.VFX;
 
 namespace DrillCorp.Bug.Behaviors.Passive
 {
@@ -20,9 +22,12 @@ namespace DrillCorp.Bug.Behaviors.Passive
             float roll = Random.Range(0f, 100f);
             if (roll < _dodgeChance)
             {
-                // 회피 성공!
-                // TODO: 회피 이펙트/텍스트 표시 ("Miss!")
-                Debug.Log($"[DodgePassive] Dodged! (roll: {roll:F1} < chance: {_dodgeChance})");
+                // 회피 성공! - 팝업 및 이펙트 표시
+                if (_bug != null)
+                {
+                    DamagePopup.Create(_bug.transform.position, 0f, PopupType.Dodge);
+                    SimpleVFX.PlayDodge(_bug.transform.position);
+                }
                 return 0f; // 데미지 완전 무효
             }
 

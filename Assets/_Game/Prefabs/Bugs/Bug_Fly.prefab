@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 692621981502934019}
-  - component: {fileID: 6474403558157845402}
+  - component: {fileID: 7844339326826984687}
   m_Layer: 0
   m_Name: Bug_Fly
   m_TagString: Untagged
@@ -36,7 +36,7 @@ Transform:
   - {fileID: 4519064047249723925}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6474403558157845402
+--- !u!114 &7844339326826984687
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -45,21 +45,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 5321672167020227983}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4baf1b8d96a2a29469ff0c65303afcae, type: 3}
+  m_Script: {fileID: 11500000, guid: 48fa8fa4f2ab2ac40b111e852bfe266e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.FlyBug
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.BugController
   _bugData: {fileID: 11400000, guid: 0979a09a05ba65f43aea855d3b473a6b, type: 2}
-  _bugId: 0
-  _maxHealth: 10
-  _moveSpeed: 2
-  _attackDamage: 5
-  _attackCooldown: 1
-  _attackRange: 1
-  _fxSocket: {fileID: 2661876512257611532}
+  _behaviorData: {fileID: 11400000, guid: f599309adc03d434b9c6beafb8f34b6c, type: 2}
+  _fxSocket: {fileID: 692621981502934019}
   _deathVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
   _hitFlashDuration: 0.1
-  _hoverAmplitude: 0.3
-  _hoverFrequency: 2
 --- !u!1 &6122239176070521502
 GameObject:
   m_ObjectHideFlags: 0

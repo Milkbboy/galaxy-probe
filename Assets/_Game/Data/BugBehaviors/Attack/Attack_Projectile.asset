@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5181c40c8d1046a4ea8c08197a138669, type: 3}
+  m_Name: Attack_Projectile
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.AttackBehaviorData
+  _type: 3
+  _displayName: "\uC6D0\uAC70\uB9AC \uACF5\uACA9"
+  _description: "\uD22C\uC0AC\uCCB4\uB97C \uBC1C\uC0AC\uD569\uB2C8\uB2E4."
+  _param1: 10
+  _param2: 0
+  _projectilePrefab: {fileID: 5561489888943746921, guid: 4af33922077117c41ba8db255b6645b7, type: 3}
+  _hitVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}

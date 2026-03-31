@@ -1,4 +1,6 @@
 using UnityEngine;
+using DrillCorp.UI;
+using DrillCorp.VFX;
 
 namespace DrillCorp.Bug.Behaviors.Passive
 {
@@ -29,7 +31,17 @@ namespace DrillCorp.Bug.Behaviors.Passive
 
             // 데미지에서 방어력만큼 감소 (최소 1)
             float reduced = damage - _armorValue;
-            return Mathf.Max(1f, reduced);
+            float finalDamage = Mathf.Max(1f, reduced);
+
+            // 방어력으로 감소된 데미지 표시
+            if (_bug != null && _armorValue > 0f && damage > finalDamage)
+            {
+                float blocked = damage - finalDamage;
+                DamagePopup.CreateText(_bug.transform.position, $"-{blocked:F0}", Color.gray);
+                SimpleVFX.PlayArmorBlock(_bug.transform.position);
+            }
+
+            return finalDamage;
         }
     }
 }

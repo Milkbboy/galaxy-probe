@@ -40,7 +40,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2558019208749166534}
-  - component: {fileID: 5152795879294015536}
+  - component: {fileID: 6671680639084834441}
   m_Layer: 0
   m_Name: Bug_Centipede
   m_TagString: Untagged
@@ -67,7 +67,7 @@ Transform:
   - {fileID: 124564524734699083}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5152795879294015536
+--- !u!114 &6671680639084834441
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -76,21 +76,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 4768174378865864379}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de276c29d64c4a14ba8336f5774182db, type: 3}
+  m_Script: {fileID: 11500000, guid: 48fa8fa4f2ab2ac40b111e852bfe266e, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.CentipedeBug
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.BugController
   _bugData: {fileID: 11400000, guid: 2b0904ed477de7c4daf5e24c6bba6bd2, type: 2}
-  _bugId: 0
-  _maxHealth: 10
-  _moveSpeed: 2
-  _attackDamage: 5
-  _attackCooldown: 1
-  _attackRange: 1
+  _behaviorData: {fileID: 11400000, guid: ff87e5515c6ddf64cac091c6bae30bd1, type: 2}
   _fxSocket: {fileID: 8105409176002292665}
   _deathVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
   _hitFlashDuration: 0.1
-  _chargeDistance: 3
-  _chargeSpeedMultiplier: 2
 --- !u!1 &7894280524745800871
 GameObject:
   m_ObjectHideFlags: 0

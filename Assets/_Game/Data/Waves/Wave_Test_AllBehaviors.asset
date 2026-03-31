@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9ee43dbe552f1d4dbb0a944763030c0, type: 3}
+  m_Name: Wave_Test_AllBehaviors
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.WaveData
+  _waveNumber: 99
+  _waveName: Test - All Behaviors
+  _spawnGroups:
+  - BugData: {fileID: 11400000, guid: 6c05fd5cb405e9844942336a85787c3c, type: 2}
+    Count: 1
+    StartDelay: 0
+    SpawnInterval: 0
+    RandomPosition: 1
+  - BugData: {fileID: 11400000, guid: 9554a135de035b84f86edb706256ebb6, type: 2}
+    Count: 1
+    StartDelay: 2
+    SpawnInterval: 0
+    RandomPosition: 1
+  - BugData: {fileID: 11400000, guid: 8c1cb76c1352c594c9652f2618ebffae, type: 2}
+    Count: 1
+    StartDelay: 4
+    SpawnInterval: 0
+    RandomPosition: 1
+  - BugData: {fileID: 11400000, guid: 7effe4ef9c502bc40bc6ca44c8931722, type: 2}
+    Count: 1
+    StartDelay: 6
+    SpawnInterval: 0
+    RandomPosition: 1
+  - BugData: {fileID: 11400000, guid: a9688b7327c1a334b9a608ea99e357c7, type: 2}
+    Count: 1
+    StartDelay: 8
+    SpawnInterval: 0
+    RandomPosition: 1
+  - BugData: {fileID: 11400000, guid: d7582122394863d4ea56af1678fdba7f, type: 2}
+    Count: 1
+    StartDelay: 10
+    SpawnInterval: 0
+    RandomPosition: 1
+  - BugData: {fileID: 11400000, guid: 7908a2c1e4d22324f97e6634239b5631, type: 2}
+    Count: 1
+    StartDelay: 12
+    SpawnInterval: 0
+    RandomPosition: 1
+  - BugData: {fileID: 11400000, guid: e6c90b25638e3b046bf54487d43bec25, type: 2}
+    Count: 1
+    StartDelay: 14
+    SpawnInterval: 0
+    RandomPosition: 1
+  _waveDuration: 120
+  _delayBeforeNextWave: 5
+  _healthMultiplier: 1
+  _damageMultiplier: 1
+  _speedMultiplier: 1

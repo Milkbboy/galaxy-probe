@@ -1,6 +1,7 @@
 using UnityEngine;
 using DrillCorp.Core;
 using DrillCorp.Data;
+using DrillCorp.UI;
 
 namespace DrillCorp.Machine
 {
@@ -47,6 +48,10 @@ namespace DrillCorp.Machine
         public MachineData MachineData => _machineData;
 
         private bool _isSessionActive;
+
+        // 디버그용
+        private bool _isInvincible;
+        public bool IsInvincible => _isInvincible;
 
         private void Awake()
         {
@@ -136,10 +141,21 @@ namespace DrillCorp.Machine
         {
             if (IsDead || !_isSessionActive) return;
 
+            // 무적 상태면 데미지 무시
+            if (_isInvincible)
+            {
+                DamagePopup.CreateText(transform, "INVINCIBLE", Color.cyan);
+                return;
+            }
+
             // Armor 적용
             float actualDamage = CalculateDamageReceived(damage);
             _currentHealth -= actualDamage;
             _currentHealth = Mathf.Max(0f, _currentHealth);
+
+            // 데미지 팝업 표시 (콜라이더 크기 고려)
+            DamagePopup.Create(transform, actualDamage, PopupType.Normal);
+
             GameEvents.OnMachineDamaged?.Invoke(actualDamage);
         }
 
@@ -164,5 +180,27 @@ namespace DrillCorp.Machine
             _currentFuel = Mathf.Min(_currentFuel, _maxFuel);
             GameEvents.OnFuelChanged?.Invoke(_currentFuel);
         }
+
+        #region Debug
+
+        /// <summary>
+        /// 무적 모드 토글
+        /// </summary>
+        public void ToggleInvincible()
+        {
+            _isInvincible = !_isInvincible;
+            Debug.Log($"[Machine] Invincible: {_isInvincible}");
+        }
+
+        /// <summary>
+        /// 무적 모드 설정
+        /// </summary>
+        public void SetInvincible(bool value)
+        {
+            _isInvincible = value;
+            Debug.Log($"[Machine] Invincible: {_isInvincible}");
+        }
+
+        #endregion
     }
 }

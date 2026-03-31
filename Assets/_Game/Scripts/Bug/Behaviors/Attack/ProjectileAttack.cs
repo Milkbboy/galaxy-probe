@@ -9,18 +9,19 @@ namespace DrillCorp.Bug.Behaviors.Attack
     {
         private float _projectileSpeed;
         private GameObject _projectilePrefab;
+        private GameObject _projectileHitVfxPrefab;
 
-        public ProjectileAttack(float speed = 10f, GameObject prefab = null)
+        public ProjectileAttack(float speed = 10f, GameObject prefab = null, GameObject hitVfxPrefab = null)
         {
             _projectileSpeed = speed > 0f ? speed : 10f;
             _projectilePrefab = prefab;
+            _projectileHitVfxPrefab = hitVfxPrefab;
         }
 
         public override void Initialize(BugController bug)
         {
             base.Initialize(bug);
-            // 원거리는 보통 더 긴 사거리
-            _attackRange = bug.AttackRange > 1f ? bug.AttackRange : 5f;
+            _attackRange = bug.AttackRange;
         }
 
         protected override void PerformAttack(Transform target)
@@ -48,7 +49,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
             var bugProjectile = projectile.GetComponent<BugProjectile>();
             if (bugProjectile != null)
             {
-                bugProjectile.Initialize(GetDamage(), _projectileSpeed, direction);
+                bugProjectile.Initialize(GetDamage(), _projectileSpeed, direction, _bug.gameObject, _projectileHitVfxPrefab);
             }
             else
             {

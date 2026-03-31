@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c88a683098f114dbf15ce64cd6a038, type: 3}
+  m_Name: Movement_Ranged
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.MovementBehaviorData
+  _type: 3
+  _displayName: "\uC6D0\uAC70\uB9AC \uC774\uB3D9"
+  _description: "\uC0AC\uAC70\uB9AC\uB97C \uC720\uC9C0\uD558\uBA70 \uC88C\uC6B0\uB85C
+    \uC774\uB3D9\uD569\uB2C8\uB2E4."
+  _param1: 0
+  _param2: 0.5

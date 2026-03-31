@@ -1,5 +1,8 @@
 using UnityEngine;
 using DrillCorp.Data;
+using DrillCorp.Core;
+using DrillCorp.Machine;
+using DrillCorp.Bug.Behaviors.Data;
 
 namespace DrillCorp.Bug
 {
@@ -9,7 +12,10 @@ namespace DrillCorp.Bug
         [SerializeField] private float _spawnRadius = 10f;
         [SerializeField] private Transform _centerPoint;
 
-        public BugBase SpawnBugFromData(BugData bugData, float healthMult = 1f, float damageMult = 1f, float speedMult = 1f)
+        /// <summary>
+        /// BugData로 스폰 (BugBase 또는 BugController 자동 감지)
+        /// </summary>
+        public IDamageable SpawnBugFromData(BugData bugData, float healthMult = 1f, float damageMult = 1f, float speedMult = 1f)
         {
             if (bugData == null)
             {
@@ -28,13 +34,60 @@ namespace DrillCorp.Bug
             Vector3 spawnPosition = GetRandomSpawnPosition();
             GameObject bugObj = Instantiate(prefab, spawnPosition, Quaternion.identity);
 
-            var bug = bugObj.GetComponent<BugBase>();
-            if (bug != null)
+            // 새 시스템 (BugController) 우선 체크
+            var bugController = bugObj.GetComponent<BugController>();
+            if (bugController != null)
             {
-                bug.Initialize(bugData, healthMult, damageMult, speedMult);
+                // 프리펩에 설정된 BehaviorData 유지 (null 전달 시 프리펩 설정 사용)
+                bugController.Initialize(bugData, healthMult, damageMult, speedMult);
+                return bugController;
             }
 
-            return bug;
+            // 기존 시스템 (BugBase)
+            var bugBase = bugObj.GetComponent<BugBase>();
+            if (bugBase != null)
+            {
+                bugBase.Initialize(bugData, healthMult, damageMult, speedMult);
+                return bugBase;
+            }
+
+            Debug.LogWarning($"[BugSpawner] No BugController or BugBase on prefab: {bugData.BugName}");
+            return null;
+        }
+
+        /// <summary>
+        /// BugData + BugBehaviorData로 스폰 (BugController 전용)
+        /// </summary>
+        public BugController SpawnBugWithBehavior(BugData bugData, BugBehaviorData behaviorData,
+            float healthMult = 1f, float damageMult = 1f, float speedMult = 1f)
+        {
+            if (bugData == null)
+            {
+                Debug.LogWarning("[BugSpawner] BugData is null");
+                return null;
+            }
+
+            GameObject prefab = bugData.Prefab;
+
+            if (prefab == null)
+            {
+                Debug.LogWarning($"[BugSpawner] No prefab for bug: {bugData.BugName}");
+                return null;
+            }
+
+            Vector3 spawnPosition = GetRandomSpawnPosition();
+            GameObject bugObj = Instantiate(prefab, spawnPosition, Quaternion.identity);
+
+            var bugController = bugObj.GetComponent<BugController>();
+            if (bugController != null)
+            {
+                bugController.Initialize(bugData, behaviorData, healthMult, damageMult, speedMult);
+                return bugController;
+            }
+
+            Debug.LogWarning($"[BugSpawner] No BugController on prefab: {bugData.BugName}");
+            Destroy(bugObj);
+            return null;
         }
 
         private Vector3 GetRandomSpawnPosition()

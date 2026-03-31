@@ -10,6 +10,7 @@ namespace DrillCorp.Bug.Behaviors.Data
         Linear,     // 직선 이동
         Hover,      // 공중 부유
         Burst,      // 멈췄다 돌진
+        Ranged,     // 원거리 (사거리 유지 + 좌우 이동)
         Retreat,    // 후퇴
         SlowStart,  // 느린 시작
         Orbit,      // 선회
@@ -41,6 +42,7 @@ namespace DrillCorp.Bug.Behaviors.Data
         /// 타입별 파라미터 의미:
         /// - Hover: param1 = 높이, param2 = 주기
         /// - Burst: param1 = 대기시간, param2 = 속도배율
+        /// - Ranged: param1 = 유지거리(0=AttackRange), param2 = 좌우이동속도배율
         /// - Retreat: param1 = 지속시간
         /// - Orbit: param1 = 반경
         /// - Burrow: param1 = 지속시간

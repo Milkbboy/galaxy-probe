@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using DrillCorp.Bug.Behaviors.Data;
 using DrillCorp.Core;
+using DrillCorp.Machine;
 
 namespace DrillCorp.Bug.Behaviors.Attack
 {
@@ -14,6 +15,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
         protected float _damageMultiplier = 1f;
         protected float _lastAttackTime;
         protected float _attackRange;
+        protected GameObject _hitVfxPrefab;
 
         public event Action OnAttackPerformed;
 
@@ -72,20 +74,49 @@ namespace DrillCorp.Bug.Behaviors.Attack
         }
 
         /// <summary>
+        /// Hit VFX 재생 (프리펩 있으면 사용, 없으면 SimpleVFX 폴백)
+        /// </summary>
+        protected void PlayHitVfx(Vector3 position)
+        {
+            if (_hitVfxPrefab != null)
+            {
+                var vfx = UnityEngine.Object.Instantiate(_hitVfxPrefab, position, Quaternion.identity);
+                // ParticleSystem 있으면 duration 후 파괴
+                var ps = vfx.GetComponent<ParticleSystem>();
+                if (ps != null)
+                {
+                    UnityEngine.Object.Destroy(vfx, ps.main.duration + ps.main.startLifetime.constantMax);
+                }
+                else
+                {
+                    UnityEngine.Object.Destroy(vfx, 2f);
+                }
+            }
+            else
+            {
+                VFX.SimpleVFX.PlayMeleeHit(position);
+            }
+        }
+
+        /// <summary>
         /// Attack 타입에 따른 인스턴스 생성
         /// </summary>
-        public static AttackBehaviorBase Create(AttackType type, float param1, float param2, GameObject projectilePrefab = null)
+        public static AttackBehaviorBase Create(AttackType type, float param1, float param2, GameObject projectilePrefab = null, GameObject hitVfxPrefab = null)
         {
+            AttackBehaviorBase attack = null;
+
             switch (type)
             {
                 case AttackType.None:
                     return null;
 
                 case AttackType.Melee:
-                    return new MeleeAttack();
+                    attack = new MeleeAttack();
+                    break;
 
                 case AttackType.Projectile:
-                    return new ProjectileAttack(param1, projectilePrefab);
+                    attack = new ProjectileAttack(param1, projectilePrefab, hitVfxPrefab);
+                    break;
 
                 // TODO: Phase 2에서 추가
                 // case AttackType.Cleave:
@@ -95,8 +126,16 @@ namespace DrillCorp.Bug.Behaviors.Attack
                 // case AttackType.Lob:
 
                 default:
-                    return new MeleeAttack();
+                    attack = new MeleeAttack();
+                    break;
             }
+
+            if (attack != null)
+            {
+                attack._hitVfxPrefab = hitVfxPrefab;
+            }
+
+            return attack;
         }
     }
 }

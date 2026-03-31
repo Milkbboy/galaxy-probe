@@ -904,6 +904,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 645039229}
   m_CullTransparentMesh: 1
+--- !u!1 &812965580
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 812965582}
+  - component: {fileID: 812965581}
+  m_Layer: 0
+  m_Name: DebugManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &812965581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 812965580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e4bf9b561a39d846bc04fbe7fcb92f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Core.DebugManager
+  _enableDebugKeys: 1
+  _showDebugUI: 1
+--- !u!4 &812965582
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 812965580}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &819630377
 GameObject:
   m_ObjectHideFlags: 0
@@ -2336,6 +2382,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Wave.WaveManager
   _waveDataAssets:
+  - {fileID: 11400000, guid: 4fe18707671a9014291d003bdcadf67b, type: 2}
   - {fileID: 11400000, guid: d491bdb9813d78f448cb6995c2003eff, type: 2}
   - {fileID: 11400000, guid: 87d5c1a5aa38f2f4b9eabf8fb0893906, type: 2}
   - {fileID: 11400000, guid: b3e35dcad459db044b46ebf930f1ba30, type: 2}
@@ -2470,7 +2517,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   _attackCooldown: 0.5
-  _damage: 5
+  _damage: 10
   _crosshairRenderer: {fileID: 1678801216}
   _normalColor: {r: 1, g: 1, b: 1, a: 1}
   _readyColor: {r: 1, g: 0, b: 0, a: 1}
@@ -3705,7 +3752,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.7071068, w: 0.7071068}
   m_LocalPosition: {x: -0, y: 0.277, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.03, y: 2.05, z: 2.65}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -4051,3 +4098,4 @@ SceneRoots:
   - {fileID: 1678801217}
   - {fileID: 1877594819}
   - {fileID: 1829573764}
+  - {fileID: 812965582}

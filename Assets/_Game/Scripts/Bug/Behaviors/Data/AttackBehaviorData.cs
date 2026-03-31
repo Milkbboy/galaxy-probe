@@ -34,11 +34,13 @@ namespace DrillCorp.Bug.Behaviors.Data
 
         [Header("Prefabs")]
         [SerializeField] private GameObject _projectilePrefab;
+        [SerializeField] private GameObject _hitVfxPrefab;
 
         public AttackType Type => _type;
         public string DisplayName => _displayName;
         public string Description => _description;
         public GameObject ProjectilePrefab => _projectilePrefab;
+        public GameObject HitVfxPrefab => _hitVfxPrefab;
 
         /// <summary>
         /// 타입별 파라미터 의미:

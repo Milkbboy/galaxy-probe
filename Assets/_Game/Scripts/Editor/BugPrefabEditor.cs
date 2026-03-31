@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEditor;
 using DrillCorp.Bug;
+using DrillCorp.Bug.Behaviors.Attack;
+using DrillCorp.Bug.Behaviors.Data;
 using DrillCorp.Data;
 
 namespace DrillCorp.Editor
@@ -8,6 +10,8 @@ namespace DrillCorp.Editor
     public class BugPrefabEditor : UnityEditor.Editor
     {
         private const string HpBarPrefabPath = "Assets/_Game/Prefabs/UI/BugHpBar.prefab";
+        private const string BehaviorDataPath = "Assets/_Game/Data/BugBehaviors";
+        private const string ProjectilePrefabPath = "Assets/_Game/Prefabs/Bugs/BugProjectile.prefab";
 
         [MenuItem("Tools/Drill-Corp/Bug/1. Create HpBar Prefab")]
         public static void CreateHpBarPrefab()
@@ -76,7 +80,109 @@ namespace DrillCorp.Editor
             Debug.Log($"[BugPrefabEditor] Created: BugHpBar.prefab");
         }
 
-        [MenuItem("Tools/Drill-Corp/Bug/2. Create Bug Prefabs")]
+        [MenuItem("Tools/Drill-Corp/Bug/2. Create Projectile Prefab")]
+        public static void CreateProjectilePrefab()
+        {
+            string prefabPath = "Assets/_Game/Prefabs/Bugs";
+
+            // 폴더 생성
+            if (!AssetDatabase.IsValidFolder("Assets/_Game/Prefabs"))
+                AssetDatabase.CreateFolder("Assets/_Game", "Prefabs");
+
+            if (!AssetDatabase.IsValidFolder(prefabPath))
+                AssetDatabase.CreateFolder("Assets/_Game/Prefabs", "Bugs");
+
+            string fullPath = $"{prefabPath}/BugProjectile.prefab";
+
+            if (System.IO.File.Exists(fullPath))
+            {
+                Debug.Log("[BugPrefabEditor] BugProjectile.prefab already exists, skipping.");
+                return;
+            }
+
+            // Root 오브젝트
+            GameObject projectileObj = new GameObject("BugProjectile");
+
+            // BugProjectile 컴포넌트 추가
+            BugProjectile projectile = projectileObj.AddComponent<BugProjectile>();
+
+            // Rigidbody (Kinematic)
+            Rigidbody rb = projectileObj.AddComponent<Rigidbody>();
+            rb.useGravity = false;
+            rb.isKinematic = true;
+
+            // SphereCollider (Trigger)
+            SphereCollider collider = projectileObj.AddComponent<SphereCollider>();
+            collider.isTrigger = true;
+            collider.radius = 0.15f;
+
+            // Visual (Sphere)
+            GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            visual.name = "Visual";
+            visual.transform.SetParent(projectileObj.transform);
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+
+            // Visual의 Collider 제거
+            Object.DestroyImmediate(visual.GetComponent<Collider>());
+
+            // Material 생성 (노란색)
+            var renderer = visual.GetComponent<MeshRenderer>();
+            if (renderer != null)
+            {
+                Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                mat.color = new Color(1f, 0.8f, 0f); // 노란색
+                mat.SetFloat("_Smoothness", 0.8f);
+
+                // Emission 설정 (발광)
+                mat.EnableKeyword("_EMISSION");
+                mat.SetColor("_EmissionColor", new Color(1f, 0.6f, 0f) * 2f);
+
+                renderer.sharedMaterial = mat;
+
+                // Material 저장
+                string matPath = $"{prefabPath}/BugProjectile_Mat.mat";
+                AssetDatabase.CreateAsset(mat, matPath);
+            }
+
+            // 프리팹으로 저장
+            var prefab = PrefabUtility.SaveAsPrefabAsset(projectileObj, fullPath);
+
+            // 씬의 임시 오브젝트 삭제
+            Object.DestroyImmediate(projectileObj);
+
+            // Inspector 선택
+            Selection.activeObject = prefab;
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log($"[BugPrefabEditor] Created: BugProjectile.prefab");
+
+            // Attack_Projectile에 연결
+            ConnectProjectileToAttackData();
+        }
+
+        private static void ConnectProjectileToAttackData()
+        {
+            string attackDataPath = $"{BehaviorDataPath}/Attack/Attack_Projectile.asset";
+            var attackData = AssetDatabase.LoadAssetAtPath<AttackBehaviorData>(attackDataPath);
+            var projectilePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(ProjectilePrefabPath);
+
+            if (attackData != null && projectilePrefab != null)
+            {
+                var so = new SerializedObject(attackData);
+                var prefabProp = so.FindProperty("_projectilePrefab");
+                if (prefabProp != null)
+                {
+                    prefabProp.objectReferenceValue = projectilePrefab;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    Debug.Log("[BugPrefabEditor] Connected: BugProjectile -> Attack_Projectile.asset");
+                }
+            }
+        }
+
+        [MenuItem("Tools/Drill-Corp/Bug/3. Create Bug Prefabs (BugController)")]
         public static void CreateBugPrefabs()
         {
             // HpBar 프리팹 확인
@@ -95,10 +201,13 @@ namespace DrillCorp.Editor
             if (!AssetDatabase.IsValidFolder(prefabPath))
                 AssetDatabase.CreateFolder("Assets/_Game/Prefabs", "Bugs");
 
-            // Bug 프리팹 생성
-            CreateBugPrefab(prefabPath, "Bug_Beetle", typeof(BeetleBug), Color.red);
-            CreateBugPrefab(prefabPath, "Bug_Fly", typeof(FlyBug), Color.blue);
-            CreateBugPrefab(prefabPath, "Bug_Centipede", typeof(CentipedeBug), Color.green);
+            // Bug 프리팹 생성 (BugController 사용)
+            CreateBugPrefab(prefabPath, "Bug_Beetle", "BugBehavior_Beetle", Color.red);
+            CreateBugPrefab(prefabPath, "Bug_Fly", "BugBehavior_Fly", Color.blue);
+            CreateBugPrefab(prefabPath, "Bug_Centipede", null, Color.green);  // 기본 행동
+            CreateBugPrefab(prefabPath, "Bug_Tank", "BugBehavior_Tank", new Color(0.5f, 0.5f, 0.5f));
+            CreateBugPrefab(prefabPath, "Bug_Spitter", "BugBehavior_Spitter", Color.yellow);
+            CreateBugPrefab(prefabPath, "Bug_Bomber", "BugBehavior_Bomber", new Color(1f, 0.5f, 0f));
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -106,35 +215,99 @@ namespace DrillCorp.Editor
             Debug.Log($"[BugPrefabEditor] Bug prefabs created at: {prefabPath}");
         }
 
-        [MenuItem("Tools/Drill-Corp/Bug/3. Connect BugData to Prefabs")]
+        [MenuItem("Tools/Drill-Corp/Bug/4. Connect BugData to Prefabs")]
         public static void ConnectBugDataToPrefabs()
         {
             string prefabPath = "Assets/_Game/Prefabs/Bugs";
             string dataPath = "Assets/_Game/Data/Bugs";
 
-            // Beetle
-            ConnectDataToPrefab(
-                $"{dataPath}/Bug_Beetle.asset",
-                $"{prefabPath}/Bug_Beetle.prefab"
-            );
+            // 기존 벌레
+            ConnectDataToPrefab($"{dataPath}/Bug_Beetle.asset", $"{prefabPath}/Bug_Beetle.prefab", $"{BehaviorDataPath}/BugBehavior_Beetle.asset");
+            ConnectDataToPrefab($"{dataPath}/Bug_Fly.asset", $"{prefabPath}/Bug_Fly.prefab", $"{BehaviorDataPath}/BugBehavior_Fly.asset");
+            ConnectDataToPrefab($"{dataPath}/Bug_Centipede.asset", $"{prefabPath}/Bug_Centipede.prefab", null);
 
-            // Fly
-            ConnectDataToPrefab(
-                $"{dataPath}/Bug_Fly.asset",
-                $"{prefabPath}/Bug_Fly.prefab"
-            );
-
-            // Centipede
-            ConnectDataToPrefab(
-                $"{dataPath}/Bug_Centipede.asset",
-                $"{prefabPath}/Bug_Centipede.prefab"
-            );
+            // 새 벌레 (BugData가 있으면 연결)
+            ConnectDataToPrefab($"{dataPath}/Bug_Tank.asset", $"{prefabPath}/Bug_Tank.prefab", $"{BehaviorDataPath}/BugBehavior_Tank.asset");
+            ConnectDataToPrefab($"{dataPath}/Bug_Spitter.asset", $"{prefabPath}/Bug_Spitter.prefab", $"{BehaviorDataPath}/BugBehavior_Spitter.asset");
+            ConnectDataToPrefab($"{dataPath}/Bug_Bomber.asset", $"{prefabPath}/Bug_Bomber.prefab", $"{BehaviorDataPath}/BugBehavior_Bomber.asset");
 
             AssetDatabase.SaveAssets();
             Debug.Log("[BugPrefabEditor] BugData connected to prefabs!");
         }
 
-        private static void CreateBugPrefab(string path, string name, System.Type bugType, Color visualColor)
+        [MenuItem("Tools/Drill-Corp/Bug/5. Upgrade Existing Prefabs to BugController")]
+        public static void UpgradeExistingPrefabs()
+        {
+            string prefabPath = "Assets/_Game/Prefabs/Bugs";
+
+            // 모든 Bug 프리팹 찾기
+            string[] guids = AssetDatabase.FindAssets("Bug_", new[] { prefabPath });
+
+            int upgraded = 0;
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (!path.EndsWith(".prefab")) continue;
+
+                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (prefab == null) continue;
+
+                // 이미 BugController가 있으면 스킵
+                if (prefab.GetComponent<BugController>() != null)
+                {
+                    Debug.Log($"[BugPrefabEditor] {prefab.name} already has BugController, skipping.");
+                    continue;
+                }
+
+                // BugBase가 있으면 업그레이드
+                BugBase bugBase = prefab.GetComponent<BugBase>();
+                if (bugBase != null)
+                {
+                    // 프리팹 수정 모드 진입
+                    string prefabFullPath = AssetDatabase.GetAssetPath(prefab);
+                    GameObject prefabRoot = PrefabUtility.LoadPrefabContents(prefabFullPath);
+
+                    // 기존 BugBase에서 데이터 가져오기
+                    BugBase oldBugBase = prefabRoot.GetComponent<BugBase>();
+                    BugData bugData = oldBugBase?.BugData;
+
+                    // BugBase 제거
+                    Object.DestroyImmediate(oldBugBase);
+
+                    // BugController 추가
+                    BugController bugController = prefabRoot.AddComponent<BugController>();
+
+                    // BugData 연결
+                    if (bugData != null)
+                    {
+                        var so = new SerializedObject(bugController);
+                        so.FindProperty("_bugData").objectReferenceValue = bugData;
+                        so.ApplyModifiedPropertiesWithoutUndo();
+                    }
+
+                    // 프리팹 저장
+                    PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabFullPath);
+                    PrefabUtility.UnloadPrefabContents(prefabRoot);
+
+                    Debug.Log($"[BugPrefabEditor] Upgraded: {prefab.name}");
+                    upgraded++;
+                }
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            if (upgraded > 0)
+            {
+                EditorUtility.DisplayDialog("완료", $"{upgraded}개의 프리팹이 BugController로 업그레이드되었습니다.", "확인");
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("완료", "업그레이드할 프리팹이 없습니다.\n(이미 모두 BugController를 사용 중이거나 프리팹이 없음)", "확인");
+            }
+        }
+
+        private static void CreateBugPrefab(string path, string name, string behaviorDataName, Color visualColor)
         {
             string fullPath = $"{path}/{name}.prefab";
 
@@ -147,8 +320,20 @@ namespace DrillCorp.Editor
             // Root 오브젝트
             GameObject bugObj = new GameObject(name);
 
-            // BugBase 컴포넌트 추가
-            bugObj.AddComponent(bugType);
+            // BugController 컴포넌트 추가
+            BugController bugController = bugObj.AddComponent<BugController>();
+
+            // BehaviorData 연결 (있으면)
+            if (!string.IsNullOrEmpty(behaviorDataName))
+            {
+                var behaviorData = AssetDatabase.LoadAssetAtPath<BugBehaviorData>($"{BehaviorDataPath}/{behaviorDataName}.asset");
+                if (behaviorData != null)
+                {
+                    var so = new SerializedObject(bugController);
+                    so.FindProperty("_behaviorData").objectReferenceValue = behaviorData;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+            }
 
             // Visual (임시 Capsule)
             GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
@@ -157,7 +342,7 @@ namespace DrillCorp.Editor
             visual.transform.localPosition = new Vector3(0f, 0.5f, 0f);
             visual.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
 
-            // Collider 제거 (BugBase에서 자동 추가)
+            // Collider 제거 (BugController에서 자동 추가)
             Object.DestroyImmediate(visual.GetComponent<Collider>());
 
             // Visual 색상 설정
@@ -170,8 +355,30 @@ namespace DrillCorp.Editor
 
                 // Material 저장
                 string matPath = $"{path}/{name}_Mat.mat";
-                AssetDatabase.CreateAsset(mat, matPath);
+                if (!System.IO.File.Exists(matPath))
+                {
+                    AssetDatabase.CreateAsset(mat, matPath);
+                }
+                else
+                {
+                    // 기존 머티리얼 사용
+                    var existingMat = AssetDatabase.LoadAssetAtPath<Material>(matPath);
+                    if (existingMat != null)
+                    {
+                        renderer.sharedMaterial = existingMat;
+                    }
+                }
             }
+
+            // FX_Socket 추가
+            GameObject fxSocket = new GameObject("FX_Socket");
+            fxSocket.transform.SetParent(bugObj.transform);
+            fxSocket.transform.localPosition = new Vector3(0f, 0.5f, 0f);
+
+            // BugController에 FX_Socket 연결
+            var controllerSo = new SerializedObject(bugController);
+            controllerSo.FindProperty("_fxSocket").objectReferenceValue = fxSocket.transform;
+            controllerSo.ApplyModifiedPropertiesWithoutUndo();
 
             // HpBar 프리팹 인스턴스 추가 (자식으로)
             GameObject hpBarPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(HpBarPrefabPath);
@@ -191,7 +398,7 @@ namespace DrillCorp.Editor
             // Inspector 선택을 생성한 프리팹으로 변경
             Selection.activeObject = prefab;
 
-            Debug.Log($"[BugPrefabEditor] Created: {name}.prefab");
+            Debug.Log($"[BugPrefabEditor] Created: {name}.prefab (with BugController)");
         }
 
         private static Sprite CreateSquareSprite()
@@ -226,7 +433,7 @@ namespace DrillCorp.Editor
             return Sprite.Create(texture, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), 4f);
         }
 
-        private static void ConnectDataToPrefab(string dataPath, string prefabPath)
+        private static void ConnectDataToPrefab(string dataPath, string prefabPath, string behaviorDataPath)
         {
             var bugData = AssetDatabase.LoadAssetAtPath<BugData>(dataPath);
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
@@ -253,7 +460,37 @@ namespace DrillCorp.Editor
                 Debug.Log($"[BugPrefabEditor] Connected: {bugData.name} -> {prefab.name}");
             }
 
-            // Prefab의 BugBase에 BugData 연결
+            // Prefab의 BugController에 BugData 연결
+            var bugController = prefab.GetComponent<BugController>();
+            if (bugController != null)
+            {
+                var bugSo = new SerializedObject(bugController);
+
+                // BugData 연결
+                var bugDataProp = bugSo.FindProperty("_bugData");
+                if (bugDataProp != null)
+                {
+                    bugDataProp.objectReferenceValue = bugData;
+                }
+
+                // BehaviorData 연결 (있으면)
+                if (!string.IsNullOrEmpty(behaviorDataPath))
+                {
+                    var behaviorData = AssetDatabase.LoadAssetAtPath<BugBehaviorData>(behaviorDataPath);
+                    if (behaviorData != null)
+                    {
+                        var behaviorProp = bugSo.FindProperty("_behaviorData");
+                        if (behaviorProp != null)
+                        {
+                            behaviorProp.objectReferenceValue = behaviorData;
+                        }
+                    }
+                }
+
+                bugSo.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            // 기존 BugBase 지원 (호환성)
             var bugBase = prefab.GetComponent<BugBase>();
             if (bugBase != null)
             {

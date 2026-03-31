@@ -42,6 +42,56 @@ Assets/
 - **저장 방식**: JSON (PlayerPrefs 최소화)
 - **기본 폰트**: D2Coding-Ver1.3 (TextMeshPro 사용 시 이 폰트 적용)
 
+## ⚠️ 탑다운 뷰 좌표계 (모든 코드에 필수 적용)
+이 게임은 **탑다운 뷰**이며, 카메라가 위에서 아래(-Y)를 내려다봅니다.
+- **X축**: 좌우 (화면 좌 ↔ 우)
+- **Y축**: 높이 (위 아래, 화면에 수직) - 일반적으로 고정
+- **Z축**: 상하 (화면 위 ↔ 아래)
+
+### 코드 작성 시 규칙
+| 상황 | 올바른 예 | 잘못된 예 |
+|------|-----------|-----------|
+| 위로 이동/떠오름 | `Vector3(0, 0, 1)` 또는 `Vector3.forward` | `Vector3(0, 1, 0)` 또는 `Vector3.up` |
+| 아래로 이동 | `Vector3(0, 0, -1)` 또는 `Vector3.back` | `Vector3(0, -1, 0)` |
+| XZ 평면 거리 계산 | `Vector3.Distance(new Vector3(a.x, 0, a.z), new Vector3(b.x, 0, b.z))` | `Vector3.Distance(a, b)` (Y 포함됨) |
+| 2D 방향 벡터 | `new Vector3(dir.x, 0, dir.z).normalized` | Y값 포함된 방향 |
+
+### 주의 사항
+- `Vector3.up`은 Y축(높이)이므로 화면상 "위"가 아님
+- UI/이펙트가 "화면 위로" 떠야 한다면 **Z축 양의 방향** 사용
+- 이동, 회전, 거리 계산 시 항상 **XZ 평면** 기준으로 작성
+
+### 월드 UI 컴포넌트 체크리스트 (HP바, 라벨, 팝업 등)
+월드 공간에 표시되는 UI 컴포넌트를 만들 때 반드시 확인:
+1. **위치**: 오프셋의 Z값이 "화면 위쪽"을 의미 (예: `new Vector3(0, 0.1f, 0.8f)`)
+2. **회전**: `Quaternion.Euler(90f, 0f, 0f)` 또는 `transform.rotation = Quaternion.identity`로 카메라 향함
+3. **부모 회전 무시**: 부모 오브젝트가 회전해도 UI는 고정되어야 함
+   - `LateUpdate`에서 월드 좌표로 위치 설정: `transform.position = _target.position + _offset`
+   - 회전 고정: `transform.rotation = Quaternion.identity` 또는 `Quaternion.Euler(90f, 0f, 0f)`
+4. **참조 패턴**: `BugHpBar.cs` 참고 (올바른 구현 예시)
+
+## TextMeshPro 폰트 규칙
+코드에서 TextMeshPro를 생성할 때는 **반드시 D2Coding 폰트**를 적용해야 합니다.
+
+### 런타임 코드에서
+```csharp
+using DrillCorp.UI;
+
+// TextMeshPro 생성 후 폰트 적용
+var tmp = obj.AddComponent<TextMeshPro>();
+TMPFontHelper.ApplyDefaultFont(tmp);
+```
+
+### 에디터 스크립트에서
+```csharp
+var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Fonts/D2Coding-Ver1.3.asset");
+if (font != null) tmp.font = font;
+```
+
+### 폰트 에셋 경로
+- 기본: `Assets/TextMesh Pro/Fonts/D2Coding-Ver1.3.asset`
+- 볼드: `Assets/TextMesh Pro/Fonts/D2CodingBold-Ver1.3.asset`
+
 ## 코딩 컨벤션
 - 언어: C#
 - private 변수: `_camelCase`
