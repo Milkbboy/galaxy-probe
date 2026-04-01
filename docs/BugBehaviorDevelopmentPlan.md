@@ -13,7 +13,7 @@
 |-------|------|------|
 | Phase 0 | 기반 구조 | ✅ 완료 |
 | Phase 1 | 기본 행동 | ✅ 완료 |
-| Phase 2 | 확장 행동 | ⬜ 미진행 |
+| Phase 2 | 확장 행동 | ✅ 완료 |
 | Phase 3 | 고급 행동 | ⬜ 미진행 |
 | Phase 4 | Google Sheets 연동 | ⬜ 미진행 |
 | Phase 5 | 기존 코드 제거 | ⬜ 미진행 |
@@ -110,38 +110,45 @@ Assets/_Game/Scripts/Bug/Behaviors/
 
 ---
 
-## Phase 2: 확장 행동 ⬜
+## Phase 2: 확장 행동 ✅
 
 ### 목표
 - 다양한 벌레 타입 구현 가능 (Spitter, Bomber, Tank, Hive)
 
-### 구현 항목
+### 완료 항목
 
 #### Movement
-- [ ] `RetreatMovement` - 공격 후 후퇴
-- [ ] `SlowStartMovement` - 점점 가속
-- [ ] `OrbitMovement` - 타겟 주위 선회
+- [x] `RetreatMovement` - 공격 후 후퇴
+- [x] `SlowStartMovement` - 점점 가속
+- [x] `OrbitMovement` - 타겟 주위 선회
 
 #### BasicAttack
-- [ ] `CleaveAttack` - 부채꼴 범위 공격
-- [ ] `SpreadAttack` - 다발 발사
+- [x] `CleaveAttack` - 부채꼴 범위 공격 (LineRenderer 범위 표시)
+- [x] `SpreadAttack` - 다발 발사
 
 #### Skills
-- [ ] `SkillBehaviorBase` - 스킬 기본 클래스
-- [ ] `SpawnSkill` - 졸개 소환
-- [ ] `NovaSkill` - 전방향 폭발
+- [x] `SkillBehaviorBase` - 스킬 기본 클래스
+- [x] `SpawnSkill` - 졸개 소환 (측면/후방 배치)
+- [x] `NovaSkill` - 전방향 폭발 (Mesh 범위 표시)
 
 #### Passives
-- [ ] `ShieldPassive` - 데미지 흡수 (재생)
-- [ ] `RegenPassive` - 체력 재생
-- [ ] `PoisonAttackPassive` - 독 공격
+- [x] `ShieldPassive` - 데미지 흡수 (재생)
+- [x] `RegenPassive` - 체력 재생
+- [x] `PoisonAttackPassive` - 독 공격 (PoisonEffect 컴포넌트)
 
 #### Triggers
-- [ ] `TriggerBehaviorBase` - 트리거 기본 클래스
-- [ ] `EnrageTrigger` - HP 낮으면 공격력 증가
-- [ ] `ExplodeOnDeathTrigger` - 사망 시 폭발
+- [x] `TriggerBehaviorBase` - 트리거 기본 클래스
+- [x] `EnrageTrigger` - HP 낮으면 공격력/이속 증가
+- [x] `ExplodeOnDeathTrigger` - 사망 시 폭발 (SimpleVFX.PlayExplosion)
 
-### 예상 파일
+### 추가 기능
+- [x] 패시브의 `ProcessOutgoingDamage` 연결 (독 효과 등)
+- [x] `SkillBehaviorData`에 `spawnPrefab` 필드 추가
+- [x] `effectPrefab` 활용 연결
+- [x] BugController에서 Skills/Triggers 초기화 코드 완성
+- [x] `SimpleVFX.PlayExplosion` 추가
+
+### 생성된 파일
 ```
 Assets/_Game/Scripts/Bug/Behaviors/
 ├── Movement/
@@ -249,11 +256,14 @@ ConditionalBehaviors 시트:
 ### 완료
 - Phase 0: 기반 구조 ✅
 - Phase 1: 기본 행동 ✅
+- Phase 2: 확장 행동 ✅
 
 ### 다음 작업
-1. ~~BugSpawner가 BugController 지원하도록 수정~~ ✅
-2. 테스트용 프리펩 생성 (Unity Editor에서 BugController 컴포넌트 추가)
-3. 인게임 테스트
+1. Phase 3: 고급 행동 (보스급 벌레)
+   - TeleportMovement, BurrowMovement
+   - HomingAttack, BeamAttack
+   - BuffAllySkill, SlowSkill
+   - TransformTrigger, SplitOnDeathTrigger
 
 ### 공존 상태
 ```
@@ -268,3 +278,4 @@ BugController (신규) ← 새 프리펩에서 사용 가능
 | 날짜 | 내용 |
 |------|------|
 | 2024-XX-XX | Phase 0~1 완료, 문서 작성 |
+| 2024-XX-XX | Phase 2 완료: 확장 행동 (Movement 3종, Attack 2종, Skill 2종, Passive 3종, Trigger 2종) |
