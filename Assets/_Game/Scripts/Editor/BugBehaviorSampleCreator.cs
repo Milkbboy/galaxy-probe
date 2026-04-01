@@ -181,6 +181,14 @@ namespace DrillCorp.Editor
             SetPrivateField(poison, "_param1", 3f);
             SetPrivateField(poison, "_param2", 5f);
 
+            // Burrow (Phase 3)
+            var burrow = CreateAsset<PassiveBehaviorData>(folder, "Passive_Burrow");
+            SetPrivateField(burrow, "_type", PassiveType.Burrow);
+            SetPrivateField(burrow, "_displayName", "땅속 숨기");
+            SetPrivateField(burrow, "_description", "Trigger에 의해 발동되면 땅속으로 숨습니다.\n숨어있는 동안 무적 상태가 되며, 반투명으로 표시됩니다.\n지속시간이 지나면 다시 출현합니다.");
+            SetPrivateField(burrow, "_param1", 2f);
+            SetPrivateField(burrow, "_param2", 0.3f);
+
             Debug.Log("[BugBehaviorSampleCreator] Passive 샘플 생성 완료");
         }
 
@@ -246,6 +254,14 @@ namespace DrillCorp.Editor
             SetPrivateField(split, "_description", "사망 시 작은 벌레로 분열합니다.\n분열 개수만큼 SpawnPrefab이 소환되며, 체력비율만큼의 HP를 가집니다.");
             SetPrivateField(split, "_param1", 3f);
             SetPrivateField(split, "_stringParam", "MiniBeetle");
+
+            // PanicBurrow (Phase 3)
+            var panicBurrow = CreateAsset<TriggerBehaviorData>(folder, "Trigger_PanicBurrow");
+            SetPrivateField(panicBurrow, "_type", TriggerType.PanicBurrow);
+            SetPrivateField(panicBurrow, "_displayName", "위협 회피");
+            SetPrivateField(panicBurrow, "_description", "HP가 임계값 이하일 때 피격 시 땅속으로 숨습니다.\nBurrow 패시브가 필요합니다.\n쿨다운 동안 재발동되지 않습니다.");
+            SetPrivateField(panicBurrow, "_param1", 50f);
+            SetPrivateField(panicBurrow, "_param2", 5f);
 
             Debug.Log("[BugBehaviorSampleCreator] Trigger 샘플 생성 완료");
         }

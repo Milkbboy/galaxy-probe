@@ -62,6 +62,9 @@ namespace DrillCorp.Bug.Behaviors.Trigger
                 case TriggerType.ExplodeOnDeath:
                     return new ExplodeOnDeathTrigger(param1, param2);
 
+                case TriggerType.PanicBurrow:
+                    return new PanicBurrowTrigger(param1, param2);
+
                 // TODO: Phase 3에서 추가
                 // case TriggerType.LastStand:
                 // case TriggerType.Transform:

@@ -618,5 +618,106 @@ namespace DrillCorp.Editor
                 }
             }
         }
+
+        [MenuItem("Tools/Drill-Corp/Bug/7. Create Burrow VFX Prefabs")]
+        public static void CreateBurrowVfxPrefabs()
+        {
+            string prefabPath = "Assets/_Game/Prefabs/VFX";
+
+            // 폴더 생성
+            if (!AssetDatabase.IsValidFolder("Assets/_Game/Prefabs"))
+                AssetDatabase.CreateFolder("Assets/_Game", "Prefabs");
+
+            if (!AssetDatabase.IsValidFolder(prefabPath))
+                AssetDatabase.CreateFolder("Assets/_Game/Prefabs", "VFX");
+
+            // Burrow VFX (숨음!)
+            CreateTextVfxPrefab(prefabPath, "VFX_Burrow", "숨음!", new Color(0.6f, 0.4f, 0.2f)); // 갈색
+
+            // Emerge VFX (등장!)
+            CreateTextVfxPrefab(prefabPath, "VFX_Emerge", "등장!", new Color(0.6f, 0.4f, 0.2f)); // 갈색
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Debug.Log("[BugPrefabEditor] Created: VFX_Burrow.prefab, VFX_Emerge.prefab");
+        }
+
+        private static void CreateTextVfxPrefab(string path, string prefabName, string text, Color color)
+        {
+            string fullPath = $"{path}/{prefabName}.prefab";
+
+            // 기존 파일 삭제 (재생성)
+            if (System.IO.File.Exists(fullPath))
+            {
+                AssetDatabase.DeleteAsset(fullPath);
+            }
+
+            // Root 오브젝트
+            GameObject vfxObj = new GameObject(prefabName);
+
+            // 자동 삭제 컴포넌트
+            var autoDestroy = vfxObj.AddComponent<DrillCorp.VFX.AutoDestroy>();
+            var autoDestroySo = new SerializedObject(autoDestroy);
+            autoDestroySo.FindProperty("_lifetime").floatValue = 0.5f;
+            autoDestroySo.ApplyModifiedPropertiesWithoutUndo();
+
+            // 텍스트 오브젝트
+            GameObject textObj = new GameObject("Text");
+            textObj.transform.SetParent(vfxObj.transform);
+            textObj.transform.localPosition = Vector3.zero;
+            textObj.transform.localRotation = Quaternion.Euler(90f, 0f, 0f); // 탑뷰용
+
+            // TextMeshPro 추가
+            var tmp = textObj.AddComponent<TMPro.TextMeshPro>();
+            tmp.text = text;
+            tmp.fontSize = 5f;
+            tmp.alignment = TMPro.TextAlignmentOptions.Center;
+            tmp.fontStyle = TMPro.FontStyles.Bold;
+            tmp.sortingOrder = 200;
+
+            // D2Coding 폰트 적용 (Material 설정 전에 폰트부터 설정)
+            var font = AssetDatabase.LoadAssetAtPath<TMPro.TMP_FontAsset>("Assets/TextMesh Pro/Fonts/D2Coding-Ver1.3.asset");
+            if (font != null)
+            {
+                tmp.font = font;
+            }
+
+            // Outline Material 생성 및 설정
+            Material outlineMat = new Material(tmp.font.material);
+            outlineMat.name = $"{prefabName}_Mat";
+
+            // Outline 활성화
+            outlineMat.EnableKeyword("OUTLINE_ON");
+            outlineMat.SetFloat(TMPro.ShaderUtilities.ID_OutlineWidth, 0.2f);
+            outlineMat.SetColor(TMPro.ShaderUtilities.ID_OutlineColor, Color.black);
+
+            // Face Color (텍스트 본체 색상)
+            outlineMat.SetColor(TMPro.ShaderUtilities.ID_FaceColor, color);
+
+            // Material 에셋으로 저장
+            string matPath = $"{path}/{prefabName}_Mat.mat";
+            if (System.IO.File.Exists(matPath))
+            {
+                AssetDatabase.DeleteAsset(matPath);
+            }
+            AssetDatabase.CreateAsset(outlineMat, matPath);
+
+            // TMP에 Material 적용
+            tmp.fontSharedMaterial = outlineMat;
+
+            // RectTransform 크기
+            var rectTransform = textObj.GetComponent<RectTransform>();
+            rectTransform.sizeDelta = new Vector2(3f, 2f);
+
+            // 프리팹으로 저장
+            var prefab = PrefabUtility.SaveAsPrefabAsset(vfxObj, fullPath);
+
+            // 씬의 임시 오브젝트 삭제
+            Object.DestroyImmediate(vfxObj);
+
+            // Inspector 선택
+            Selection.activeObject = prefab;
+        }
     }
 }

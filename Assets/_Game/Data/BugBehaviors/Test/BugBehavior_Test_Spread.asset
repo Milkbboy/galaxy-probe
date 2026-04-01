@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f092bc5128f9cf448aa7606799bd08d, type: 3}
   m_Name: BugBehavior_Test_Spread
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.BugBehaviorData
-  _defaultMovement: {fileID: 11400000, guid: 76b5f9b04f8d50d4898e263e8ad04bb2, type: 2}
+  _defaultMovement: {fileID: 11400000, guid: 90eae9b8c9f8d0f49a5763d6bf3197b5, type: 2}
   _conditionalMovements: []
   _defaultAttack: {fileID: 11400000, guid: b45d1e8505075de4e91ff647a1166f82, type: 2}
   _conditionalAttacks: []
   _skills: []
-  _passives: []
+  _passives:
+  - {fileID: 11400000, guid: ca3178479d504544ebce770d60fecfd3, type: 2}
   _triggers:
-  - {fileID: 11400000, guid: bcab45fda6047214ab3c8bc6fa1c2758, type: 2}
+  - {fileID: 11400000, guid: 49632f6a18b6f474b9314359f7e22344, type: 2}

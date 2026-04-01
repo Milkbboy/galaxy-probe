@@ -45,7 +45,8 @@ namespace DrillCorp.Bug.Behaviors.Passive
         /// <summary>
         /// Passive 타입에 따른 인스턴스 생성
         /// </summary>
-        public static PassiveBehaviorBase Create(PassiveType type, float param1, float param2)
+        public static PassiveBehaviorBase Create(PassiveType type, float param1, float param2,
+            GameObject effectPrefab = null, GameObject effectPrefab2 = null)
         {
             switch (type)
             {
@@ -63,6 +64,9 @@ namespace DrillCorp.Bug.Behaviors.Passive
 
                 case PassiveType.PoisonAttack:
                     return new PoisonAttackPassive(param1, param2);
+
+                case PassiveType.Burrow:
+                    return new BurrowPassive(param1, param2, effectPrefab, effectPrefab2);
 
                 // TODO: Phase 3에서 추가
                 // case PassiveType.Reflect:

@@ -183,8 +183,21 @@ Assets/_Game/Scripts/Bug/Behaviors/
 
 #### Movement
 - [x] `TeleportMovement` - 순간이동 (쿨다운 기반, 느린 이동 + 순간이동)
-- [ ] `BurrowMovement` - 땅속 이동 (무적)
 - [ ] `DiveMovement` - 급강하
+
+#### Passives (추가)
+- [x] `BurrowPassive` - 땅속 숨기 (무적 + 투명화)
+  - 원래 Movement로 기획했으나 Passive + Trigger 조합으로 변경
+  - param1 = 숨어있는 시간 (초)
+  - param2 = 애니메이션 시간 (초)
+  - effectPrefab = 숨을 때 VFX
+  - effectPrefab2 = 나올 때 VFX
+
+#### Triggers (추가)
+- [x] `PanicBurrowTrigger` - HP 낮을 때 피격 시 Burrow 발동
+  - param1 = HP 임계값 % (기본 50%)
+  - param2 = 쿨다운 (기본 5초)
+  - 반복 발동 가능 (쿨다운 후 재발동)
 
 #### BasicAttack
 - [ ] `HomingAttack` - 유도 투사체
@@ -196,12 +209,12 @@ Assets/_Game/Scripts/Bug/Behaviors/
 - [ ] `SlowSkill` - 감속
 - [ ] `StunSkill` - 기절
 
-#### Passives
+#### Passives (미구현)
 - [ ] `LifestealPassive` - 흡혈
 - [ ] `ReflectPassive` - 반사
 - [ ] `FastPassive` - 이속 증가
 
-#### Triggers
+#### Triggers (미구현)
 - [ ] `TransformTrigger` - 2페이즈 변신
 - [ ] `SplitOnDeathTrigger` - 사망 시 분열
 - [ ] `ReviveTrigger` - 부활
@@ -279,3 +292,5 @@ BugController (신규) ← 새 프리펩에서 사용 가능
 |------|------|
 | 2024-XX-XX | Phase 0~1 완료, 문서 작성 |
 | 2024-XX-XX | Phase 2 완료: 확장 행동 (Movement 3종, Attack 2종, Skill 2종, Passive 3종, Trigger 2종) |
+| 2024-XX-XX | Phase 3 진행: TeleportMovement 완료 |
+| 2024-XX-XX | Burrow 시스템 설계 변경: Movement → Passive + Trigger 조합으로 변경. BurrowPassive, PanicBurrowTrigger 완료 |

@@ -20,7 +20,10 @@ namespace DrillCorp.Bug.Behaviors.Data
         PoisonAttack,   // 독 공격
 
         // 이동
-        Fast            // 이속 증가
+        Fast,           // 이속 증가
+
+        // 특수
+        Burrow          // 땅속 숨기
     }
 
     /// <summary>
@@ -35,6 +38,9 @@ namespace DrillCorp.Bug.Behaviors.Data
 
         [SerializeField] private float _param1;
         [SerializeField] private float _param2;
+
+        [SerializeField] private GameObject _effectPrefab;
+        [SerializeField] private GameObject _effectPrefab2;
 
         public PassiveType Type => _type;
         public string DisplayName => _displayName;
@@ -51,9 +57,13 @@ namespace DrillCorp.Bug.Behaviors.Data
         /// - CritChance: param1 = 확률%, param2 = 배율
         /// - PoisonAttack: param1 = 지속시간, param2 = 데미지
         /// - Fast: param1 = 이속배율
+        /// - Burrow: param1 = 숨어있는 시간(초), param2 = 애니메이션 시간(초)
+        ///           effectPrefab = 숨을 때 VFX, effectPrefab2 = 나올 때 VFX
         /// </summary>
         public float Param1 => _param1;
         public float Param2 => _param2;
+        public GameObject EffectPrefab => _effectPrefab;
+        public GameObject EffectPrefab2 => _effectPrefab2;
 
         /// <summary>
         /// 문자열에서 파싱 (예: "Armor:5", "Shield:50:30", "Dodge:20")

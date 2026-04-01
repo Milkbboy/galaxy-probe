@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 namespace DrillCorp.VFX
 {
@@ -300,6 +301,77 @@ namespace DrillCorp.VFX
 
             ps.Play();
             Object.Destroy(effectObj, 1f);
+        }
+
+        /// <summary>
+        /// 텍스트 VFX (개발용 - "뿅!", "숨음!" 등)
+        /// </summary>
+        public static void PlayText(Vector3 position, string text, Color color, float duration = 0.5f)
+        {
+            GameObject effectObj = new GameObject($"TextVFX_{text}");
+            effectObj.transform.position = position;
+            effectObj.transform.rotation = Quaternion.Euler(90f, 0f, 0f); // 탑뷰용
+
+            var tmp = effectObj.AddComponent<TextMeshPro>();
+            tmp.text = text;
+            tmp.fontSize = 5f;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.color = color;
+            tmp.fontStyle = FontStyles.Bold;
+            tmp.sortingOrder = 200;
+
+            // D2Coding 폰트 적용 (한글 지원)
+            DrillCorp.UI.TMPFontHelper.ApplyDefaultFont(tmp);
+
+            // RectTransform 크기
+            var rectTransform = effectObj.GetComponent<RectTransform>();
+            rectTransform.sizeDelta = new Vector2(3f, 2f);
+
+            // AutoDestroy
+            effectObj.AddComponent<AutoDestroy>().SetLifetime(duration);
+
+            // 위로 떠오르는 애니메이션 (선택적)
+            var floater = effectObj.AddComponent<FloatUpAndFade>();
+            floater.Initialize(tmp, duration);
+        }
+    }
+
+    /// <summary>
+    /// 텍스트가 위로 떠오르며 사라지는 효과
+    /// </summary>
+    public class FloatUpAndFade : MonoBehaviour
+    {
+        private TextMeshPro _tmp;
+        private float _duration;
+        private float _elapsed;
+        private Color _startColor;
+        private Vector3 _startPos;
+        private const float FLOAT_HEIGHT = 1f;
+
+        public void Initialize(TextMeshPro tmp, float duration)
+        {
+            _tmp = tmp;
+            _duration = duration;
+            _startColor = tmp.color;
+            _startPos = transform.position;
+        }
+
+        private void Update()
+        {
+            if (_tmp == null || _duration <= 0) return;
+
+            _elapsed += Time.deltaTime;
+            float t = _elapsed / _duration;
+
+            // 위로 이동 (Z축 - 탑다운)
+            Vector3 pos = _startPos;
+            pos.z += FLOAT_HEIGHT * t;
+            transform.position = pos;
+
+            // 페이드 아웃
+            Color c = _startColor;
+            c.a = Mathf.Lerp(1f, 0f, t);
+            _tmp.color = c;
         }
     }
 }

@@ -99,7 +99,6 @@ Triggers: (비워두기)
 | 후퇴 | `Retreat:시간` | 공격 후 뒤로 물러남. 예: `Retreat:2` |
 | 느린 시작 | `SlowStart` | 천천히 시작해서 점점 빨라짐 |
 | 선회 | `Orbit:반경` | 타겟 주위를 돌며 접근. 예: `Orbit:5` |
-| 땅속 이동 | `Burrow:시간` | 땅속으로 이동 (무적). 예: `Burrow:3` |
 | 순간이동 | `Teleport:쿨타임` | 순간이동. 예: `Teleport:5` |
 | 급강하 | `Dive` | 높이 떴다가 타겟에게 급강하 |
 
@@ -175,6 +174,8 @@ Skills: Spawn:10:Beetle:2, Nova:15
 | 독 공격 | `PoisonAttack:지속:데미지` | 예: `PoisonAttack:3:5` |
 | **이동** | | |
 | 빠른 이동 | `Fast:배율` | 예: `Fast:1.5` (1.5배 빠름) |
+| **특수** | | |
+| 땅속 숨기 | `Burrow:시간:애니시간` | 피격 시 땅속에 숨음 (무적). 예: `Burrow:2:0.3` |
 
 ### 작성 예시
 
@@ -210,6 +211,8 @@ Passives: Armor:10, Regen:2, Dodge:15
 | 장판 | `DropHazard:범위:지속:데미지` | 사망 시 | 위험 지역 생성 |
 | 성장 | `Grow:시간:배율` | 시간 경과 | 점점 강해짐 |
 | | 예: `Grow:30:1.5` | 30초마다 | 1.5배 성장 |
+| 공포 도피 | `PanicBurrow:HP%:쿨타임` | HP 이하 + 피격 | 땅속 숨기 |
+| | 예: `PanicBurrow:50:5` | HP 50% 이하 + 피격 | Burrow 발동 |
 
 ### 작성 예시
 
@@ -217,6 +220,19 @@ Passives: Armor:10, Regen:2, Dodge:15
 Triggers: Enrage:30:2, ExplodeOnDeath:3:50
 ```
 → HP 30% 이하면 공격력 2배 + 죽으면 폭발
+
+### Burrow + PanicBurrow 조합
+
+땅속에 숨는 행동은 **Passive + Trigger 조합**으로 구현합니다:
+
+```
+Passives: Burrow:2:0.3
+Triggers: PanicBurrow:50:5
+```
+→ HP 50% 이하일 때 피격 시 땅속에 2초간 숨음 (무적)
+→ 쿨타임 5초 후 재발동 가능
+
+**주의**: Burrow는 반드시 Passives에 추가해야 PanicBurrow가 작동합니다.
 
 ---
 
@@ -423,3 +439,4 @@ Triggers: Enrage:30:2, ExplodeOnDeath:3:50
 | 날짜 | 변경 내용 |
 |------|-----------|
 | 2024-01-XX | 최초 작성 |
+| 2024-XX-XX | Burrow를 Movement에서 Passive로 변경, PanicBurrow 트리거 추가 |

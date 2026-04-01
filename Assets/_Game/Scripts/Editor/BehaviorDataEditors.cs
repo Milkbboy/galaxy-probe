@@ -236,6 +236,8 @@ namespace DrillCorp.Editor
         private SerializedProperty _description;
         private SerializedProperty _param1;
         private SerializedProperty _param2;
+        private SerializedProperty _effectPrefab;
+        private SerializedProperty _effectPrefab2;
 
         private void OnEnable()
         {
@@ -244,6 +246,8 @@ namespace DrillCorp.Editor
             _description = serializedObject.FindProperty("_description");
             _param1 = serializedObject.FindProperty("_param1");
             _param2 = serializedObject.FindProperty("_param2");
+            _effectPrefab = serializedObject.FindProperty("_effectPrefab");
+            _effectPrefab2 = serializedObject.FindProperty("_effectPrefab2");
         }
 
         public override void OnInspectorGUI()
@@ -286,6 +290,15 @@ namespace DrillCorp.Editor
                 EditorGUILayout.PropertyField(_param2, new GUIContent("Param2 (미사용)"));
             }
 
+            // Prefabs (Burrow 타입만)
+            if (passiveType == PassiveType.Burrow)
+            {
+                EditorGUILayout.Space(10);
+                EditorGUILayout.LabelField("Prefabs", EditorStyles.boldLabel);
+                EditorGUILayout.PropertyField(_effectPrefab, new GUIContent("Burrow VFX (숨을 때)"));
+                EditorGUILayout.PropertyField(_effectPrefab2, new GUIContent("Emerge VFX (나올 때)"));
+            }
+
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -316,6 +329,9 @@ namespace DrillCorp.Editor
 
                 case PassiveType.Fast:
                     return ("이속 증가 (%)", null);
+
+                case PassiveType.Burrow:
+                    return ("숨어있는 시간 (초)", "애니메이션 시간 (초)");
 
                 default:
                     return (null, null);
@@ -550,6 +566,9 @@ namespace DrillCorp.Editor
 
                 case TriggerType.Revive:
                     return ("부활 횟수", "부활 HP 비율 (%)", null, null);
+
+                case TriggerType.PanicBurrow:
+                    return ("HP 임계값 (%)", "쿨다운 (초)", null, null);
 
                 default:
                     return (null, null, null, null);

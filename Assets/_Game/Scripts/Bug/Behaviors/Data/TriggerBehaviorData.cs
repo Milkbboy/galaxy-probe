@@ -23,7 +23,10 @@ namespace DrillCorp.Bug.Behaviors.Data
         Revive,         // 부활
 
         // 시간 기반
-        Grow            // 성장
+        Grow,           // 성장
+
+        // 특수
+        PanicBurrow     // HP 낮을 때 숨기
     }
 
     /// <summary>
@@ -60,6 +63,7 @@ namespace DrillCorp.Bug.Behaviors.Data
         /// - DropHazard: param1 = 범위, param2 = 지속시간, param3 = 데미지
         /// - Revive: param1 = HP%
         /// - Grow: param1 = 시간간격, param2 = 배율
+        /// - PanicBurrow: param1 = HP%, param2 = 쿨다운(초)
         /// </summary>
         public float Param1 => _param1;
         public float Param2 => _param2;

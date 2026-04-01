@@ -49,6 +49,7 @@ namespace DrillCorp.Bug
         private float _justAttackedTimer;
         private bool _allyJustDied;
         private bool _isDead;
+        private bool _isInvulnerable;
 
         // === Behaviors ===
         private IMovementBehavior _currentMovement;
@@ -89,6 +90,7 @@ namespace DrillCorp.Bug
         public IMovementBehavior CurrentMovement => _currentMovement;
         public IAttackBehavior CurrentAttack => _currentAttack;
         public IReadOnlyList<IPassiveBehavior> Passives => _passives;
+        public bool IsInvulnerable => _isInvulnerable;
 
         #region Unity Lifecycle
 
@@ -143,56 +145,63 @@ namespace DrillCorp.Bug
                     _justAttacked = false;
             }
 
-            // 조건부 행동 체크 및 전환
-            UpdateConditionalBehaviors();
-
-            // 이동
-            _currentMovement?.UpdateMovement(_target);
-
-            // 기본 공격
-            if (_currentAttack != null && _target != null)
-            {
-                // Cleave 범위 표시 업데이트
-                if (_currentAttack is CleaveAttack cleaveAttack)
-                {
-                    cleaveAttack.UpdateRangeIndicator(_target);
-                }
-
-                float distance = GetDistanceTo(_target);
-                // Debug.Log($"[BugController] {name} distance: {distance:F2}, attackRange: {_currentAttack.AttackRange:F2}");
-                if (distance <= _currentAttack.AttackRange)
-                {
-                    if (_currentAttack.TryAttack(_target))
-                    {
-                        SetJustAttacked();
-                    }
-                }
-            }
-
-            // 스킬 업데이트
-            foreach (var skill in _skills)
-            {
-                skill.UpdateCooldown(deltaTime);
-
-                // Nova 범위 표시 업데이트
-                if (skill is NovaSkill novaSkill)
-                {
-                    novaSkill.UpdateRangeIndicator();
-                }
-
-                if (skill.IsReady && _target != null)
-                {
-                    skill.TryUse(_target);
-                }
-            }
-
-            // 패시브 업데이트
+            // 패시브 업데이트 (Burrow 상태 체크를 위해 먼저 실행)
             foreach (var passive in _passives)
             {
                 passive.UpdatePassive(deltaTime);
             }
 
-            // 트리거 체크
+            // 버로우 상태 체크
+            var burrow = GetBurrowPassive();
+            bool isBurrowed = burrow != null && !burrow.CanBurrow; // Idle이 아니면 버로우 중
+
+            // 버로우 중이 아닐 때만 행동
+            if (!isBurrowed)
+            {
+                // 조건부 행동 체크 및 전환
+                UpdateConditionalBehaviors();
+
+                // 이동
+                _currentMovement?.UpdateMovement(_target);
+
+                // 기본 공격
+                if (_currentAttack != null && _target != null)
+                {
+                    // Cleave 범위 표시 업데이트
+                    if (_currentAttack is CleaveAttack cleaveAttack)
+                    {
+                        cleaveAttack.UpdateRangeIndicator(_target);
+                    }
+
+                    float distance = GetDistanceTo(_target);
+                    if (distance <= _currentAttack.AttackRange)
+                    {
+                        if (_currentAttack.TryAttack(_target))
+                        {
+                            SetJustAttacked();
+                        }
+                    }
+                }
+
+                // 스킬 업데이트
+                foreach (var skill in _skills)
+                {
+                    skill.UpdateCooldown(deltaTime);
+
+                    // Nova 범위 표시 업데이트
+                    if (skill is NovaSkill novaSkill)
+                    {
+                        novaSkill.UpdateRangeIndicator();
+                    }
+
+                    if (skill.IsReady && _target != null)
+                    {
+                        skill.TryUse(_target);
+                    }
+                }
+            }
+
+            // 트리거 체크 (버로우 중에도 체크 - PanicBurrow 등)
             foreach (var trigger in _triggers)
             {
                 if (!trigger.TriggerOnDeath)
@@ -320,12 +329,21 @@ namespace DrillCorp.Bug
             _currentAttack = _defaultAttack;
 
             // Passives
-            foreach (var passiveData in _behaviorData.Passives)
+            for (int i = 0; i < _behaviorData.Passives.Count; i++)
             {
+                var passiveData = _behaviorData.Passives[i];
+                if (passiveData == null)
+                {
+                    Debug.LogWarning($"[BugController] {name}: Passives[{i}] is null in {_behaviorData.name}");
+                    continue;
+                }
+
                 var passive = PassiveBehaviorBase.Create(
                     passiveData.Type,
                     passiveData.Param1,
-                    passiveData.Param2
+                    passiveData.Param2,
+                    passiveData.EffectPrefab,
+                    passiveData.EffectPrefab2
                 );
                 if (passive != null)
                 {
@@ -335,8 +353,15 @@ namespace DrillCorp.Bug
             }
 
             // Skills
-            foreach (var skillData in _behaviorData.Skills)
+            for (int i = 0; i < _behaviorData.Skills.Count; i++)
             {
+                var skillData = _behaviorData.Skills[i];
+                if (skillData == null)
+                {
+                    Debug.LogWarning($"[BugController] {name}: Skills[{i}] is null in {_behaviorData.name}");
+                    continue;
+                }
+
                 var skill = SkillBehaviorBase.Create(
                     skillData.Type,
                     skillData.Cooldown,
@@ -353,8 +378,15 @@ namespace DrillCorp.Bug
             }
 
             // Triggers
-            foreach (var triggerData in _behaviorData.Triggers)
+            for (int i = 0; i < _behaviorData.Triggers.Count; i++)
             {
+                var triggerData = _behaviorData.Triggers[i];
+                if (triggerData == null)
+                {
+                    Debug.LogWarning($"[BugController] {name}: Triggers[{i}] is null in {_behaviorData.name}");
+                    continue;
+                }
+
                 var trigger = TriggerBehaviorBase.Create(
                     triggerData.Type,
                     triggerData.Param1,
@@ -553,6 +585,7 @@ namespace DrillCorp.Bug
         public void TakeDamage(float damage)
         {
             if (_isDead) return;
+            if (_isInvulnerable) return; // 무적 상태면 데미지 무시
 
             _hitCount++;
 
@@ -591,6 +624,27 @@ namespace DrillCorp.Bug
             {
                 _hpBar.SetHealth(_currentHealth / _maxHealth);
             }
+        }
+
+        /// <summary>
+        /// 무적 상태 설정 (Burrow 등에서 사용)
+        /// </summary>
+        public void SetInvulnerable(bool invulnerable)
+        {
+            _isInvulnerable = invulnerable;
+        }
+
+        /// <summary>
+        /// Burrow 패시브 가져오기 (Trigger에서 사용)
+        /// </summary>
+        public BurrowPassive GetBurrowPassive()
+        {
+            foreach (var passive in _passives)
+            {
+                if (passive is BurrowPassive burrow)
+                    return burrow;
+            }
+            return null;
         }
 
         #endregion
