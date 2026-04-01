@@ -200,8 +200,11 @@ Assets/_Game/Scripts/Bug/Behaviors/
   - 반복 발동 가능 (쿨다운 후 재발동)
 
 #### BasicAttack
-- [ ] `HomingAttack` - 유도 투사체
-- [ ] `BeamAttack` - 지속 레이저
+- ~~[ ] `HomingAttack` - 유도 투사체~~ (제외: 머신이 고정이라 유도 의미 없음)
+- [x] `BeamAttack` - 지속 레이저
+  - param1 = 지속시간 (초)
+  - param2 = 틱간격 (초)
+  - projectilePrefab = 빔 VFX (없으면 붉은색 LineRenderer 폴백)
 
 #### Skills
 - [ ] `BuffAllySkill` - 아군 강화
@@ -294,3 +297,4 @@ BugController (신규) ← 새 프리펩에서 사용 가능
 | 2024-XX-XX | Phase 2 완료: 확장 행동 (Movement 3종, Attack 2종, Skill 2종, Passive 3종, Trigger 2종) |
 | 2024-XX-XX | Phase 3 진행: TeleportMovement 완료 |
 | 2024-XX-XX | Burrow 시스템 설계 변경: Movement → Passive + Trigger 조합으로 변경. BurrowPassive, PanicBurrowTrigger 완료 |
+| 2024-XX-XX | BeamAttack 구현 완료. HomingAttack 제외 결정 (머신 고정이라 유도 의미 없음) |

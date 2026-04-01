@@ -135,6 +135,14 @@ namespace DrillCorp.Editor
             SetPrivateField(spread, "_param1", 5f);
             SetPrivateField(spread, "_param2", 60f);
 
+            // Beam (Phase 3)
+            var beam = CreateAsset<AttackBehaviorData>(folder, "Attack_Beam");
+            SetPrivateField(beam, "_type", AttackType.Beam);
+            SetPrivateField(beam, "_displayName", "레이저 공격");
+            SetPrivateField(beam, "_description", "타겟에게 지속적인 레이저 빔을 발사합니다.\n빔이 활성화된 동안 틱마다 데미지를 주며, 빔은 타겟을 추적합니다.\n빔 VFX가 없으면 붉은색 LineRenderer로 표시됩니다.");
+            SetPrivateField(beam, "_param1", 2f);
+            SetPrivateField(beam, "_param2", 0.5f);
+
             Debug.Log("[BugBehaviorSampleCreator] Attack 샘플 생성 완료");
         }
 

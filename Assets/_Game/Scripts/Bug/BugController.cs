@@ -173,10 +173,19 @@ namespace DrillCorp.Bug
                         cleaveAttack.UpdateRangeIndicator(_target);
                     }
 
+                    // Beam 공격 업데이트 (지속 데미지)
+                    if (_currentAttack is BeamAttack beamAttack)
+                    {
+                        beamAttack.UpdateBeam(deltaTime);
+                    }
+
                     float distance = GetDistanceTo(_target);
                     if (distance <= _currentAttack.AttackRange)
                     {
-                        if (_currentAttack.TryAttack(_target))
+                        // Beam이 활성 중이면 새 공격 시도 안 함
+                        bool canAttack = !((_currentAttack is BeamAttack beam) && beam.IsBeamActive);
+
+                        if (canAttack && _currentAttack.TryAttack(_target))
                         {
                             SetJustAttacked();
                         }

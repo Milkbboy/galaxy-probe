@@ -190,7 +190,11 @@ namespace DrillCorp.Editor
             if (attackType == AttackType.Projectile || attackType == AttackType.Spread ||
                 attackType == AttackType.Homing)
             {
-                EditorGUILayout.PropertyField(_projectilePrefab);
+                EditorGUILayout.PropertyField(_projectilePrefab, new GUIContent("Projectile Prefab (투사체)"));
+            }
+            else if (attackType == AttackType.Beam)
+            {
+                EditorGUILayout.PropertyField(_projectilePrefab, new GUIContent("Beam VFX Prefab (레이저)"));
             }
             EditorGUILayout.PropertyField(_hitVfxPrefab);
 
@@ -217,7 +221,7 @@ namespace DrillCorp.Editor
                     return ("투사체 속도", "유도력");
 
                 case AttackType.Beam:
-                    return ("빔 지속시간 (초)", "초당 데미지 배율");
+                    return ("빔 지속시간 (초)", "데미지 틱 간격 (초)");
 
                 default:
                     return (null, null);

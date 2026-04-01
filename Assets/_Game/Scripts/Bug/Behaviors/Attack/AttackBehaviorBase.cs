@@ -135,9 +135,11 @@ namespace DrillCorp.Bug.Behaviors.Attack
                     attack = new SpreadAttack((int)param1, param2, 10f, projectilePrefab, hitVfxPrefab);
                     break;
 
+                case AttackType.Beam:
+                    attack = new BeamAttack(param1, param2, projectilePrefab); // projectilePrefab을 beamVfxPrefab으로 사용
+                    break;
+
                 // TODO: Phase 3에서 추가
-                // case AttackType.Homing:
-                // case AttackType.Beam:
                 // case AttackType.Lob:
 
                 default:
