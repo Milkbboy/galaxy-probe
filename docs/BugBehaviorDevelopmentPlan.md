@@ -174,7 +174,7 @@ Assets/_Game/Scripts/Bug/Behaviors/
 
 ---
 
-## Phase 3: 고급 행동 ⬜
+## Phase 3: 고급 행동 🔄
 
 ### 목표
 - 보스급 벌레 구현 가능 (Queen)
@@ -182,7 +182,7 @@ Assets/_Game/Scripts/Bug/Behaviors/
 ### 구현 항목
 
 #### Movement
-- [ ] `TeleportMovement` - 순간이동
+- [x] `TeleportMovement` - 순간이동 (쿨다운 기반, 느린 이동 + 순간이동)
 - [ ] `BurrowMovement` - 땅속 이동 (무적)
 - [ ] `DiveMovement` - 급강하
 

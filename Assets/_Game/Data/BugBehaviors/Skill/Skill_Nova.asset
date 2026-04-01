@@ -14,9 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.SkillBehaviorData
   _type: 0
   _displayName: "\uD3ED\uBC1C"
-  _description: "\uC804\uBC29\uD5A5\uC73C\uB85C \uD3ED\uBC1C\uD569\uB2C8\uB2E4."
+  _description: "\uC790\uC2E0\uC744 \uC911\uC2EC\uC73C\uB85C \uC804\uBC29\uD5A5 \uD3ED\uBC1C\uC744
+    \uC77C\uC73C\uD0B5\uB2C8\uB2E4.\n\uD3ED\uBC1C \uBC94\uC704 \uB0B4 \uBAA8\uB4E0
+    \uB300\uC0C1(\uBC8C\uB808 \uC81C\uC678)\uC5D0\uAC8C \uB370\uBBF8\uC9C0\uB97C
+    \uC90D\uB2C8\uB2E4.\n\uC6D0\uD615 \uBC94\uC704 \uC778\uB514\uCF00\uC774\uD130\uAC00
+    \uD45C\uC2DC\uB429\uB2C8\uB2E4."
   _cooldown: 15
   _param1: 0
   _param2: 0
   _stringParam: 
-  _effectPrefab: {fileID: 0}
+  _effectPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
+  _spawnPrefab: {fileID: 0}

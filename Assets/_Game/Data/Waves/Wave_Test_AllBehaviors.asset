@@ -16,7 +16,7 @@ MonoBehaviour:
   _waveName: Test - All Behaviors
   _spawnGroups:
   - BugData: {fileID: 11400000, guid: 1d394bfc9b80e734db46a1ff48a9c72d, type: 2}
-    Count: 1
+    Count: 3
     StartDelay: 0
     SpawnInterval: 0.5
     RandomPosition: 1

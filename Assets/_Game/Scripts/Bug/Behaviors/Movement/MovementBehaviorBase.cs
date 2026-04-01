@@ -63,7 +63,7 @@ namespace DrillCorp.Bug.Behaviors.Movement
         /// <summary>
         /// Movement 타입에 따른 인스턴스 생성
         /// </summary>
-        public static MovementBehaviorBase Create(MovementType type, float param1, float param2)
+        public static MovementBehaviorBase Create(MovementType type, float param1, float param2, GameObject effectPrefab = null)
         {
             switch (type)
             {
@@ -88,9 +88,11 @@ namespace DrillCorp.Bug.Behaviors.Movement
                 case MovementType.Orbit:
                     return new OrbitMovement(param1, param2);
 
+                case MovementType.Teleport:
+                    return new TeleportMovement(param1, param2, effectPrefab);
+
                 // TODO: Phase 3에서 추가
                 // case MovementType.Burrow:
-                // case MovementType.Teleport:
                 // case MovementType.Dive:
 
                 default:

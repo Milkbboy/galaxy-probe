@@ -268,7 +268,7 @@ namespace DrillCorp.Bug
             if (_behaviorData.DefaultMovement != null)
             {
                 var movData = _behaviorData.DefaultMovement;
-                _defaultMovement = MovementBehaviorBase.Create(movData.Type, movData.Param1, movData.Param2);
+                _defaultMovement = MovementBehaviorBase.Create(movData.Type, movData.Param1, movData.Param2, movData.EffectPrefab);
                 _defaultMovement?.Initialize(this);
             }
             else
@@ -286,7 +286,8 @@ namespace DrillCorp.Bug
                 var behavior = MovementBehaviorBase.Create(
                     condMov.Behavior.Type,
                     condMov.Behavior.Param1,
-                    condMov.Behavior.Param2
+                    condMov.Behavior.Param2,
+                    condMov.Behavior.EffectPrefab
                 );
                 behavior?.Initialize(this);
 

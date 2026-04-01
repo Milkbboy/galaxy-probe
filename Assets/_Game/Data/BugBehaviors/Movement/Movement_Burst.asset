@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.MovementBehaviorData
   _type: 2
   _displayName: "\uB3CC\uC9C4 \uC774\uB3D9"
-  _description: "\uC7A0\uC2DC \uBA48\uCDC4\uB2E4\uAC00 \uBE60\uB974\uAC8C \uB3CC\uC9C4\uD569\uB2C8\uB2E4."
+  _description: "\uC77C\uC815 \uC2DC\uAC04 \uB300\uAE30 \uD6C4 \uBE60\uB978 \uC18D\uB3C4\uB85C
+    \uB3CC\uC9C4\uD569\uB2C8\uB2E4.\n\uB300\uAE30 \uC911\uC5D0\uB294 \uC815\uC9C0,
+    \uB3CC\uC9C4 \uC911\uC5D0\uB294 \uC18D\uB3C4\uBC30\uC728\uB9CC\uD07C \uBE60\uB974\uAC8C
+    \uC774\uB3D9\uD569\uB2C8\uB2E4."
   _param1: 2
   _param2: 3

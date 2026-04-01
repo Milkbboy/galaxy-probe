@@ -14,7 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.TriggerBehaviorData
   _type: 6
   _displayName: "\uBD84\uC5F4"
-  _description: "\uC8FD\uC744 \uB54C \uC791\uC740 \uBC8C\uB808\uB85C \uBD84\uC5F4\uD569\uB2C8\uB2E4."
+  _description: "\uC0AC\uB9DD \uC2DC \uC791\uC740 \uBC8C\uB808\uB85C \uBD84\uC5F4\uD569\uB2C8\uB2E4.\n\uBD84\uC5F4
+    \uAC1C\uC218\uB9CC\uD07C SpawnPrefab\uC774 \uC18C\uD658\uB418\uBA70, \uCCB4\uB825\uBE44\uC728\uB9CC\uD07C\uC758
+    HP\uB97C \uAC00\uC9D1\uB2C8\uB2E4."
   _param1: 3
   _param2: 0
   _param3: 0

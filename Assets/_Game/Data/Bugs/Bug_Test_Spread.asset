@@ -19,7 +19,7 @@ MonoBehaviour:
   _moveSpeed: 2
   _attackDamage: 10
   _attackCooldown: 1
-  _attackRange: 5
+  _attackRange: 1
   _prefab: {fileID: 3105106472247511596, guid: 565a67743fa6d3044a70ae498fca7941, type: 3}
   _tintColor: {r: 0.9, g: 0.6, b: 0.2, a: 1}
   _scale: 1

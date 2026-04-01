@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.PassiveBehaviorData
   _type: 2
   _displayName: "\uC7AC\uC0DD"
-  _description: "\uCD08\uB2F9 \uCCB4\uB825\uC744 \uD68C\uBCF5\uD569\uB2C8\uB2E4."
+  _description: "\uB9E4 \uCD08\uB9C8\uB2E4 \uCCB4\uB825\uC744 \uD68C\uBCF5\uD569\uB2C8\uB2E4.\nMaxHealth\uB97C
+    \uCD08\uACFC\uD558\uC5EC \uD68C\uBCF5\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."
   _param1: 2
   _param2: 0

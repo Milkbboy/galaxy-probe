@@ -33,18 +33,15 @@ namespace DrillCorp.Bug.Behaviors.Data
     [CreateAssetMenu(fileName = "Skill_New", menuName = "Drill-Corp/Bug Behaviors/Skill")]
     public class SkillBehaviorData : ScriptableObject
     {
-        [Header("Basic")]
         [SerializeField] private SkillType _type;
         [SerializeField] private string _displayName;
         [SerializeField, TextArea] private string _description;
         [SerializeField] private float _cooldown = 10f;
 
-        [Header("Parameters")]
         [SerializeField] private float _param1;
         [SerializeField] private float _param2;
         [SerializeField] private string _stringParam; // Spawn 시 BugName 등
 
-        [Header("Prefabs")]
         [SerializeField] private GameObject _effectPrefab;
         [SerializeField] private GameObject _spawnPrefab;
 

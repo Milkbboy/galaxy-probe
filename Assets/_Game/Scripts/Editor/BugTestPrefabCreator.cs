@@ -246,6 +246,20 @@ namespace DrillCorp.Editor
                 ModelName = "SM_Bug_B_01",
                 Scale = 0.32f
             },
+
+            // ===== Phase 3 테스트 =====
+
+            // Movement Phase 3
+            new TestBugDefinition
+            {
+                Name = "Test_Teleport",
+                Label = "Teleport\nMelee",
+                MovementType = "Teleport",
+                AttackType = "Melee",
+                Color = new Color(0.6f, 0.2f, 1f), // 진한 보라 (순간이동)
+                ModelName = "SM_Bug_C_01",
+                Scale = 0.22f
+            },
         };
 
         [MenuItem("Tools/Drill-Corp/Bug/Test/1. 테스트용 Bug 전체 생성 (Data + Prefab)", priority = 200)]

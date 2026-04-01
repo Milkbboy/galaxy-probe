@@ -23,16 +23,13 @@ namespace DrillCorp.Bug.Behaviors.Data
     [CreateAssetMenu(fileName = "Attack_New", menuName = "Drill-Corp/Bug Behaviors/Attack")]
     public class AttackBehaviorData : ScriptableObject
     {
-        [Header("Basic")]
         [SerializeField] private AttackType _type = AttackType.Melee;
         [SerializeField] private string _displayName;
         [SerializeField, TextArea] private string _description;
 
-        [Header("Parameters")]
         [SerializeField] private float _param1;
         [SerializeField] private float _param2;
 
-        [Header("Prefabs")]
         [SerializeField] private GameObject _projectilePrefab;
         [SerializeField] private GameObject _hitVfxPrefab;
 

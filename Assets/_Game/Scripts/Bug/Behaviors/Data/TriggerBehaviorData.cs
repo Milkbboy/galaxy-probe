@@ -32,18 +32,15 @@ namespace DrillCorp.Bug.Behaviors.Data
     [CreateAssetMenu(fileName = "Trigger_New", menuName = "Drill-Corp/Bug Behaviors/Trigger")]
     public class TriggerBehaviorData : ScriptableObject
     {
-        [Header("Basic")]
         [SerializeField] private TriggerType _type;
         [SerializeField] private string _displayName;
         [SerializeField, TextArea] private string _description;
 
-        [Header("Parameters")]
         [SerializeField] private float _param1;
         [SerializeField] private float _param2;
         [SerializeField] private float _param3;
         [SerializeField] private string _stringParam; // SplitOnDeath 시 BugName 등
 
-        [Header("Prefabs")]
         [SerializeField] private GameObject _effectPrefab;
 
         public TriggerType Type => _type;

@@ -14,10 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.SkillBehaviorData
   _type: 3
   _displayName: "\uC18C\uD658"
-  _description: "\uC878\uAC1C\uB97C \uC18C\uD658\uD569\uB2C8\uB2E4."
+  _description: "\uC878\uAC1C \uBC8C\uB808\uB97C \uC18C\uD658\uD569\uB2C8\uB2E4.\n\uC18C\uD658
+    \uC704\uCE58\uB294 \uC18C\uD658 \uAC1C\uC218\uC5D0 \uB530\uB77C \uC88C/\uC6B0/\uD6C4\uBC29\uC5D0
+    \uBC30\uCE58\uB429\uB2C8\uB2E4.\nSpawnPrefab\uC5D0 \uC18C\uD658\uD560 \uBC84\uADF8
+    \uD504\uB9AC\uD3A9\uC744 \uC124\uC815\uD558\uC138\uC694."
   _cooldown: 10
   _param1: 2
   _param2: 0
-  _stringParam: 
+  _stringParam: Beetle
   _effectPrefab: {fileID: 0}
   _spawnPrefab: {fileID: 4798210652939941789, guid: e94e1cf063fbdc8479d6d3e854bdb714, type: 3}

@@ -29,12 +29,10 @@ namespace DrillCorp.Bug.Behaviors.Data
     [CreateAssetMenu(fileName = "Passive_New", menuName = "Drill-Corp/Bug Behaviors/Passive")]
     public class PassiveBehaviorData : ScriptableObject
     {
-        [Header("Basic")]
         [SerializeField] private PassiveType _type;
         [SerializeField] private string _displayName;
         [SerializeField, TextArea] private string _description;
 
-        [Header("Parameters")]
         [SerializeField] private float _param1;
         [SerializeField] private float _param2;
 

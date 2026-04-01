@@ -25,14 +25,14 @@ namespace DrillCorp.Bug.Behaviors.Data
     [CreateAssetMenu(fileName = "Movement_New", menuName = "Drill-Corp/Bug Behaviors/Movement")]
     public class MovementBehaviorData : ScriptableObject
     {
-        [Header("Basic")]
         [SerializeField] private MovementType _type = MovementType.Linear;
         [SerializeField] private string _displayName;
         [SerializeField, TextArea] private string _description;
 
-        [Header("Parameters")]
         [SerializeField] private float _param1;
         [SerializeField] private float _param2;
+
+        [SerializeField] private GameObject _effectPrefab;
 
         public MovementType Type => _type;
         public string DisplayName => _displayName;
@@ -50,6 +50,7 @@ namespace DrillCorp.Bug.Behaviors.Data
         /// </summary>
         public float Param1 => _param1;
         public float Param2 => _param2;
+        public GameObject EffectPrefab => _effectPrefab;
 
         /// <summary>
         /// 문자열에서 파싱 (예: "Hover:0.5:2", "Burst:2:3", "Linear")
