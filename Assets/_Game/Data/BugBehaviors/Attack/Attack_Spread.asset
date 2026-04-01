@@ -15,7 +15,7 @@ MonoBehaviour:
   _type: 4
   _displayName: "\uB2E4\uBC1C \uACF5\uACA9"
   _description: "\uC5EC\uB7EC \uBC1C\uC758 \uD22C\uC0AC\uCCB4\uB97C \uBC1C\uC0AC\uD569\uB2C8\uB2E4."
-  _param1: 5
+  _param1: 3
   _param2: 60
-  _projectilePrefab: {fileID: 0}
+  _projectilePrefab: {fileID: 5561489888943746921, guid: 4af33922077117c41ba8db255b6645b7, type: 3}
   _hitVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}

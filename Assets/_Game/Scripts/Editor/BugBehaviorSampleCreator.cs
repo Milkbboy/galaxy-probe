@@ -66,6 +66,30 @@ namespace DrillCorp.Editor
             SetPrivateField(ranged, "_param1", 0f);    // 유지거리 (0 = AttackRange 사용)
             SetPrivateField(ranged, "_param2", 0.5f);  // 좌우 이동 속도 배율
 
+            // Retreat (Phase 2)
+            var retreat = CreateAsset<MovementBehaviorData>(folder, "Movement_Retreat");
+            SetPrivateField(retreat, "_type", MovementType.Retreat);
+            SetPrivateField(retreat, "_displayName", "후퇴 이동");
+            SetPrivateField(retreat, "_description", "공격 후 일정 시간 후퇴합니다.");
+            SetPrivateField(retreat, "_param1", 1f);    // 후퇴 지속시간
+            SetPrivateField(retreat, "_param2", 1.5f);  // 후퇴 속도배율
+
+            // SlowStart (Phase 2)
+            var slowStart = CreateAsset<MovementBehaviorData>(folder, "Movement_SlowStart");
+            SetPrivateField(slowStart, "_type", MovementType.SlowStart);
+            SetPrivateField(slowStart, "_displayName", "점진 가속");
+            SetPrivateField(slowStart, "_description", "천천히 속도가 증가합니다.");
+            SetPrivateField(slowStart, "_param1", 0.2f);  // 시작 속도 비율
+            SetPrivateField(slowStart, "_param2", 2f);    // 최대속도 도달 시간
+
+            // Orbit (Phase 2)
+            var orbit = CreateAsset<MovementBehaviorData>(folder, "Movement_Orbit");
+            SetPrivateField(orbit, "_type", MovementType.Orbit);
+            SetPrivateField(orbit, "_displayName", "궤도 이동");
+            SetPrivateField(orbit, "_description", "타겟 주위를 맴돌며 이동합니다.");
+            SetPrivateField(orbit, "_param1", 0f);    // 궤도 반경 (0 = AttackRange 사용)
+            SetPrivateField(orbit, "_param2", 60f);   // 초당 회전 각도 (60도 = 6초에 한바퀴)
+
             Debug.Log("[BugBehaviorSampleCreator] Movement 샘플 생성 완료");
         }
 
@@ -140,6 +164,14 @@ namespace DrillCorp.Editor
             SetPrivateField(regen, "_displayName", "재생");
             SetPrivateField(regen, "_description", "초당 체력을 회복합니다.");
             SetPrivateField(regen, "_param1", 2f);  // 초당회복
+
+            // PoisonAttack (Phase 2)
+            var poison = CreateAsset<PassiveBehaviorData>(folder, "Passive_PoisonAttack");
+            SetPrivateField(poison, "_type", PassiveType.PoisonAttack);
+            SetPrivateField(poison, "_displayName", "독 공격");
+            SetPrivateField(poison, "_description", "공격 시 대상에게 독을 적용합니다.");
+            SetPrivateField(poison, "_param1", 3f);  // 지속시간
+            SetPrivateField(poison, "_param2", 5f);  // 초당 데미지
 
             Debug.Log("[BugBehaviorSampleCreator] Passive 샘플 생성 완료");
         }

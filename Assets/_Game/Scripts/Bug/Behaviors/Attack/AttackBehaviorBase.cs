@@ -69,6 +69,15 @@ namespace DrillCorp.Bug.Behaviors.Attack
         /// </summary>
         protected void DealDamage(Transform target, float damage)
         {
+            // 패시브에게 공격 알림 (독 공격 등)
+            if (_bug != null)
+            {
+                foreach (var passive in _bug.Passives)
+                {
+                    passive.ProcessOutgoingDamage(damage, target);
+                }
+            }
+
             var damageable = target.GetComponent<IDamageable>();
             damageable?.TakeDamage(damage);
         }
@@ -118,9 +127,15 @@ namespace DrillCorp.Bug.Behaviors.Attack
                     attack = new ProjectileAttack(param1, projectilePrefab, hitVfxPrefab);
                     break;
 
-                // TODO: Phase 2에서 추가
-                // case AttackType.Cleave:
-                // case AttackType.Spread:
+                case AttackType.Cleave:
+                    attack = new CleaveAttack(param1);
+                    break;
+
+                case AttackType.Spread:
+                    attack = new SpreadAttack((int)param1, param2, 10f, projectilePrefab, hitVfxPrefab);
+                    break;
+
+                // TODO: Phase 3에서 추가
                 // case AttackType.Homing:
                 // case AttackType.Beam:
                 // case AttackType.Lob:

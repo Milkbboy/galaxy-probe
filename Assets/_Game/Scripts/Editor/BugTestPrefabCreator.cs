@@ -117,6 +117,135 @@ namespace DrillCorp.Editor
                 ModelName = "SM_Bug_B_01",
                 Scale = 0.35f // 원거리 Armor는 제일 크게
             },
+
+            // ===== Phase 2 테스트 =====
+
+            // Movement Phase 2
+            new TestBugDefinition
+            {
+                Name = "Test_Retreat",
+                Label = "Retreat\nMelee",
+                MovementType = "Retreat",
+                AttackType = "Melee",
+                Color = new Color(0.8f, 0.4f, 0.6f), // 분홍
+                ModelName = "SM_Bug_C_01",
+                Scale = 0.2f
+            },
+            new TestBugDefinition
+            {
+                Name = "Test_Orbit",
+                Label = "Orbit\nProjectile",
+                MovementType = "Orbit",
+                AttackType = "Projectile",
+                Color = new Color(0.4f, 0.8f, 0.6f), // 민트
+                ModelName = "SM_Bug_A_01",
+                Scale = 0.22f
+            },
+
+            // Attack Phase 2
+            new TestBugDefinition
+            {
+                Name = "Test_Cleave",
+                Label = "Linear\nCleave",
+                MovementType = "Linear",
+                AttackType = "Cleave",
+                Color = new Color(0.9f, 0.2f, 0.2f), // 진한 빨강
+                ModelName = "SM_Bug_B_01",
+                Scale = 0.28f
+            },
+            new TestBugDefinition
+            {
+                Name = "Test_Spread",
+                Label = "Ranged\nSpread",
+                MovementType = "Ranged",
+                AttackType = "Spread",
+                Color = new Color(0.9f, 0.6f, 0.2f), // 황금색
+                ModelName = "SM_Bug_A_01",
+                Scale = 0.25f
+            },
+
+            // Passive Phase 2
+            new TestBugDefinition
+            {
+                Name = "Test_Shield",
+                Label = "Linear\nShield",
+                MovementType = "Linear",
+                AttackType = "Melee",
+                Passives = new string[] { "Shield" },
+                Color = new Color(0.3f, 0.7f, 1f), // 하늘색
+                ModelName = "SM_Bug_B_01",
+                Scale = 0.26f
+            },
+            new TestBugDefinition
+            {
+                Name = "Test_Regen",
+                Label = "Linear\nRegen",
+                MovementType = "Linear",
+                AttackType = "Melee",
+                Passives = new string[] { "Regen" },
+                Color = new Color(0.3f, 1f, 0.5f), // 밝은 초록
+                ModelName = "SM_Bug_C_01",
+                Scale = 0.22f
+            },
+            new TestBugDefinition
+            {
+                Name = "Test_Poison",
+                Label = "Linear\nPoison",
+                MovementType = "Linear",
+                AttackType = "Melee",
+                Passives = new string[] { "PoisonAttack" },
+                Color = new Color(0.5f, 0.2f, 0.8f), // 보라
+                ModelName = "SM_Bug_A_01",
+                Scale = 0.2f
+            },
+
+            // Trigger Phase 2
+            new TestBugDefinition
+            {
+                Name = "Test_Enrage",
+                Label = "Linear\nEnrage",
+                MovementType = "Linear",
+                AttackType = "Melee",
+                Triggers = new string[] { "Enrage" },
+                Color = new Color(1f, 0.3f, 0.1f), // 붉은 주황
+                ModelName = "SM_Bug_B_01",
+                Scale = 0.24f
+            },
+            new TestBugDefinition
+            {
+                Name = "Test_Explode",
+                Label = "Burst\nExplode",
+                MovementType = "Burst",
+                AttackType = "Melee",
+                Triggers = new string[] { "ExplodeOnDeath" },
+                Color = new Color(1f, 0.8f, 0.2f), // 노란 주황
+                ModelName = "SM_Bug_C_01",
+                Scale = 0.3f
+            },
+
+            // 복합 Phase 2
+            new TestBugDefinition
+            {
+                Name = "Test_OrbitPoison",
+                Label = "Orbit\nProj+Poison",
+                MovementType = "Orbit",
+                AttackType = "Projectile",
+                Passives = new string[] { "PoisonAttack" },
+                Color = new Color(0.6f, 0.1f, 0.6f), // 진보라
+                ModelName = "SM_Bug_A_01",
+                Scale = 0.25f
+            },
+            new TestBugDefinition
+            {
+                Name = "Test_EnrageExplode",
+                Label = "Linear\nEnrage+Explode",
+                MovementType = "Linear",
+                AttackType = "Melee",
+                Triggers = new string[] { "Enrage", "ExplodeOnDeath" },
+                Color = new Color(0.9f, 0.1f, 0.1f), // 강렬한 빨강
+                ModelName = "SM_Bug_B_01",
+                Scale = 0.32f
+            },
         };
 
         [MenuItem("Tools/Drill-Corp/Bug/Test/1. 테스트용 Bug 전체 생성 (Data + Prefab)", priority = 200)]
@@ -367,7 +496,7 @@ namespace DrillCorp.Editor
                 }
 
                 // Passives 연결
-                if (def.Passives.Length > 0)
+                if (def.Passives != null && def.Passives.Length > 0)
                 {
                     var passiveList = new System.Collections.Generic.List<PassiveBehaviorData>();
                     foreach (string passiveName in def.Passives)
@@ -380,6 +509,22 @@ namespace DrillCorp.Editor
                         }
                     }
                     SetPrivateField(behaviorData, "_passives", passiveList);
+                }
+
+                // Triggers 연결 (Phase 2)
+                if (def.Triggers != null && def.Triggers.Length > 0)
+                {
+                    var triggerList = new System.Collections.Generic.List<TriggerBehaviorData>();
+                    foreach (string triggerName in def.Triggers)
+                    {
+                        string triggerPath = $"{BehaviorDataPath}/Trigger/Trigger_{triggerName}.asset";
+                        var trigger = AssetDatabase.LoadAssetAtPath<TriggerBehaviorData>(triggerPath);
+                        if (trigger != null)
+                        {
+                            triggerList.Add(trigger);
+                        }
+                    }
+                    SetPrivateField(behaviorData, "_triggers", triggerList);
                 }
 
                 AssetDatabase.CreateAsset(behaviorData, assetPath);
@@ -567,7 +712,8 @@ namespace DrillCorp.Editor
             public string Label;
             public string MovementType;
             public string AttackType;
-            public string[] Passives;
+            public string[] Passives = new string[0];
+            public string[] Triggers = new string[0];  // Phase 2: Trigger 지원
             public Color Color;
             public string ModelName; // SM_Bug_A_01, SM_Bug_B_01, SM_Bug_C_01
             public float Scale = 1f;

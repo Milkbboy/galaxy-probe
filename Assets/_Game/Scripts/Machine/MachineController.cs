@@ -32,7 +32,7 @@ namespace DrillCorp.Machine
 
         public float CurrentHealth => _currentHealth;
         public float MaxHealth => _maxHealth;
-        public bool IsDead => _currentHealth <= 0f;
+        public bool IsDead => _currentHealth <= 0f && !_isInvincible;
 
         public float CurrentFuel => _currentFuel;
         public float MaxFuel => _maxFuel;
@@ -141,17 +141,19 @@ namespace DrillCorp.Machine
         {
             if (IsDead || !_isSessionActive) return;
 
-            // 무적 상태면 데미지 무시
-            if (_isInvincible)
-            {
-                DamagePopup.CreateText(transform, "INVINCIBLE", Color.cyan);
-                return;
-            }
-
             // Armor 적용
             float actualDamage = CalculateDamageReceived(damage);
             _currentHealth -= actualDamage;
-            _currentHealth = Mathf.Max(0f, _currentHealth);
+
+            // 무적 상태면 HP 1 이하로 안 떨어짐
+            if (_isInvincible)
+            {
+                _currentHealth = Mathf.Max(1f, _currentHealth);
+            }
+            else
+            {
+                _currentHealth = Mathf.Max(0f, _currentHealth);
+            }
 
             // 데미지 팝업 표시 (콜라이더 크기 고려)
             DamagePopup.Create(transform, actualDamage, PopupType.Normal);

@@ -18,5 +18,6 @@ MonoBehaviour:
   _cooldown: 10
   _param1: 2
   _param2: 0
-  _stringParam: Beetle
+  _stringParam: 
   _effectPrefab: {fileID: 0}
+  _spawnPrefab: {fileID: 4798210652939941789, guid: e94e1cf063fbdc8479d6d3e854bdb714, type: 3}

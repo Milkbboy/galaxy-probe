@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using DrillCorp.Core;
 using DrillCorp.Data;
 using DrillCorp.Machine;
@@ -9,6 +10,8 @@ using DrillCorp.Bug.Behaviors.Data;
 using DrillCorp.Bug.Behaviors.Movement;
 using DrillCorp.Bug.Behaviors.Attack;
 using DrillCorp.Bug.Behaviors.Passive;
+using DrillCorp.Bug.Behaviors.Skill;
+using DrillCorp.Bug.Behaviors.Trigger;
 using DrillCorp.VFX;
 
 namespace DrillCorp.Bug
@@ -41,6 +44,7 @@ namespace DrillCorp.Bug
         private Transform _target;
         private float _aliveTime;
         private int _hitCount;
+        private int _attackCount;
         private bool _justAttacked;
         private float _justAttackedTimer;
         private bool _allyJustDied;
@@ -77,10 +81,14 @@ namespace DrillCorp.Bug
         public float AttackRange => _attackRange;
         public float AliveTime => _aliveTime;
         public int HitCount => _hitCount;
+        public int AttackCount => _attackCount;
         public bool JustAttacked => _justAttacked;
         public bool AllyJustDied => _allyJustDied;
         public Transform Target => _target;
         public BugData BugData => _bugData;
+        public IMovementBehavior CurrentMovement => _currentMovement;
+        public IAttackBehavior CurrentAttack => _currentAttack;
+        public IReadOnlyList<IPassiveBehavior> Passives => _passives;
 
         #region Unity Lifecycle
 
@@ -144,6 +152,12 @@ namespace DrillCorp.Bug
             // 기본 공격
             if (_currentAttack != null && _target != null)
             {
+                // Cleave 범위 표시 업데이트
+                if (_currentAttack is CleaveAttack cleaveAttack)
+                {
+                    cleaveAttack.UpdateRangeIndicator(_target);
+                }
+
                 float distance = GetDistanceTo(_target);
                 // Debug.Log($"[BugController] {name} distance: {distance:F2}, attackRange: {_currentAttack.AttackRange:F2}");
                 if (distance <= _currentAttack.AttackRange)
@@ -159,6 +173,13 @@ namespace DrillCorp.Bug
             foreach (var skill in _skills)
             {
                 skill.UpdateCooldown(deltaTime);
+
+                // Nova 범위 표시 업데이트
+                if (skill is NovaSkill novaSkill)
+                {
+                    novaSkill.UpdateRangeIndicator();
+                }
+
                 if (skill.IsReady && _target != null)
                 {
                     skill.TryUse(_target);
@@ -312,7 +333,40 @@ namespace DrillCorp.Bug
                 }
             }
 
-            // TODO: Skills, Triggers 초기화 (Phase 2)
+            // Skills
+            foreach (var skillData in _behaviorData.Skills)
+            {
+                var skill = SkillBehaviorBase.Create(
+                    skillData.Type,
+                    skillData.Cooldown,
+                    skillData.Param1,
+                    skillData.Param2,
+                    skillData.SpawnPrefab,
+                    skillData.EffectPrefab
+                );
+                if (skill != null)
+                {
+                    skill.Initialize(this);
+                    _skills.Add(skill);
+                }
+            }
+
+            // Triggers
+            foreach (var triggerData in _behaviorData.Triggers)
+            {
+                var trigger = TriggerBehaviorBase.Create(
+                    triggerData.Type,
+                    triggerData.Param1,
+                    triggerData.Param2,
+                    triggerData.Param3,
+                    triggerData.EffectPrefab
+                );
+                if (trigger != null)
+                {
+                    trigger.Initialize(this);
+                    _triggers.Add(trigger);
+                }
+            }
         }
 
         private void InitializeFromRuntimeData(RuntimeBehaviorSet data)
@@ -480,6 +534,7 @@ namespace DrillCorp.Bug
         {
             _justAttacked = true;
             _justAttackedTimer = 0.5f; // 0.5초간 유지
+            _attackCount++;
         }
 
         /// <summary>

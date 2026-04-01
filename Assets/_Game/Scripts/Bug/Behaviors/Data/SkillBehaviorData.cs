@@ -46,12 +46,14 @@ namespace DrillCorp.Bug.Behaviors.Data
 
         [Header("Prefabs")]
         [SerializeField] private GameObject _effectPrefab;
+        [SerializeField] private GameObject _spawnPrefab;
 
         public SkillType Type => _type;
         public string DisplayName => _displayName;
         public string Description => _description;
         public float Cooldown => _cooldown;
         public GameObject EffectPrefab => _effectPrefab;
+        public GameObject SpawnPrefab => _spawnPrefab;
 
         /// <summary>
         /// 타입별 파라미터 의미:

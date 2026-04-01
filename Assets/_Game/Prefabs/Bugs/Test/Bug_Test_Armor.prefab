@@ -52,7 +52,7 @@ MonoBehaviour:
   _bugData: {fileID: 11400000, guid: a9688b7327c1a334b9a608ea99e357c7, type: 2}
   _behaviorData: {fileID: 11400000, guid: 383268bfadacb674db3ab779bd189d22, type: 2}
   _fxSocket: {fileID: 2154179954016321326}
-  _deathVfxPrefab: {fileID: 0}
+  _deathVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
   _hitFlashDuration: 0.1
 --- !u!136 &73841395897993488
 CapsuleCollider:

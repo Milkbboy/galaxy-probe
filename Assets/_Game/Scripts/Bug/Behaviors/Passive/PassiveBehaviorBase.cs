@@ -55,13 +55,19 @@ namespace DrillCorp.Bug.Behaviors.Passive
                 case PassiveType.Dodge:
                     return new DodgePassive(param1);
 
-                // TODO: Phase 2에서 추가
-                // case PassiveType.Shield:
-                // case PassiveType.Regen:
+                case PassiveType.Shield:
+                    return new ShieldPassive(param1, param2);
+
+                case PassiveType.Regen:
+                    return new RegenPassive(param1, param2);
+
+                case PassiveType.PoisonAttack:
+                    return new PoisonAttackPassive(param1, param2);
+
+                // TODO: Phase 3에서 추가
                 // case PassiveType.Reflect:
                 // case PassiveType.Lifesteal:
                 // case PassiveType.CritChance:
-                // case PassiveType.PoisonAttack:
                 // case PassiveType.Fast:
 
                 default:

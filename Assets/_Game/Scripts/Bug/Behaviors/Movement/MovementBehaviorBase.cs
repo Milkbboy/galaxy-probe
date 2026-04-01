@@ -79,10 +79,16 @@ namespace DrillCorp.Bug.Behaviors.Movement
                 case MovementType.Ranged:
                     return new RangedMovement(param1, param2);
 
-                // TODO: Phase 2에서 추가
-                // case MovementType.Retreat:
-                // case MovementType.SlowStart:
-                // case MovementType.Orbit:
+                case MovementType.Retreat:
+                    return new RetreatMovement(param1, param2);
+
+                case MovementType.SlowStart:
+                    return new SlowStartMovement(param1, param2);
+
+                case MovementType.Orbit:
+                    return new OrbitMovement(param1, param2);
+
+                // TODO: Phase 3에서 추가
                 // case MovementType.Burrow:
                 // case MovementType.Teleport:
                 // case MovementType.Dive:

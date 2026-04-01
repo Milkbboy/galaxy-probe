@@ -2,6 +2,7 @@ using UnityEngine;
 using DrillCorp.Core;
 using DrillCorp.Machine;
 using DrillCorp.VFX;
+using DrillCorp.Bug;
 
 namespace DrillCorp.Bug.Behaviors.Attack
 {
@@ -18,6 +19,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
         private Vector3 _direction;
         private bool _initialized;
         private GameObject _owner;
+        private BugController _ownerBug;
         private float _spawnTime;
 
         public void Initialize(float damage, float speed, Vector3 direction, GameObject owner = null, GameObject hitVfxPrefab = null)
@@ -26,6 +28,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
             _speed = speed;
             _direction = direction.normalized;
             _owner = owner;
+            _ownerBug = owner?.GetComponent<BugController>();
             _initialized = true;
             _spawnTime = Time.time;
 
@@ -62,7 +65,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
                     var damageable = hit.collider.GetComponent<IDamageable>();
                     if (damageable != null)
                     {
-                        damageable.TakeDamage(_damage);
+                        DealDamageWithPassives(hit.collider.transform, _damage);
 
                         // 히트 이펙트
                         if (_hitEffect != null)
@@ -108,7 +111,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
             var damageable = other.GetComponent<IDamageable>();
             if (damageable != null)
             {
-                damageable.TakeDamage(_damage);
+                DealDamageWithPassives(other.transform, _damage);
 
                 // 히트 이펙트
                 if (_hitEffect != null)
@@ -123,6 +126,24 @@ namespace DrillCorp.Bug.Behaviors.Attack
 
                 Destroy(gameObject);
             }
+        }
+
+        /// <summary>
+        /// 패시브 효과 적용 후 데미지 처리
+        /// </summary>
+        private void DealDamageWithPassives(Transform target, float damage)
+        {
+            // 패시브에게 공격 알림 (독 공격 등)
+            if (_ownerBug != null)
+            {
+                foreach (var passive in _ownerBug.Passives)
+                {
+                    passive.ProcessOutgoingDamage(damage, target);
+                }
+            }
+
+            var damageable = target.GetComponent<IDamageable>();
+            damageable?.TakeDamage(damage);
         }
     }
 }

@@ -200,6 +200,66 @@ namespace DrillCorp.VFX
         }
 
         /// <summary>
+        /// 폭발 이펙트 (주황색 큰 폭발)
+        /// </summary>
+        public static void PlayExplosion(Vector3 position, float radius = 3f)
+        {
+            GameObject effectObj = new GameObject("ExplosionVFX");
+            effectObj.transform.position = position;
+
+            var ps = effectObj.AddComponent<ParticleSystem>();
+            ApplyDefaultMaterial(effectObj);
+
+            // 스케일 계산 (기본 반경 3 기준, 2배 키움)
+            float scale = (radius / 3f) * 2f;
+
+            var main = ps.main;
+            main.startLifetime = 0.8f;
+            main.startSpeed = 6f * scale;
+            main.startSize = 1.5f * scale;
+            main.startColor = new Color(1f, 0.6f, 0.1f, 1f); // 주황색
+            main.maxParticles = 50;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+
+            var emission = ps.emission;
+            emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0f, 50) });
+            emission.rateOverTime = 0;
+
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Sphere;
+            shape.radius = 0.5f * scale;
+
+            var sizeOverLifetime = ps.sizeOverLifetime;
+            sizeOverLifetime.enabled = true;
+            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(
+                new Keyframe(0f, 0.5f),
+                new Keyframe(0.2f, 2f),
+                new Keyframe(1f, 0.3f)
+            ));
+
+            var colorOverLifetime = ps.colorOverLifetime;
+            colorOverLifetime.enabled = true;
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new GradientColorKey[] {
+                    new GradientColorKey(Color.white, 0f),
+                    new GradientColorKey(new Color(1f, 0.5f, 0f), 0.3f),
+                    new GradientColorKey(new Color(0.8f, 0.2f, 0f), 0.7f),
+                    new GradientColorKey(Color.black, 1f)
+                },
+                new GradientAlphaKey[] {
+                    new GradientAlphaKey(1f, 0f),
+                    new GradientAlphaKey(1f, 0.5f),
+                    new GradientAlphaKey(0f, 1f)
+                }
+            );
+            colorOverLifetime.color = gradient;
+
+            ps.Play();
+            Object.Destroy(effectObj, 1.5f);
+        }
+
+        /// <summary>
         /// 방어 이펙트 (회색 방패)
         /// </summary>
         public static void PlayArmorBlock(Vector3 position)

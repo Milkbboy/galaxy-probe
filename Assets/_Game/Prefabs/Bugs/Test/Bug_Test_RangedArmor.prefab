@@ -250,7 +250,7 @@ MonoBehaviour:
   _bugData: {fileID: 11400000, guid: e6c90b25638e3b046bf54487d43bec25, type: 2}
   _behaviorData: {fileID: 11400000, guid: dffa566a0c259ec4db083db74c92b484, type: 2}
   _fxSocket: {fileID: 2841600293038210480}
-  _deathVfxPrefab: {fileID: 0}
+  _deathVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
   _hitFlashDuration: 0.1
 --- !u!135 &3371061449978454253
 SphereCollider:

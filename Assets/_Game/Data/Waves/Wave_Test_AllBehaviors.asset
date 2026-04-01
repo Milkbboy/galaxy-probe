@@ -15,45 +15,10 @@ MonoBehaviour:
   _waveNumber: 99
   _waveName: Test - All Behaviors
   _spawnGroups:
-  - BugData: {fileID: 11400000, guid: 6c05fd5cb405e9844942336a85787c3c, type: 2}
+  - BugData: {fileID: 11400000, guid: 1d394bfc9b80e734db46a1ff48a9c72d, type: 2}
     Count: 1
     StartDelay: 0
-    SpawnInterval: 0
-    RandomPosition: 1
-  - BugData: {fileID: 11400000, guid: 9554a135de035b84f86edb706256ebb6, type: 2}
-    Count: 1
-    StartDelay: 2
-    SpawnInterval: 0
-    RandomPosition: 1
-  - BugData: {fileID: 11400000, guid: 8c1cb76c1352c594c9652f2618ebffae, type: 2}
-    Count: 1
-    StartDelay: 4
-    SpawnInterval: 0
-    RandomPosition: 1
-  - BugData: {fileID: 11400000, guid: 7effe4ef9c502bc40bc6ca44c8931722, type: 2}
-    Count: 1
-    StartDelay: 6
-    SpawnInterval: 0
-    RandomPosition: 1
-  - BugData: {fileID: 11400000, guid: a9688b7327c1a334b9a608ea99e357c7, type: 2}
-    Count: 1
-    StartDelay: 8
-    SpawnInterval: 0
-    RandomPosition: 1
-  - BugData: {fileID: 11400000, guid: d7582122394863d4ea56af1678fdba7f, type: 2}
-    Count: 1
-    StartDelay: 10
-    SpawnInterval: 0
-    RandomPosition: 1
-  - BugData: {fileID: 11400000, guid: 7908a2c1e4d22324f97e6634239b5631, type: 2}
-    Count: 1
-    StartDelay: 12
-    SpawnInterval: 0
-    RandomPosition: 1
-  - BugData: {fileID: 11400000, guid: e6c90b25638e3b046bf54487d43bec25, type: 2}
-    Count: 1
-    StartDelay: 14
-    SpawnInterval: 0
+    SpawnInterval: 0.5
     RandomPosition: 1
   _waveDuration: 120
   _delayBeforeNextWave: 5
