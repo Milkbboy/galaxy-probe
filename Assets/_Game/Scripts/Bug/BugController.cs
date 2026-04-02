@@ -51,6 +51,11 @@ namespace DrillCorp.Bug
         private bool _isDead;
         private bool _isInvulnerable;
 
+        // === Buff ===
+        private Dictionary<object, BuffInfo> _activeBuffs = new Dictionary<object, BuffInfo>();
+        private float _buffedDamageMultiplier = 1f;
+        private float _buffedSpeedMultiplier = 1f;
+
         // === Behaviors ===
         private IMovementBehavior _currentMovement;
         private IMovementBehavior _defaultMovement;
@@ -74,10 +79,12 @@ namespace DrillCorp.Bug
         public int BugId => _bugId;
         public float CurrentHealth => _currentHealth;
         public float MaxHealth => _maxHealth;
+        public float CurrentHp => _currentHealth; // HealAllySkill 용 alias
+        public float MaxHp => _maxHealth; // HealAllySkill 용 alias
         public float HealthPercent => _maxHealth > 0 ? (_currentHealth / _maxHealth) * 100f : 0f;
         public bool IsDead => _isDead;
-        public float MoveSpeed => _moveSpeed;
-        public float AttackDamage => _attackDamage;
+        public float MoveSpeed => _moveSpeed * _buffedSpeedMultiplier;
+        public float AttackDamage => _attackDamage * _buffedDamageMultiplier;
         public float AttackCooldown => _attackCooldown;
         public float AttackRange => _attackRange;
         public float AliveTime => _aliveTime;
@@ -201,6 +208,18 @@ namespace DrillCorp.Bug
                     if (skill is NovaSkill novaSkill)
                     {
                         novaSkill.UpdateRangeIndicator();
+                    }
+
+                    // BuffAlly Aura 업데이트
+                    if (skill is BuffAllySkill buffAllySkill)
+                    {
+                        buffAllySkill.UpdateAura();
+                    }
+
+                    // HealAlly Aura 업데이트
+                    if (skill is HealAllySkill healAllySkill)
+                    {
+                        healAllySkill.UpdateHealAura(deltaTime);
                     }
 
                     if (skill.IsReady && _target != null)
@@ -658,6 +677,145 @@ namespace DrillCorp.Bug
 
         #endregion
 
+        #region Buff
+
+        /// <summary>
+        /// 버프 정보
+        /// </summary>
+        private struct BuffInfo
+        {
+            public float DamageMultiplier;
+            public float SpeedMultiplier;
+        }
+
+        /// <summary>
+        /// 버프 적용 (Aura 등에서 호출)
+        /// </summary>
+        public void ApplyBuff(object source, float damageMultiplier, float speedMultiplier)
+        {
+            _activeBuffs[source] = new BuffInfo
+            {
+                DamageMultiplier = damageMultiplier,
+                SpeedMultiplier = speedMultiplier
+            };
+            RecalculateBuffs();
+        }
+
+        /// <summary>
+        /// 버프 해제
+        /// </summary>
+        public void RemoveBuff(object source)
+        {
+            if (_activeBuffs.Remove(source))
+            {
+                RecalculateBuffs();
+            }
+        }
+
+        /// <summary>
+        /// 모든 활성 버프를 종합하여 최종 배율 계산
+        /// </summary>
+        private void RecalculateBuffs()
+        {
+            _buffedDamageMultiplier = 1f;
+            _buffedSpeedMultiplier = 1f;
+
+            foreach (var buff in _activeBuffs.Values)
+            {
+                _buffedDamageMultiplier *= buff.DamageMultiplier;
+                _buffedSpeedMultiplier *= buff.SpeedMultiplier;
+            }
+
+            // 버프 텍스트 업데이트
+            UpdateBuffLabel();
+        }
+
+        /// <summary>
+        /// 버프 활성 여부
+        /// </summary>
+        public bool HasBuff => _activeBuffs.Count > 0;
+
+        // 버프 텍스트 UI
+        private BugLabel _buffLabel;
+
+        /// <summary>
+        /// 버프 텍스트 업데이트
+        /// </summary>
+        private void UpdateBuffLabel()
+        {
+            bool hasBuff = _activeBuffs.Count > 0;
+
+            if (!hasBuff)
+            {
+                // 버프 없으면 라벨 제거
+                if (_buffLabel != null)
+                {
+                    Destroy(_buffLabel.gameObject);
+                    _buffLabel = null;
+                }
+                // 아웃라인 끄기
+                SetBuffOutline(false);
+                return;
+            }
+
+            // 버프 있으면 라벨 생성/업데이트
+            if (_buffLabel == null)
+            {
+                // HP바 위에 표시
+                Vector3 offset = (_bugData != null && _bugData.HpBarOffset != Vector3.zero)
+                    ? _bugData.HpBarOffset + new Vector3(0f, 0f, 0.3f)
+                    : new Vector3(0f, 0.1f, 1.0f);
+                _buffLabel = BugLabel.Create(transform, "", Color.yellow, offset);
+            }
+
+            // 텍스트 구성
+            string buffText = "";
+            if (_buffedDamageMultiplier > 1f)
+            {
+                buffText += $"ATK {_buffedDamageMultiplier:F1}x";
+            }
+            if (_buffedSpeedMultiplier > 1f)
+            {
+                if (!string.IsNullOrEmpty(buffText)) buffText += "\n";
+                buffText += $"SPD {_buffedSpeedMultiplier:F1}x";
+            }
+            _buffLabel.SetText(buffText);
+
+            // 아웃라인 켜기
+            SetBuffOutline(true);
+        }
+
+        // 버프 아웃라인 쉐이더 프로퍼티 ID
+        private static readonly int OutlineEnabledId = Shader.PropertyToID("_OutlineEnabled");
+        private static readonly int OutlineColorId = Shader.PropertyToID("_OutlineColor");
+
+        /// <summary>
+        /// 버프 아웃라인 쉐이더 On/Off
+        /// </summary>
+        private void SetBuffOutline(bool enabled)
+        {
+            if (_renderers == null) return;
+
+            float value = enabled ? 1f : 0f;
+            Color outlineColor = new Color(1f, 0.85f, 0.2f, 1f); // 황금색
+
+            foreach (var renderer in _renderers)
+            {
+                if (renderer == null) continue;
+
+                // MaterialPropertyBlock으로 인스턴스별 설정
+                renderer.GetPropertyBlock(_propBlock);
+                _propBlock.SetFloat(OutlineEnabledId, value);
+                if (enabled)
+                {
+                    _propBlock.SetColor(OutlineColorId, outlineColor);
+                }
+                renderer.SetPropertyBlock(_propBlock);
+            }
+        }
+
+        #endregion
+
         #region Death
 
         private void Die()
@@ -677,6 +835,12 @@ namespace DrillCorp.Bug
             if (_hpBar != null)
             {
                 Destroy(_hpBar.gameObject);
+            }
+
+            // 버프 라벨 제거
+            if (_buffLabel != null)
+            {
+                Destroy(_buffLabel.gameObject);
             }
 
             // 데스 VFX

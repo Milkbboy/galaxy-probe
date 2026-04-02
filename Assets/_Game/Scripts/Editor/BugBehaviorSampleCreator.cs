@@ -222,13 +222,23 @@ namespace DrillCorp.Editor
             SetPrivateField(spawn, "_param1", 2f);
             SetPrivateField(spawn, "_stringParam", "Beetle");
 
-            // BuffAlly (Phase 3)
+            // BuffAlly (Phase 3) - Aura 방식
             var buff = CreateAsset<SkillBehaviorData>(folder, "Skill_BuffAlly");
             SetPrivateField(buff, "_type", SkillType.BuffAlly);
             SetPrivateField(buff, "_displayName", "아군 강화");
-            SetPrivateField(buff, "_description", "주변 아군 벌레의 공격력과 이동속도를 증가시킵니다.\n버프 범위 내 모든 BugController에 적용됩니다.");
-            SetPrivateField(buff, "_cooldown", 20f);
-            SetPrivateField(buff, "_param1", 1.5f);
+            SetPrivateField(buff, "_description", "주변 아군 벌레의 공격력과 이동속도를 증가시킵니다.\n범위 내에 있는 동안 버프가 적용되고, 범위를 벗어나면 해제됩니다.\n황금색 원형 인디케이터가 표시됩니다.");
+            SetPrivateField(buff, "_cooldown", 1.2f);  // 이속 배율로 사용
+            SetPrivateField(buff, "_param1", 5f);     // 범위
+            SetPrivateField(buff, "_param2", 1.3f);   // 공격력 배율
+
+            // HealAlly (Phase 3) - Aura 방식
+            var heal = CreateAsset<SkillBehaviorData>(folder, "Skill_HealAlly");
+            SetPrivateField(heal, "_type", SkillType.HealAlly);
+            SetPrivateField(heal, "_displayName", "아군 회복");
+            SetPrivateField(heal, "_description", "주변 아군 벌레의 체력을 주기적으로 회복시킵니다.\n범위 내에 있는 아군을 회복 주기마다 치유합니다.\n녹색 원형 인디케이터가 표시됩니다.");
+            SetPrivateField(heal, "_cooldown", 1f);   // 회복 주기 (초)
+            SetPrivateField(heal, "_param1", 5f);    // 범위
+            SetPrivateField(heal, "_param2", 10f);   // 회복량 (회복 주기마다)
 
             Debug.Log("[BugBehaviorSampleCreator] Skill 샘플 생성 완료");
         }

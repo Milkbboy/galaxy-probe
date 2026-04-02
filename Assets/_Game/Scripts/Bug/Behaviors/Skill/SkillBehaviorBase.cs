@@ -74,11 +74,13 @@ namespace DrillCorp.Bug.Behaviors.Skill
                 case SkillType.Nova:
                     return new NovaSkill(cooldown, param1, effectPrefab);
 
-                // TODO: Phase 3에서 추가
-                // case SkillType.BuffAlly:
-                // case SkillType.HealAlly:
-                // case SkillType.Slow:
-                // case SkillType.Stun:
+                case SkillType.BuffAlly:
+                    // param1 = 범위, param2 = 공격력 배율, cooldown = 이속 배율
+                    return new BuffAllySkill(param1, param2, cooldown, effectPrefab);
+
+                case SkillType.HealAlly:
+                    // param1 = 범위, param2 = 회복량 (초당), cooldown = 회복 주기
+                    return new HealAllySkill(param1, param2, cooldown, effectPrefab);
 
                 default:
                     return null;

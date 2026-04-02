@@ -207,10 +207,16 @@ Assets/_Game/Scripts/Bug/Behaviors/
   - projectilePrefab = 빔 VFX (없으면 붉은색 LineRenderer 폴백)
 
 #### Skills
-- [ ] `BuffAllySkill` - 아군 강화
-- [ ] `HealAllySkill` - 아군 회복
-- [ ] `SlowSkill` - 감속
-- [ ] `StunSkill` - 기절
+- [x] `BuffAllySkill` - 아군 강화 (Aura 방식, 범위 내 버프)
+  - param1 = 범위, param2 = 공격력 배율, cooldown = 이속 배율
+  - Physics.OverlapSphereNonAlloc으로 성능 최적화
+  - 황금색 Cylinder 범위 표시
+  - 버프 받는 버그에 텍스트 표시 (ATK/SPD 배율)
+- [x] `HealAllySkill` - 아군 회복 (Aura 방식, 주기적 회복)
+  - param1 = 범위, param2 = 회복량, cooldown = 회복 주기
+  - 녹색 Cylinder 범위 표시
+- ~~[ ] `SlowSkill` - 감속~~ (제외: 머신이 고정이라 감속 대상 없음)
+- ~~[ ] `StunSkill` - 기절~~ (제외: 머신이 고정이라 기절 효과 무의미)
 
 #### Passives (미구현)
 - [ ] `LifestealPassive` - 흡혈
@@ -298,3 +304,4 @@ BugController (신규) ← 새 프리펩에서 사용 가능
 | 2024-XX-XX | Phase 3 진행: TeleportMovement 완료 |
 | 2024-XX-XX | Burrow 시스템 설계 변경: Movement → Passive + Trigger 조합으로 변경. BurrowPassive, PanicBurrowTrigger 완료 |
 | 2024-XX-XX | BeamAttack 구현 완료. HomingAttack 제외 결정 (머신 고정이라 유도 의미 없음) |
+| 2024-XX-XX | BuffAllySkill, HealAllySkill 완료 (Aura 방식). SlowSkill, StunSkill 제외 결정 (머신 고정이라 디버프 대상 없음) |

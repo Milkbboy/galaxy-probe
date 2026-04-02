@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08d4c90128c5e3a4c94b57c07028d2cd, type: 3}
+  m_Name: Skill_HealAlly
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.SkillBehaviorData
+  _type: 6
+  _displayName: "\uC544\uAD70 \uD68C\uBCF5"
+  _description: "\uC8FC\uBCC0 \uC544\uAD70 \uBC8C\uB808\uC758 \uCCB4\uB825\uC744
+    \uC8FC\uAE30\uC801\uC73C\uB85C \uD68C\uBCF5\uC2DC\uD0B5\uB2C8\uB2E4.\n\uBC94\uC704
+    \uB0B4\uC5D0 \uC788\uB294 \uC544\uAD70\uC744 \uD68C\uBCF5 \uC8FC\uAE30\uB9C8\uB2E4
+    \uCE58\uC720\uD569\uB2C8\uB2E4.\n\uB179\uC0C9 \uC6D0\uD615 \uC778\uB514\uCF00\uC774\uD130\uAC00
+    \uD45C\uC2DC\uB429\uB2C8\uB2E4."
+  _cooldown: 1
+  _param1: 5
+  _param2: 10
+  _stringParam: 
+  _effectPrefab: {fileID: 0}
+  _spawnPrefab: {fileID: 0}

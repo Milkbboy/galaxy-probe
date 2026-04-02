@@ -446,10 +446,10 @@ namespace DrillCorp.Editor
                     return ("소환 개수", "소환 거리", null);
 
                 case SkillType.BuffAlly:
-                    return ("버프 배율", "버프 범위", null);
+                    return ("범위", "공격력 배율", "이속 배율 (Cooldown 필드 사용)");
 
                 case SkillType.HealAlly:
-                    return ("회복량", "회복 범위", null);
+                    return ("범위", "회복량 (회복 주기마다)", "회복 주기 (Cooldown 필드 사용)");
 
                 case SkillType.Slow:
                     return ("감속 비율 (%)", "감속 범위", null);
