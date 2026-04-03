@@ -262,7 +262,7 @@ namespace DrillCorp.Editor
             },
         };
 
-        [MenuItem("Tools/Drill-Corp/Bug/Test/1. 테스트용 Bug 전체 생성 (Data + Prefab)", priority = 200)]
+        [MenuItem("Tools/Drill-Corp/1. 버그 설정/테스트/1. 테스트용 Bug 전체 생성 (Data + Prefab)", priority = 200)]
         public static void CreateAllTestPrefabs()
         {
             // 폴더 생성
@@ -298,7 +298,7 @@ namespace DrillCorp.Editor
         /// <summary>
         /// BugData만 개별 생성 (메뉴)
         /// </summary>
-        [MenuItem("Tools/Drill-Corp/Bug/Test/2. 테스트용 BugData만 생성", priority = 201)]
+        [MenuItem("Tools/Drill-Corp/1. 버그 설정/테스트/2. 테스트용 BugData만 생성", priority = 201)]
         public static void CreateTestBugData()
         {
             CreateTestBugDataInternal();
@@ -392,7 +392,7 @@ namespace DrillCorp.Editor
         /// <summary>
         /// 테스트용 Wave 생성 - 모든 테스트 Bug가 등장
         /// </summary>
-        [MenuItem("Tools/Drill-Corp/Bug/Test/3. 테스트용 Wave 생성", priority = 202)]
+        [MenuItem("Tools/Drill-Corp/1. 버그 설정/테스트/3. 테스트용 Wave 생성", priority = 202)]
         public static void CreateTestWave()
         {
             string wavePath = "Assets/_Game/Data/Waves";

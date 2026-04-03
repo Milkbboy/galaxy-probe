@@ -59,7 +59,7 @@ namespace DrillCorp.Bug
                 _moveSpeed = _bugData.MoveSpeed;
                 _attackDamage = _bugData.AttackDamage;
                 _attackCooldown = _bugData.AttackCooldown;
-                _attackRange = _bugData.AttackRange;
+                // _attackRange는 기본값(1f) 또는 Inspector에서 설정된 값 사용
 
                 // Scale 적용
                 if (_bugData.Scale != 1f)
@@ -367,7 +367,7 @@ namespace DrillCorp.Bug
             _moveSpeed = data.MoveSpeed * speedMult;
             _attackDamage = data.AttackDamage * damageMult;
             _attackCooldown = data.AttackCooldown;
-            _attackRange = data.AttackRange;
+            // _attackRange는 기본값(1f) 또는 Inspector에서 설정된 값 사용
 
             if (data.Scale != 1f)
             {

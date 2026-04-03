@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.BugBehaviorData
   _defaultMovement: {fileID: 11400000, guid: 6c25076d262920c499cffecaf0af765e, type: 2}
   _conditionalMovements: []
-  _defaultAttack: {fileID: 0}
+  _defaultAttack: {fileID: 11400000, guid: d38aff79109ea274fbd59f5b66d8e37a, type: 2}
   _conditionalAttacks: []
   _skills: []
   _passives: []

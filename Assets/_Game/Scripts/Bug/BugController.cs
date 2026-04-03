@@ -38,7 +38,6 @@ namespace DrillCorp.Bug
         private float _moveSpeed;
         private float _attackDamage;
         private float _attackCooldown;
-        private float _attackRange;
 
         // === State ===
         private Transform _target;
@@ -86,7 +85,10 @@ namespace DrillCorp.Bug
         public float MoveSpeed => _moveSpeed * _buffedSpeedMultiplier;
         public float AttackDamage => _attackDamage * _buffedDamageMultiplier;
         public float AttackCooldown => _attackCooldown;
-        public float AttackRange => _attackRange;
+        /// <summary>
+        /// 현재 공격 사거리 (Attack SO에서 설정)
+        /// </summary>
+        public float AttackRange => _currentAttack?.AttackRange ?? 0f;
         public float AliveTime => _aliveTime;
         public int HitCount => _hitCount;
         public int AttackCount => _attackCount;
@@ -255,7 +257,6 @@ namespace DrillCorp.Bug
                 _moveSpeed = _bugData.MoveSpeed;
                 _attackDamage = _bugData.AttackDamage;
                 _attackCooldown = _bugData.AttackCooldown;
-                _attackRange = _bugData.AttackRange;
 
                 if (_bugData.Scale != 1f)
                 {
@@ -305,7 +306,10 @@ namespace DrillCorp.Bug
             if (_behaviorData.DefaultMovement != null)
             {
                 var movData = _behaviorData.DefaultMovement;
-                _defaultMovement = MovementBehaviorBase.Create(movData.Type, movData.Param1, movData.Param2, movData.EffectPrefab);
+                _defaultMovement = MovementBehaviorBase.Create(
+                    movData.Type, movData.Param1, movData.Param2, movData.EffectPrefab,
+                    movData.IdleType, movData.IdleParam
+                );
                 _defaultMovement?.Initialize(this);
             }
             else
@@ -324,7 +328,9 @@ namespace DrillCorp.Bug
                     condMov.Behavior.Type,
                     condMov.Behavior.Param1,
                     condMov.Behavior.Param2,
-                    condMov.Behavior.EffectPrefab
+                    condMov.Behavior.EffectPrefab,
+                    condMov.Behavior.IdleType,
+                    condMov.Behavior.IdleParam
                 );
                 behavior?.Initialize(this);
 
@@ -345,7 +351,8 @@ namespace DrillCorp.Bug
                     atkData.Param1,
                     atkData.Param2,
                     atkData.ProjectilePrefab,
-                    atkData.HitVfxPrefab
+                    atkData.HitVfxPrefab,
+                    atkData.Range
                 );
                 _defaultAttack?.Initialize(this);
             }
@@ -355,6 +362,28 @@ namespace DrillCorp.Bug
                 _defaultAttack.Initialize(this);
             }
             _currentAttack = _defaultAttack;
+
+            // Conditional Attacks
+            foreach (var condAtk in _behaviorData.ConditionalAttacks)
+            {
+                if (condAtk.Behavior == null) continue;
+
+                var behavior = AttackBehaviorBase.Create(
+                    condAtk.Behavior.Type,
+                    condAtk.Behavior.Param1,
+                    condAtk.Behavior.Param2,
+                    condAtk.Behavior.ProjectilePrefab,
+                    condAtk.Behavior.HitVfxPrefab,
+                    condAtk.Behavior.Range
+                );
+                behavior?.Initialize(this);
+
+                _conditionalAttacks.Add(new ConditionalBehavior<IAttackBehavior>
+                {
+                    Condition = BehaviorCondition.Parse(condAtk.Condition),
+                    Behavior = behavior
+                });
+            }
 
             // Passives
             for (int i = 0; i < _behaviorData.Passives.Count; i++)
@@ -564,7 +593,9 @@ namespace DrillCorp.Bug
             IMovementBehavior newMovement = _defaultMovement;
             foreach (var conditional in _conditionalMovements)
             {
-                if (conditional.Condition.Evaluate(this, _target))
+                bool result = conditional.Condition.Evaluate(this, _target);
+                // Debug.Log($"[{name}] Movement Condition: {conditional.Condition.Type} {conditional.Condition.Value}, HP%={HealthPercent:F1}, Result={result}");
+                if (result)
                 {
                     newMovement = conditional.Behavior;
                     break;
@@ -572,6 +603,7 @@ namespace DrillCorp.Bug
             }
             if (newMovement != _currentMovement)
             {
+                Debug.Log($"[{name}] Movement changed: {_currentMovement?.GetType().Name} → {newMovement?.GetType().Name}");
                 _currentMovement = newMovement;
             }
 
@@ -579,7 +611,9 @@ namespace DrillCorp.Bug
             IAttackBehavior newAttack = _defaultAttack;
             foreach (var conditional in _conditionalAttacks)
             {
-                if (conditional.Condition.Evaluate(this, _target))
+                bool result = conditional.Condition.Evaluate(this, _target);
+                // Debug.Log($"[{name}] Attack Condition: {conditional.Condition.Type} {conditional.Condition.Value}, HP%={HealthPercent:F1}, Result={result}");
+                if (result)
                 {
                     newAttack = conditional.Behavior;
                     break;
@@ -587,6 +621,7 @@ namespace DrillCorp.Bug
             }
             if (newAttack != _currentAttack)
             {
+                Debug.Log($"[{name}] Attack changed: {_currentAttack?.GetType().Name} → {newAttack?.GetType().Name}");
                 _currentAttack = newAttack;
             }
         }
@@ -1004,7 +1039,6 @@ namespace DrillCorp.Bug
             _moveSpeed = data.MoveSpeed * speedMult;
             _attackDamage = data.AttackDamage * damageMult;
             _attackCooldown = data.AttackCooldown;
-            _attackRange = data.AttackRange;
 
             if (data.Scale != 1f)
             {

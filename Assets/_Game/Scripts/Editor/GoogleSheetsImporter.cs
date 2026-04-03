@@ -38,7 +38,7 @@ namespace DrillCorp.Editor
         private const string SHEET_MACHINE_DATA = "MachineData";
         private const string SHEET_UPGRADE_DATA = "UpgradeData";
 
-        [MenuItem("Tools/Drill-Corp/Google Sheets Importer")]
+        [MenuItem("Tools/Drill-Corp/4. 데이터 Import/Google Sheets Importer")]
         public static void ShowWindow()
         {
             var window = GetWindow<GoogleSheetsImporter>("Google Sheets Importer");

@@ -18,3 +18,5 @@ MonoBehaviour:
     \uCD08\uACFC\uD558\uC5EC \uD68C\uBCF5\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."
   _param1: 2
   _param2: 0
+  _effectPrefab: {fileID: 0}
+  _effectPrefab2: {fileID: 0}

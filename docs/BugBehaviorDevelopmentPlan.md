@@ -14,7 +14,7 @@
 | Phase 0 | 기반 구조 | ✅ 완료 |
 | Phase 1 | 기본 행동 | ✅ 완료 |
 | Phase 2 | 확장 행동 | ✅ 완료 |
-| Phase 3 | 고급 행동 | ⬜ 미진행 |
+| Phase 3 | 고급 행동 | ✅ 완료 |
 | Phase 4 | Google Sheets 연동 | ⬜ 미진행 |
 | Phase 5 | 기존 코드 제거 | ⬜ 미진행 |
 
@@ -174,7 +174,7 @@ Assets/_Game/Scripts/Bug/Behaviors/
 
 ---
 
-## Phase 3: 고급 행동 🔄
+## Phase 3: 고급 행동 ✅
 
 ### 목표
 - 보스급 벌레 구현 가능 (Queen)
@@ -218,15 +218,15 @@ Assets/_Game/Scripts/Bug/Behaviors/
 - ~~[ ] `SlowSkill` - 감속~~ (제외: 머신이 고정이라 감속 대상 없음)
 - ~~[ ] `StunSkill` - 기절~~ (제외: 머신이 고정이라 기절 효과 무의미)
 
-#### Passives (미구현)
-- [ ] `LifestealPassive` - 흡혈
-- [ ] `ReflectPassive` - 반사
-- [ ] `FastPassive` - 이속 증가
+#### Passives (제외)
+- ~~`LifestealPassive` - 흡혈~~ (제외: 현재 필요성 낮음)
+- ~~`ReflectPassive` - 반사~~ (제외: 현재 필요성 낮음)
+- ~~`FastPassive` - 이속 증가~~ (제외: 기존 행동으로 대체 가능)
 
-#### Triggers (미구현)
-- [ ] `TransformTrigger` - 2페이즈 변신
-- [ ] `SplitOnDeathTrigger` - 사망 시 분열
-- [ ] `ReviveTrigger` - 부활
+#### Triggers (제외)
+- ~~`TransformTrigger` - 2페이즈 변신~~ (제외: 현재 필요성 낮음)
+- ~~`SplitOnDeathTrigger` - 사망 시 분열~~ (제외: 현재 필요성 낮음)
+- ~~`ReviveTrigger` - 부활~~ (제외: 현재 필요성 낮음)
 
 ---
 
@@ -305,3 +305,4 @@ BugController (신규) ← 새 프리펩에서 사용 가능
 | 2024-XX-XX | Burrow 시스템 설계 변경: Movement → Passive + Trigger 조합으로 변경. BurrowPassive, PanicBurrowTrigger 완료 |
 | 2024-XX-XX | BeamAttack 구현 완료. HomingAttack 제외 결정 (머신 고정이라 유도 의미 없음) |
 | 2024-XX-XX | BuffAllySkill, HealAllySkill 완료 (Aura 방식). SlowSkill, StunSkill 제외 결정 (머신 고정이라 디버프 대상 없음) |
+| 2024-XX-XX | Phase 3 나머지 Passives, Triggers 제외 결정 (현재 필요성 낮음). Phase 3 완료 |

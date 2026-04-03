@@ -30,6 +30,9 @@ namespace DrillCorp.Bug.Behaviors.Data
         [SerializeField] private float _param1;
         [SerializeField] private float _param2;
 
+        [Tooltip("공격 사거리")]
+        [SerializeField] private float _range;
+
         [SerializeField] private GameObject _projectilePrefab;
         [SerializeField] private GameObject _hitVfxPrefab;
 
@@ -49,6 +52,11 @@ namespace DrillCorp.Bug.Behaviors.Data
         /// </summary>
         public float Param1 => _param1;
         public float Param2 => _param2;
+
+        /// <summary>
+        /// 공격 사거리
+        /// </summary>
+        public float Range => _range;
 
         /// <summary>
         /// 문자열에서 파싱 (예: "Melee", "Cleave:90", "Spread:5:60")

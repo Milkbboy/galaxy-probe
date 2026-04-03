@@ -20,7 +20,7 @@ MonoBehaviour:
   _attackDamage: 10
   _attackCooldown: 1
   _attackRange: 0.05
-  _prefab: {fileID: 8055638493739636975, guid: ea213a583b1e39b47a89605a389b7134, type: 3}
+  _prefab: {fileID: 4606959147112816184, guid: ea213a583b1e39b47a89605a389b7134, type: 3}
   _tintColor: {r: 0.3, g: 1, b: 0.3, a: 1}
   _scale: 1
   _hpBarOffset: {x: 0, y: 0.1, z: 0.8}

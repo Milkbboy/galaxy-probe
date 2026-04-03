@@ -6,7 +6,7 @@ namespace DrillCorp.Editor
 {
     public class SpriteGenerator : UnityEditor.Editor
     {
-        [MenuItem("Tools/Drill-Corp/Generate UI Sprites")]
+        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/3. UI Sprites 생성")]
         public static void GenerateUISprites()
         {
             string folderPath = "Assets/_Game/Sprites/UI";

@@ -15,7 +15,6 @@ namespace DrillCorp.Data
         [SerializeField] private float _moveSpeed = 2f;
         [SerializeField] private float _attackDamage = 5f;
         [SerializeField] private float _attackCooldown = 1f;
-        [SerializeField] private float _attackRange = 1f;
 
         [Header("Visuals")]
         [SerializeField] private GameObject _prefab;
@@ -35,7 +34,6 @@ namespace DrillCorp.Data
         public float MoveSpeed => _moveSpeed;
         public float AttackDamage => _attackDamage;
         public float AttackCooldown => _attackCooldown;
-        public float AttackRange => _attackRange;
         public GameObject Prefab => _prefab;
         public Color TintColor => _tintColor;
         public float Scale => _scale;

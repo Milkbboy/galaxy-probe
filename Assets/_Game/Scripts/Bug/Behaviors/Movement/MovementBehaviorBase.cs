@@ -63,41 +63,55 @@ namespace DrillCorp.Bug.Behaviors.Movement
         /// <summary>
         /// Movement 타입에 따른 인스턴스 생성
         /// </summary>
-        public static MovementBehaviorBase Create(MovementType type, float param1, float param2, GameObject effectPrefab = null)
+        public static MovementBehaviorBase Create(MovementType type, float param1, float param2, GameObject effectPrefab = null, IdleType idleType = IdleType.Stop, float idleParam = 0f)
         {
+            MovementBehaviorBase movement;
+
             switch (type)
             {
                 case MovementType.Linear:
-                    return new LinearMovement();
+                    movement = new LinearMovement(idleType, idleParam);
+                    break;
 
                 case MovementType.Hover:
-                    return new HoverMovement(param1, param2);
+                    movement = new HoverMovement(param1, param2, idleType, idleParam);
+                    break;
 
                 case MovementType.Burst:
-                    return new BurstMovement(param1, param2);
+                    movement = new BurstMovement(param1, param2);
+                    break;
 
                 case MovementType.Ranged:
-                    return new RangedMovement(param1, param2);
+                    // Deprecated: Linear + IdleType.Strafe 사용 권장
+                    movement = new RangedMovement(param1, param2);
+                    break;
 
                 case MovementType.Retreat:
-                    return new RetreatMovement(param1, param2);
+                    movement = new RetreatMovement(param1, param2);
+                    break;
 
                 case MovementType.SlowStart:
-                    return new SlowStartMovement(param1, param2);
+                    movement = new SlowStartMovement(param1, param2);
+                    break;
 
                 case MovementType.Orbit:
-                    return new OrbitMovement(param1, param2);
+                    movement = new OrbitMovement(param1, param2);
+                    break;
 
                 case MovementType.Teleport:
-                    return new TeleportMovement(param1, param2, effectPrefab);
+                    movement = new TeleportMovement(param1, param2, effectPrefab);
+                    break;
 
                 // TODO: Phase 3에서 추가
                 // case MovementType.Burrow:
                 // case MovementType.Dive:
 
                 default:
-                    return new LinearMovement();
+                    movement = new LinearMovement(idleType, idleParam);
+                    break;
             }
+
+            return movement;
         }
     }
 }

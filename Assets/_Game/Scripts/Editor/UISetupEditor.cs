@@ -8,7 +8,7 @@ namespace DrillCorp.Editor
 {
     public class UISetupEditor : UnityEditor.Editor
     {
-        [MenuItem("Tools/Drill-Corp/Setup InGame UI")]
+        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/2. InGame UI 설정")]
         public static void SetupInGameUI()
         {
             // 기존 Canvas 확인

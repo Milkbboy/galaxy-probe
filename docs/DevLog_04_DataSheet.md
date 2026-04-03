@@ -347,6 +347,208 @@ public BugBase SpawnBugFromData(BugData bugData, float healthMult, float damageM
 
 ---
 
+## Bug Behavior System (2026-04)
+
+### 개요
+벌레의 이동, 공격, 패시브, 스킬, 트리거 행동을 ScriptableObject로 분리하여 조합 가능하게 설계.
+
+### 생성된 SO 타입
+
+| SO 타입 | 경로 | 역할 |
+|---------|------|------|
+| MovementBehaviorData | `BugBehaviors/Movement/` | 이동 패턴 (Linear, Hover, Burst 등) |
+| AttackBehaviorData | `BugBehaviors/Attack/` | 공격 타입 (Melee, Projectile, Cleave 등) |
+| PassiveBehaviorData | `BugBehaviors/Passive/` | 패시브 효과 (Armor, Shield, Regen 등) |
+| SkillBehaviorData | `BugBehaviors/Skill/` | 스킬 (Nova, Spawn, BuffAlly 등) |
+| TriggerBehaviorData | `BugBehaviors/Trigger/` | 트리거 (Enrage, ExplodeOnDeath 등) |
+| BugBehaviorData | `BugBehaviors/` | 위 행동들의 조합 Set |
+
+### 샘플 생성기
+`BugBehaviorSampleCreator.cs`에서 모든 샘플 SO를 자동 생성.
+
+```
+Unity 메뉴: Tools > Drill-Corp > 1. 버그 설정 > 행동 (Behavior) > 샘플 전체 생성
+```
+
+---
+
+## SO 생성 시 발생한 문제와 해결
+
+### 문제 현상
+에디터 스크립트에서 ScriptableObject를 생성하고 `SetPrivateField()`로 값을 설정할 때:
+- **일부 SO에만 값이 설정됨** (불규칙)
+- **첫 번째 SO에 값이 설정되지 않음** (패턴 발견)
+- 에러나 경고 로그 없음
+
+### 원인 분석
+
+#### 1. Unity AssetDatabase 동기화 문제
+```csharp
+// 문제 코드: 생성 직후 바로 값 설정
+var asset = CreateAsset<MovementBehaviorData>(folder, "Movement_Linear");
+SetPrivateField(asset, "_type", MovementType.Linear);  // 첫번째는 실패
+SetPrivateField(asset, "_displayName", "직선 이동");   // 실패
+
+var asset2 = CreateAsset<MovementBehaviorData>(folder, "Movement_Hover");
+SetPrivateField(asset2, "_type", MovementType.Hover);  // 성공
+```
+
+`AssetDatabase.CreateAsset()` 호출 직후에는 Unity 에디터 내부적으로 에셋이 완전히 등록되지 않은 상태.
+`SerializedObject`나 `SerializedProperty`로 값을 설정해도 첫 번째 에셋에는 적용되지 않음.
+
+#### 2. SetDirty만으로는 부족
+```csharp
+// EditorUtility.SetDirty()는 "변경됨" 표시만 할 뿐
+// 실제 디스크 저장은 SaveAssets() 호출 시점에 발생
+EditorUtility.SetDirty(asset);
+```
+
+#### 3. SO 간 참조 문제
+BugBehaviorData가 MovementBehaviorData를 참조할 때:
+```csharp
+// Movement SO 생성
+CreateMovementSamples();
+SaveAllAssets();
+
+// BugBehavior 생성 시 Movement 로드 → null 반환 가능
+var linearMovement = AssetDatabase.LoadAssetAtPath<MovementBehaviorData>(path);
+// Unity가 아직 에셋을 인식하지 못한 상태
+```
+
+### 해결 방법: 3단계 분리 패턴
+
+**핵심 원칙:** 에셋 생성과 값 설정을 분리하고, 중간에 `SaveAssets()` + `Refresh()` 호출
+
+```csharp
+public static void CreateMovementSamples()
+{
+    // ========== 1단계: 빈 에셋 전부 생성 ==========
+    CreateAsset<MovementBehaviorData>(folder, "Movement_Linear");
+    CreateAsset<MovementBehaviorData>(folder, "Movement_Hover");
+    CreateAsset<MovementBehaviorData>(folder, "Movement_Burst");
+    // ... 나머지 에셋들
+
+    // ========== 2단계: 저장 및 새로고침 ==========
+    AssetDatabase.SaveAssets();
+    AssetDatabase.Refresh();
+    // 이 시점에 Unity가 모든 에셋을 인식
+
+    // ========== 3단계: 에셋 다시 로드 후 값 설정 ==========
+    var linear = AssetDatabase.LoadAssetAtPath<MovementBehaviorData>($"{folder}/Movement_Linear.asset");
+    SetPrivateField(linear, "_type", MovementType.Linear);
+    SetPrivateField(linear, "_displayName", "직선 이동");
+    // ... 나머지 값 설정
+
+    SaveAllAssets();
+}
+```
+
+### SO 참조 설정 시 추가 주의사항
+
+BugBehaviorData처럼 다른 SO를 참조하는 경우:
+
+```csharp
+public static void CreateBugBehaviorSetSamples()
+{
+    // 1단계: 빈 BugBehavior 에셋 먼저 생성
+    var beetle = CreateAsset<BugBehaviorData>(folder, "BugBehavior_Beetle");
+    var fly = CreateAsset<BugBehaviorData>(folder, "BugBehavior_Fly");
+
+    // 2단계: 저장 및 새로고침
+    AssetDatabase.SaveAssets();
+    AssetDatabase.Refresh();
+
+    // 3단계: 참조할 에셋 로드 (이미 존재하는 Movement/Attack SO)
+    var linearMovement = LoadAssetWithLog<MovementBehaviorData>(BasePath + "/Movement/Movement_Linear.asset");
+    var meleeAttack = LoadAssetWithLog<AttackBehaviorData>(BasePath + "/Attack/Attack_Melee.asset");
+
+    // 4단계: 생성한 에셋 다시 로드 후 참조 설정
+    beetle = AssetDatabase.LoadAssetAtPath<BugBehaviorData>($"{folder}/BugBehavior_Beetle.asset");
+    SetPrivateField(beetle, "_defaultMovement", linearMovement);
+    SetPrivateField(beetle, "_defaultAttack", meleeAttack);
+
+    SaveAllAssets();
+}
+```
+
+### CreateAsset 메서드 개선
+
+기존 에셋이 있을 때 덮어쓰기 문제도 해결:
+
+```csharp
+private static T CreateAsset<T>(string folder, string name, bool overwrite = true) where T : ScriptableObject
+{
+    string path = $"{folder}/{name}.asset";
+
+    T existing = AssetDatabase.LoadAssetAtPath<T>(path);
+    if (existing != null)
+    {
+        if (overwrite)
+        {
+            // 기존 에셋 삭제 후 Refresh
+            AssetDatabase.DeleteAsset(path);
+            AssetDatabase.Refresh();
+        }
+        else
+        {
+            return existing;
+        }
+    }
+
+    T asset = ScriptableObject.CreateInstance<T>();
+    AssetDatabase.CreateAsset(asset, path);
+    AssetDatabase.SaveAssets();  // 즉시 저장
+    return asset;
+}
+```
+
+### 전체 생성 순서 (CreateAllSamples)
+
+```csharp
+public static void CreateAllSamples()
+{
+    CreateFolders();
+
+    // 1단계: 기본 행동 SO 생성 (Movement, Attack, Passive, Skill, Trigger)
+    CreateMovementSamples();
+    CreateAttackSamples();
+    CreatePassiveSamples();
+    CreateSkillSamples();
+    CreateTriggerSamples();
+
+    // 저장 및 새로고침 (참조 가능하게)
+    AssetDatabase.SaveAssets();
+    AssetDatabase.Refresh();
+    AssetDatabase.ReleaseCachedFileHandles();
+
+    // 2단계: BugBehavior Set 생성 (위에서 만든 SO 참조)
+    CreateBugBehaviorSetSamples();
+    CreateTestBugBehaviorSamples();
+
+    // 최종 저장
+    AssetDatabase.SaveAssets();
+    AssetDatabase.Refresh();
+}
+```
+
+### 교훈 요약
+
+| 문제 | 원인 | 해결 |
+|------|------|------|
+| 첫 번째 SO에 값 미적용 | CreateAsset 직후 Unity 내부 동기화 미완료 | 생성과 값 설정 분리, 중간에 SaveAssets+Refresh |
+| SO 참조가 null | 참조 대상 SO가 아직 인식 안됨 | 참조 대상 SO 먼저 생성+저장 후 로드 |
+| 기존 SO 덮어쓰기 안됨 | 기존 에셋 로드 후 리턴만 함 | DeleteAsset 후 새로 생성 |
+| 에러/경고 없음 | Unity가 조용히 실패 | LoadAssetWithLog로 null 체크 로그 추가 |
+
+### 핵심 원칙
+> **Unity 에디터 스크립트에서 SO 생성 시:**
+> 1. 빈 에셋 먼저 전부 생성
+> 2. `SaveAssets()` + `Refresh()`로 동기화
+> 3. 에셋 다시 로드 후 값 설정
+> 4. 다시 `SaveAssets()`로 저장
+
+---
+
 ## 다음 단계
 5단계 - 아웃게임
 - 타이틀 화면

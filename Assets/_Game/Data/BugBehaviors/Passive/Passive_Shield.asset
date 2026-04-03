@@ -20,3 +20,5 @@ MonoBehaviour:
     \uD65C\uC131\uD654 \uC2DC \uD30C\uB780\uC0C9 \uD2F4\uD2B8\uAC00 \uC801\uC6A9\uB429\uB2C8\uB2E4."
   _param1: 50
   _param2: 30
+  _effectPrefab: {fileID: 0}
+  _effectPrefab2: {fileID: 0}

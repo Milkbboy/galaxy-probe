@@ -12,19 +12,23 @@ namespace DrillCorp.Editor
     public class MovementBehaviorDataEditor : UnityEditor.Editor
     {
         private SerializedProperty _type;
+        private SerializedProperty _idleType;
         private SerializedProperty _displayName;
         private SerializedProperty _description;
         private SerializedProperty _param1;
         private SerializedProperty _param2;
+        private SerializedProperty _idleParam;
         private SerializedProperty _effectPrefab;
 
         private void OnEnable()
         {
             _type = serializedObject.FindProperty("_type");
+            _idleType = serializedObject.FindProperty("_idleType");
             _displayName = serializedObject.FindProperty("_displayName");
             _description = serializedObject.FindProperty("_description");
             _param1 = serializedObject.FindProperty("_param1");
             _param2 = serializedObject.FindProperty("_param2");
+            _idleParam = serializedObject.FindProperty("_idleParam");
             _effectPrefab = serializedObject.FindProperty("_effectPrefab");
         }
 
@@ -68,6 +72,22 @@ namespace DrillCorp.Editor
                 EditorGUILayout.PropertyField(_param2, new GUIContent("Param2 (미사용)"));
             }
 
+            // Idle Behavior (사거리 도달 후 행동)
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField("Idle Behavior (사거리 도달 후)", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(_idleType, new GUIContent("Idle Type"));
+
+            var idleType = (IdleType)_idleType.enumValueIndex;
+            var idleParamLabel = GetIdleParamLabel(idleType);
+            if (!string.IsNullOrEmpty(idleParamLabel))
+            {
+                EditorGUILayout.PropertyField(_idleParam, new GUIContent($"Idle Param - {idleParamLabel}"));
+            }
+            else
+            {
+                EditorGUILayout.PropertyField(_idleParam, new GUIContent("Idle Param (미사용)"));
+            }
+
             // Prefabs (Teleport 타입만)
             if (movementType == MovementType.Teleport)
             {
@@ -77,6 +97,23 @@ namespace DrillCorp.Editor
             }
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private string GetIdleParamLabel(IdleType idleType)
+        {
+            switch (idleType)
+            {
+                case IdleType.Stop:
+                    return null;
+                case IdleType.Strafe:
+                    return "좌우이동 속도배율";
+                case IdleType.Orbit:
+                    return "초당 회전각도 (도)";
+                case IdleType.Retreat:
+                    return "후퇴 지속시간 (초)";
+                default:
+                    return null;
+            }
         }
 
         private (string, string) GetParamLabels(MovementType type)
@@ -130,6 +167,7 @@ namespace DrillCorp.Editor
         private SerializedProperty _description;
         private SerializedProperty _param1;
         private SerializedProperty _param2;
+        private SerializedProperty _range;
         private SerializedProperty _projectilePrefab;
         private SerializedProperty _hitVfxPrefab;
 
@@ -140,6 +178,7 @@ namespace DrillCorp.Editor
             _description = serializedObject.FindProperty("_description");
             _param1 = serializedObject.FindProperty("_param1");
             _param2 = serializedObject.FindProperty("_param2");
+            _range = serializedObject.FindProperty("_range");
             _projectilePrefab = serializedObject.FindProperty("_projectilePrefab");
             _hitVfxPrefab = serializedObject.FindProperty("_hitVfxPrefab");
         }
@@ -183,6 +222,9 @@ namespace DrillCorp.Editor
             {
                 EditorGUILayout.PropertyField(_param2, new GUIContent("Param2 (미사용)"));
             }
+
+            // Range
+            EditorGUILayout.PropertyField(_range, new GUIContent("Range - 공격 사거리"));
 
             // Prefabs
             EditorGUILayout.Space(10);

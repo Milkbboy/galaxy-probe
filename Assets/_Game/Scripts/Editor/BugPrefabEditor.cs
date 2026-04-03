@@ -13,7 +13,7 @@ namespace DrillCorp.Editor
         private const string BehaviorDataPath = "Assets/_Game/Data/BugBehaviors";
         private const string ProjectilePrefabPath = "Assets/_Game/Prefabs/Bugs/BugProjectile.prefab";
 
-        [MenuItem("Tools/Drill-Corp/Bug/1. Create HpBar Prefab")]
+        [MenuItem("Tools/Drill-Corp/1. 버그 설정/모델/1. HpBar 프리펩 생성")]
         public static void CreateHpBarPrefab()
         {
             string prefabPath = "Assets/_Game/Prefabs/UI";
@@ -80,7 +80,7 @@ namespace DrillCorp.Editor
             Debug.Log($"[BugPrefabEditor] Created: BugHpBar.prefab");
         }
 
-        [MenuItem("Tools/Drill-Corp/Bug/2. Create Projectile Prefab")]
+        [MenuItem("Tools/Drill-Corp/1. 버그 설정/모델/2. Projectile 프리펩 생성")]
         public static void CreateProjectilePrefab()
         {
             string prefabPath = "Assets/_Game/Prefabs/Bugs";
@@ -182,7 +182,7 @@ namespace DrillCorp.Editor
             }
         }
 
-        [MenuItem("Tools/Drill-Corp/Bug/3. Create Bug Prefabs (BugController)")]
+        [MenuItem("Tools/Drill-Corp/1. 버그 설정/모델/3. Bug 프리펩 생성")]
         public static void CreateBugPrefabs()
         {
             // HpBar 프리팹 확인
@@ -215,7 +215,7 @@ namespace DrillCorp.Editor
             Debug.Log($"[BugPrefabEditor] Bug prefabs created at: {prefabPath}");
         }
 
-        [MenuItem("Tools/Drill-Corp/Bug/4. Connect BugData to Prefabs")]
+        [MenuItem("Tools/Drill-Corp/1. 버그 설정/모델/4. BugData 프리펩 연결")]
         public static void ConnectBugDataToPrefabs()
         {
             string prefabPath = "Assets/_Game/Prefabs/Bugs";
@@ -235,7 +235,7 @@ namespace DrillCorp.Editor
             Debug.Log("[BugPrefabEditor] BugData connected to prefabs!");
         }
 
-        [MenuItem("Tools/Drill-Corp/Bug/5. Upgrade Existing Prefabs to BugController")]
+        [MenuItem("Tools/Drill-Corp/1. 버그 설정/모델/5. 기존 프리펩 BugController 업그레이드")]
         public static void UpgradeExistingPrefabs()
         {
             string prefabPath = "Assets/_Game/Prefabs/Bugs";
@@ -504,7 +504,7 @@ namespace DrillCorp.Editor
             }
         }
 
-        [MenuItem("Tools/Drill-Corp/Bug/6. Create Teleport VFX Prefab")]
+        [MenuItem("Tools/Drill-Corp/1. 버그 설정/모델/6. Teleport VFX 프리펩 생성")]
         public static void CreateTeleportVfxPrefab()
         {
             string prefabPath = "Assets/_Game/Prefabs/VFX";
@@ -619,7 +619,7 @@ namespace DrillCorp.Editor
             }
         }
 
-        [MenuItem("Tools/Drill-Corp/Bug/7. Create Burrow VFX Prefabs")]
+        [MenuItem("Tools/Drill-Corp/1. 버그 설정/모델/7. Burrow VFX 프리펩 생성")]
         public static void CreateBurrowVfxPrefabs()
         {
             string prefabPath = "Assets/_Game/Prefabs/VFX";

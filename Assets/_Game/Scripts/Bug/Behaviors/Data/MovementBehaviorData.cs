@@ -3,14 +3,14 @@ using UnityEngine;
 namespace DrillCorp.Bug.Behaviors.Data
 {
     /// <summary>
-    /// 이동 행동 타입
+    /// 이동 행동 타입 (타겟에 접근하는 방식)
     /// </summary>
     public enum MovementType
     {
         Linear,     // 직선 이동
         Hover,      // 공중 부유
         Burst,      // 멈췄다 돌진
-        Ranged,     // 원거리 (사거리 유지 + 좌우 이동)
+        Ranged,     // 원거리 (사거리 유지 + 좌우 이동) - Deprecated: Linear + IdleType.Strafe 사용
         Retreat,    // 후퇴
         SlowStart,  // 느린 시작
         Orbit,      // 선회
@@ -20,21 +20,37 @@ namespace DrillCorp.Bug.Behaviors.Data
     }
 
     /// <summary>
+    /// 사거리 도달 후 행동 타입
+    /// </summary>
+    public enum IdleType
+    {
+        Stop,       // 정지
+        Strafe,     // 좌우 이동
+        Orbit,      // 타겟 주위 선회
+        Retreat     // 후퇴 후 재접근
+    }
+
+    /// <summary>
     /// 이동 행동 데이터 ScriptableObject
     /// </summary>
     [CreateAssetMenu(fileName = "Movement_New", menuName = "Drill-Corp/Bug Behaviors/Movement")]
     public class MovementBehaviorData : ScriptableObject
     {
         [SerializeField] private MovementType _type = MovementType.Linear;
+        [SerializeField] private IdleType _idleType = IdleType.Stop;
         [SerializeField] private string _displayName;
         [SerializeField, TextArea] private string _description;
 
         [SerializeField] private float _param1;
         [SerializeField] private float _param2;
 
+        [Tooltip("Idle 파라미터 (Strafe: 속도배율, Orbit: 회전속도, Retreat: 후퇴시간)")]
+        [SerializeField] private float _idleParam;
+
         [SerializeField] private GameObject _effectPrefab;
 
         public MovementType Type => _type;
+        public IdleType IdleType => _idleType;
         public string DisplayName => _displayName;
         public string Description => _description;
 
@@ -50,6 +66,7 @@ namespace DrillCorp.Bug.Behaviors.Data
         /// </summary>
         public float Param1 => _param1;
         public float Param2 => _param2;
+        public float IdleParam => _idleParam;
         public GameObject EffectPrefab => _effectPrefab;
 
         /// <summary>

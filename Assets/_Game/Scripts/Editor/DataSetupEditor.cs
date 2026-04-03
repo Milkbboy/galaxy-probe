@@ -7,7 +7,7 @@ namespace DrillCorp.Editor
 {
     public class DataSetupEditor : EditorWindow
     {
-        [MenuItem("Tools/Drill-Corp/Setup Data Assets")]
+        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/1. Data Assets 생성")]
         public static void SetupDataAssets()
         {
             CreateFolders();
@@ -51,7 +51,7 @@ namespace DrillCorp.Editor
             {
                 var beetle = ScriptableObject.CreateInstance<BugData>();
                 SetBugData(beetle, 1, "Beetle", "Basic melee bug",
-                    maxHealth: 15f, moveSpeed: 2f, attackDamage: 5f, attackCooldown: 1f, attackRange: 1f, currencyReward: 1);
+                    maxHealth: 15f, moveSpeed: 2f, attackDamage: 5f, attackCooldown: 1f, currencyReward: 1);
                 AssetDatabase.CreateAsset(beetle, path + "Bug_Beetle.asset");
             }
 
@@ -60,7 +60,7 @@ namespace DrillCorp.Editor
             {
                 var fly = ScriptableObject.CreateInstance<BugData>();
                 SetBugData(fly, 2, "Fly", "Fast but weak",
-                    maxHealth: 8f, moveSpeed: 4f, attackDamage: 3f, attackCooldown: 0.5f, attackRange: 1f, currencyReward: 1);
+                    maxHealth: 8f, moveSpeed: 4f, attackDamage: 3f, attackCooldown: 0.5f, currencyReward: 1);
                 AssetDatabase.CreateAsset(fly, path + "Bug_Fly.asset");
             }
 
@@ -69,7 +69,7 @@ namespace DrillCorp.Editor
             {
                 var centipede = ScriptableObject.CreateInstance<BugData>();
                 SetBugData(centipede, 3, "Centipede", "Tanky and slow",
-                    maxHealth: 40f, moveSpeed: 1f, attackDamage: 10f, attackCooldown: 2f, attackRange: 1.5f, currencyReward: 3);
+                    maxHealth: 40f, moveSpeed: 1f, attackDamage: 10f, attackCooldown: 2f, currencyReward: 3);
                 AssetDatabase.CreateAsset(centipede, path + "Bug_Centipede.asset");
             }
 
@@ -78,7 +78,7 @@ namespace DrillCorp.Editor
             {
                 var spider = ScriptableObject.CreateInstance<BugData>();
                 SetBugData(spider, 4, "Spider", "Balanced stats",
-                    maxHealth: 20f, moveSpeed: 2.5f, attackDamage: 7f, attackCooldown: 1.2f, attackRange: 1.2f, currencyReward: 2);
+                    maxHealth: 20f, moveSpeed: 2.5f, attackDamage: 7f, attackCooldown: 1.2f, currencyReward: 2);
                 AssetDatabase.CreateAsset(spider, path + "Bug_Spider.asset");
             }
 
@@ -87,7 +87,7 @@ namespace DrillCorp.Editor
             {
                 var wasp = ScriptableObject.CreateInstance<BugData>();
                 SetBugData(wasp, 5, "Wasp", "High damage, low health",
-                    maxHealth: 12f, moveSpeed: 3f, attackDamage: 12f, attackCooldown: 1.5f, attackRange: 1f, currencyReward: 2);
+                    maxHealth: 12f, moveSpeed: 3f, attackDamage: 12f, attackCooldown: 1.5f, currencyReward: 2);
                 AssetDatabase.CreateAsset(wasp, path + "Bug_Wasp.asset");
             }
 
@@ -95,7 +95,7 @@ namespace DrillCorp.Editor
         }
 
         private static void SetBugData(BugData bug, int id, string name, string desc,
-            float maxHealth, float moveSpeed, float attackDamage, float attackCooldown, float attackRange, int currencyReward)
+            float maxHealth, float moveSpeed, float attackDamage, float attackCooldown, int currencyReward)
         {
             var so = new SerializedObject(bug);
             so.FindProperty("_bugId").intValue = id;
@@ -105,7 +105,7 @@ namespace DrillCorp.Editor
             so.FindProperty("_moveSpeed").floatValue = moveSpeed;
             so.FindProperty("_attackDamage").floatValue = attackDamage;
             so.FindProperty("_attackCooldown").floatValue = attackCooldown;
-            so.FindProperty("_attackRange").floatValue = attackRange;
+            // AttackRange는 Attack SO에서 설정
             so.FindProperty("_currencyReward").intValue = currencyReward;
             so.FindProperty("_scale").floatValue = 1f;
             so.FindProperty("_dropChance").floatValue = 1f;

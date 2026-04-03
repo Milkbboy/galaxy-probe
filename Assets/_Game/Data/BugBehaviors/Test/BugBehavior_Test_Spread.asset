@@ -17,7 +17,5 @@ MonoBehaviour:
   _defaultAttack: {fileID: 11400000, guid: b45d1e8505075de4e91ff647a1166f82, type: 2}
   _conditionalAttacks: []
   _skills: []
-  _passives:
-  - {fileID: 11400000, guid: ca3178479d504544ebce770d60fecfd3, type: 2}
-  _triggers:
-  - {fileID: 11400000, guid: 49632f6a18b6f474b9314359f7e22344, type: 2}
+  _passives: []
+  _triggers: []

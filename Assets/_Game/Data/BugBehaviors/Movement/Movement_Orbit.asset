@@ -13,10 +13,12 @@ MonoBehaviour:
   m_Name: Movement_Orbit
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.MovementBehaviorData
   _type: 6
+  _idleType: 0
   _displayName: "\uADA4\uB3C4 \uC774\uB3D9"
   _description: "\uD0C0\uAC9F \uC8FC\uC704\uB97C \uC6D0\uD615\uC73C\uB85C \uB9F4\uB3CC\uBA70
     \uC774\uB3D9\uD569\uB2C8\uB2E4.\n\uBA3C\uC800 \uADA4\uB3C4\uAE4C\uC9C0 \uC811\uADFC\uD55C
     \uD6C4, \uC77C\uC815 \uAC01\uC18D\uB3C4\uB85C \uD68C\uC804\uD569\uB2C8\uB2E4."
   _param1: 0
   _param2: 60
+  _idleParam: 0
   _effectPrefab: {fileID: 0}

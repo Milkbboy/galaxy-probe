@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f092bc5128f9cf448aa7606799bd08d, type: 3}
   m_Name: BugBehavior_Spitter
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.BugBehaviorData
-  _defaultMovement: {fileID: 0}
+  _defaultMovement: {fileID: 11400000, guid: df253a089717e004aafb88ffcd8e74f1, type: 2}
   _conditionalMovements: []
   _defaultAttack: {fileID: 11400000, guid: 7eda5ba60501c824ba4400c374d128c5, type: 2}
   _conditionalAttacks: []

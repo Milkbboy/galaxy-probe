@@ -28,7 +28,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
         public override void Initialize(BugController bug)
         {
             base.Initialize(bug);
-            _attackRange = bug.AttackRange;
+            // Range는 SO에서 설정되거나 BugController.AttackRange에서 폴백
         }
 
         protected override void PerformAttack(Transform target)

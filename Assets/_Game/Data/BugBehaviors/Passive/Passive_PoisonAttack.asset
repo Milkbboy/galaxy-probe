@@ -21,3 +21,5 @@ MonoBehaviour:
     \uCD94\uAC00\uB429\uB2C8\uB2E4."
   _param1: 3
   _param2: 5
+  _effectPrefab: {fileID: 0}
+  _effectPrefab2: {fileID: 0}

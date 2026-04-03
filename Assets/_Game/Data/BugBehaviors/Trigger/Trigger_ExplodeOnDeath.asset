@@ -23,4 +23,4 @@ MonoBehaviour:
   _param2: 50
   _param3: 0
   _stringParam: 
-  _effectPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
+  _effectPrefab: {fileID: 0}

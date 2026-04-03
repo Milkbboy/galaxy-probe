@@ -20,5 +20,5 @@ MonoBehaviour:
     \uC9C0\uB098\uBA74 \uB2E4\uC2DC \uCD9C\uD604\uD569\uB2C8\uB2E4."
   _param1: 2
   _param2: 0.3
-  _effectPrefab: {fileID: 1551315985172387026, guid: 95db6734a6246e74bac69b3ffbed8686, type: 3}
-  _effectPrefab2: {fileID: 5700156619318575440, guid: 354b169f57fce724bbbfb0d0bd859b35, type: 3}
+  _effectPrefab: {fileID: 0}
+  _effectPrefab2: {fileID: 0}

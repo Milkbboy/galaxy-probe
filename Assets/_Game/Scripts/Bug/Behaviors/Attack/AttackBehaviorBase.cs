@@ -14,7 +14,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
         protected BugController _bug;
         protected float _damageMultiplier = 1f;
         protected float _lastAttackTime;
-        protected float _attackRange;
+        protected float _range;  // SO에서 설정된 사거리 (0이면 BugData 사용)
         protected GameObject _hitVfxPrefab;
 
         public event Action OnAttackPerformed;
@@ -25,12 +25,14 @@ namespace DrillCorp.Bug.Behaviors.Attack
             set => _damageMultiplier = value;
         }
 
-        public float AttackRange => _attackRange;
+        /// <summary>
+        /// 공격 사거리 (SO에서 설정된 값, 0이면 BugData 폴백)
+        /// </summary>
+        public float AttackRange => _range;
 
         public virtual void Initialize(BugController bug)
         {
             _bug = bug;
-            _attackRange = bug.AttackRange;
             _lastAttackTime = -999f; // 즉시 공격 가능
         }
 
@@ -110,7 +112,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
         /// <summary>
         /// Attack 타입에 따른 인스턴스 생성
         /// </summary>
-        public static AttackBehaviorBase Create(AttackType type, float param1, float param2, GameObject projectilePrefab = null, GameObject hitVfxPrefab = null)
+        public static AttackBehaviorBase Create(AttackType type, float param1, float param2, GameObject projectilePrefab = null, GameObject hitVfxPrefab = null, float range = 0f)
         {
             AttackBehaviorBase attack = null;
 
@@ -150,6 +152,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
             if (attack != null)
             {
                 attack._hitVfxPrefab = hitVfxPrefab;
+                attack._range = range;
             }
 
             return attack;

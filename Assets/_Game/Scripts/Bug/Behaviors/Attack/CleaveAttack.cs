@@ -21,7 +21,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
         public override void Initialize(BugController bug)
         {
             base.Initialize(bug);
-            _attackRange = bug.AttackRange;
+            // Range는 SO에서 설정되거나 BugController.AttackRange에서 폴백
             CreateRangeIndicator();
         }
 
@@ -82,7 +82,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
                 float angle = Mathf.Lerp(-halfAngle, halfAngle, t);
                 Quaternion rotation = Quaternion.Euler(0f, angle, 0f);
                 Vector3 direction = rotation * forward;
-                positions[i + 1] = bugPos + direction * _attackRange;
+                positions[i + 1] = bugPos + direction * _bug.AttackRange;
                 positions[i + 1].y = 0.1f;
             }
 
@@ -99,7 +99,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
             Vector3 forward = new Vector3(targetPos.x - bugPos.x, 0f, targetPos.z - bugPos.z).normalized;
 
             // 범위 내 모든 타겟 검색 (탑다운 뷰에서는 XZ 평면)
-            Collider[] hits = Physics.OverlapSphere(bugPos, _attackRange);
+            Collider[] hits = Physics.OverlapSphere(bugPos, _bug.AttackRange);
 
             float damage = GetDamage();
 
@@ -126,7 +126,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
             }
 
             // VFX 재생 - 부채꼴 범위 표시
-            PlayCleaveVfx(bugPos, forward, _attackRange, _cleaveAngle);
+            PlayCleaveVfx(bugPos, forward, _bug.AttackRange, _cleaveAngle);
         }
 
         private void PlayCleaveVfx(Vector3 center, Vector3 forward, float range, float angle)

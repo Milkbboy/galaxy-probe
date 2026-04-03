@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c88a683098f114dbf15ce64cd6a038, type: 3}
+  m_Name: Movement_Hover_Strafe
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.MovementBehaviorData
+  _type: 1
+  _idleType: 1
+  _displayName: "\uBD80\uC720 + \uC88C\uC6B0\uC774\uB3D9"
+  _description: "\uACF5\uC911\uC5D0\uC11C \uBD80\uC720\uD558\uBA70 \uC811\uADFC \uD6C4,
+    \uC0AC\uAC70\uB9AC \uB3C4\uB2EC \uC2DC \uC88C\uC6B0\uB85C \uC774\uB3D9\uD569\uB2C8\uB2E4.\n\uBE44\uD589\uD615
+    \uC6D0\uAC70\uB9AC \uBC8C\uB808\uC5D0 \uC801\uD569\uD569\uB2C8\uB2E4."
+  _param1: 0.5
+  _param2: 2
+  _idleParam: 0.5
+  _effectPrefab: {fileID: 0}

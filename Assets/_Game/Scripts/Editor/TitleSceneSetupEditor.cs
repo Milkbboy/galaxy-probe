@@ -9,7 +9,7 @@ namespace DrillCorp.Editor
 {
     public class TitleSceneSetupEditor : EditorWindow
     {
-        [MenuItem("Tools/Drill-Corp/Title/2. Setup Scene UI")]
+        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/Title/2. Scene UI 설정")]
         public static void SetupTitleSceneUI()
         {
             // 프리팹이 있는지 확인
@@ -81,7 +81,7 @@ namespace DrillCorp.Editor
             Debug.Log("[TitleSceneSetup] Don't forget to save the scene!");
         }
 
-        [MenuItem("Tools/Drill-Corp/Title/1. Create Prefabs")]
+        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/Title/1. Prefabs 생성")]
         public static void CreateTitleUIPrefabs()
         {
             string prefabPath = "Assets/_Game/Prefabs/UI";

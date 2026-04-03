@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f092bc5128f9cf448aa7606799bd08d, type: 3}
   m_Name: BugBehavior_Test_Regen
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Behaviors.Data.BugBehaviorData
-  _defaultMovement: {fileID: 11400000, guid: f83b48c133160ee4c8a5ae2f5d42c217, type: 2}
+  _defaultMovement: {fileID: 11400000, guid: 90eae9b8c9f8d0f49a5763d6bf3197b5, type: 2}
   _conditionalMovements: []
   _defaultAttack: {fileID: 11400000, guid: d38aff79109ea274fbd59f5b66d8e37a, type: 2}
   _conditionalAttacks: []
