@@ -21,6 +21,6 @@ MonoBehaviour:
     \uBD89\uC740\uC0C9 LineRenderer\uB85C \uD45C\uC2DC\uB429\uB2C8\uB2E4."
   _param1: 2
   _param2: 0.5
-  _range: 10
+  _range: 3
   _projectilePrefab: {fileID: 0}
-  _hitVfxPrefab: {fileID: 0}
+  _hitVfxPrefab: {fileID: 5561489888943746921, guid: 4af33922077117c41ba8db255b6645b7, type: 3}

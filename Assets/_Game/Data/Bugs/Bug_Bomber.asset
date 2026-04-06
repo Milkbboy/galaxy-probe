@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c59824505c402d4fa528e0631f3a8d3, type: 3}
+  m_Name: Bug_Bomber
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.BugData
+  _bugId: 5
+  _bugName: Bomber
+  _description: "\uC790\uD3ED\uD615"
+  _maxHealth: 12
+  _moveSpeed: 3
+  _attackDamage: 5
+  _attackCooldown: 1
+  _behaviorData: {fileID: 11400000, guid: 982e2a895426b694ab18c1e46e05ffc6, type: 2}
+  _prefab: {fileID: 3941740222134195923, guid: 2d2903a28390b454ca0515af7fe8d9f6, type: 3}
+  _tintColor: {r: 1, g: 1, b: 1, a: 1}
+  _scale: 1
+  _hpBarOffset: {x: 0, y: 0.1, z: 0.8}
+  _currencyReward: 2
+  _dropChance: 1

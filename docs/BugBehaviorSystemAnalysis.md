@@ -1,6 +1,24 @@
 # Bug 행동 시스템 분석 보고서
 
-## 1. 폴더/파일 구조
+> 최종 갱신: 2026-04-06
+
+## 1. 개요
+
+Bug 행동 시스템은 **데이터 기반 행동 조합**을 통해 다양한 적 유형을 생성하는 시스템입니다.
+
+### 핵심 개념
+
+![데이터 계층 구조](image/데이터%20계층%20구조.png)
+
+| 계층 | 역할 | ScriptableObject |
+|------|------|------------------|
+| **Wave** | 스폰 타이밍/버그 정의 | WaveData |
+| **Bug** | 체력, 공격력, 이속 등 스탯 | BugData |
+| **BugBehavior** | 행동 조합 (어떻게 움직이고 공격할지) | BugBehaviorData |
+
+---
+
+## 2. 폴더/파일 구조
 
 ```
 Assets/_Game/Scripts/Bug/Behaviors/
@@ -62,7 +80,7 @@ Assets/_Game/Scripts/Bug/Behaviors/
 
 ---
 
-## 2. 인터페이스 계층 (IBehavior.cs)
+## 3. 인터페이스 계층 (IBehavior.cs)
 
 모든 행동은 다음 5가지 인터페이스 중 하나를 구현:
 
@@ -77,9 +95,9 @@ Assets/_Game/Scripts/Bug/Behaviors/
 
 ---
 
-## 3. Base 클래스 패턴 분석
+## 4. Base 클래스 패턴 분석
 
-### 3.1 공통 패턴
+### 4.1 공통 패턴
 
 모든 Base 클래스가 공유하는 구조:
 
@@ -106,7 +124,7 @@ public abstract class [Category]BehaviorBase : I[Category]Behavior
 }
 ```
 
-### 3.2 Base 클래스별 특징
+### 4.2 Base 클래스별 특징
 
 #### MovementBehaviorBase
 - **공유 메서드:**
@@ -150,14 +168,14 @@ public abstract class [Category]BehaviorBase : I[Category]Behavior
 
 ---
 
-## 4. 구현체 목록
+## 5. 구현체 목록
 
-### 4.1 Movement (8종)
+### 5.1 Movement (8종)
 
 | 클래스 | 동작 | 파라미터 |
 |--------|------|---------|
-| LinearMovement | 직진 | - |
-| HoverMovement | XZ 이동 + Y 부유 | param1=높이, param2=주기 |
+| LinearMovement | 직진 + 옵션 (Strafe/Orbit/Retreat) | param1=옵션, param2=값 |
+| HoverMovement | XZ 이동 + Y 부유 + Strafe | param1=높이, param2=주기 |
 | BurstMovement | 대기 → 돌진 | param1=대기시간, param2=속도배율 |
 | RangedMovement | 사거리 유지 + 좌우 | param1=거리, param2=횡이동배율 |
 | RetreatMovement | 후퇴 | param1=지속시간, param2=속도배율 |
@@ -165,7 +183,7 @@ public abstract class [Category]BehaviorBase : I[Category]Behavior
 | OrbitMovement | 타겟 주위 공전 | param1=반경, param2=각속도 |
 | TeleportMovement | 순간이동 | param1=쿨다운, param2=거리 |
 
-### 4.2 Attack (5종 + 투사체)
+### 5.2 Attack (5종 + 투사체)
 
 | 클래스 | 동작 | 파라미터 |
 |--------|------|---------|
@@ -175,7 +193,7 @@ public abstract class [Category]BehaviorBase : I[Category]Behavior
 | SpreadAttack | 다발 발사 | param1=발수, param2=각도 |
 | BeamAttack | 지속 레이저 | param1=지속시간, param2=틱간격 |
 
-### 4.3 Passive (6종)
+### 5.3 Passive (6종)
 
 | 클래스 | 효과 | 동작 방식 |
 |--------|------|----------|
@@ -186,7 +204,7 @@ public abstract class [Category]BehaviorBase : I[Category]Behavior
 | PoisonAttackPassive | 독 적용 | ProcessOutgoingDamage |
 | BurrowPassive | 땅속 숨기 | UpdatePassive (상태 머신) |
 
-### 4.4 Skill (4종)
+### 5.4 Skill (4종)
 
 | 클래스 | 효과 | 특징 |
 |--------|------|------|
@@ -195,7 +213,7 @@ public abstract class [Category]BehaviorBase : I[Category]Behavior
 | BuffAllySkill | 아군 강화 | Aura 방식, 지속 업데이트 |
 | HealAllySkill | 아군 회복 | Aura 방식, 주기적 회복 |
 
-### 4.5 Trigger (3종)
+### 5.5 Trigger (3종)
 
 | 클래스 | 조건 | 효과 |
 |--------|------|------|
@@ -205,20 +223,21 @@ public abstract class [Category]BehaviorBase : I[Category]Behavior
 
 ---
 
-## 5. 데이터 흐름
+## 6. 데이터 흐름
 
-### 5.1 ScriptableObject 구조
+### 6.1 ScriptableObject 구조
 
 ```
 [Category]BehaviorData (SO)
 ├── _type: [Category]Type (enum)
+├── _displayName: string
 ├── _param1, _param2: float
 ├── _effectPrefab: GameObject
 ├── _projectilePrefab: GameObject (Attack만)
 └── _stringParam: string (Spawn 등)
 ```
 
-### 5.2 통합 BugBehaviorData
+### 6.2 통합 BugBehaviorData
 
 ```csharp
 BugBehaviorData (SO)
@@ -228,18 +247,16 @@ BugBehaviorData (SO)
 ├── _conditionalAttacks: List<ConditionalAttackData>
 ├── _passives: List<PassiveBehaviorData>
 ├── _skills: List<SkillBehaviorData>
-├── _triggers: List<TriggerBehaviorData>
-└── _runtimeData: RuntimeBehaviorSet (Google Sheets용)
+└── _triggers: List<TriggerBehaviorData>
 ```
 
-### 5.3 초기화 흐름
+### 6.3 초기화 흐름
 
 ```
 BugController.Start()
 ├── ApplyBugData() ─────────────────── 스탯 로드 (HP, 공격력, 이속)
 ├── InitializeBehaviors()
 │   ├── BehaviorData 없음? ────────── SetupDefaultBehaviors() (Linear + Melee)
-│   ├── UseRuntimeData? ───────────── InitializeFromRuntimeData()
 │   └── SO 사용 ───────────────────── InitializeFromScriptableObjects()
 │       ├── Movement: Create() → Initialize()
 │       ├── Attack: Create() → Initialize()
@@ -252,9 +269,9 @@ BugController.Start()
 
 ---
 
-## 6. BugController 연동
+## 7. BugController 연동
 
-### 6.1 Update 흐름
+### 7.1 Update 흐름
 
 ```
 Update()
@@ -271,7 +288,7 @@ Update()
 └── AllyJustDied 리셋
 ```
 
-### 6.2 데미지 처리
+### 7.2 데미지 처리
 
 ```
 TakeDamage(damage)
@@ -284,7 +301,7 @@ TakeDamage(damage)
 └── HP ≤ 0 → Die()
 ```
 
-### 6.3 조건부 행동 전환
+### 7.3 조건부 행동 전환
 
 ```
 UpdateConditionalBehaviors()
@@ -298,111 +315,81 @@ UpdateConditionalBehaviors()
 
 ---
 
-## 7. 발견된 문제점
+## 8. 샘플 데이터
 
-### 7.1 구조적 문제
+### 8.1 BugBehavior 프리셋 (5종)
 
-| 문제 | 현상 | 영향 |
-|------|------|------|
-| Factory 분산 | 각 Base에 Create() 메서드 | 새 행동 추가 시 Base 수정 필요 |
-| 조건부 Attack 미구현 | InitializeFromScriptableObjects에서 누락 | 조건부 공격 전환 불가 |
-| 런타임 초기화 미완성 | Skills/Triggers TODO 상태 | Google Sheets 연동 불완전 |
-| Duration 미사용 | ConditionalBehavior.Duration 필드 존재 | 일시적 상태 전환 불가 |
+| SO 이름 | 컨셉 | Movement | Attack |
+|---------|------|----------|--------|
+| BugBehavior_Beetle | 돌격형 | Linear | Melee |
+| BugBehavior_Fly | 부유형 | Hover | Melee |
+| BugBehavior_Tank | 방어형 | Linear | Melee |
+| BugBehavior_Spitter | 원거리형 | Ranged | Projectile |
+| BugBehavior_Bomber | 자폭형 | Linear | Melee + ExplodeOnDeath |
 
-### 7.2 성능 문제
+### 8.2 테스트용 조합 (현재 5종)
 
-| 문제 | 현상 | 개선안 |
-|------|------|--------|
-| Passive 전체 순회 | 매 프레임 모든 Passive UpdatePassive() | 업데이트 필요한 것만 분리 |
-| 조건 매 프레임 평가 | 모든 조건 매 프레임 Evaluate() | 상태 변경 시에만 평가 |
-| OverlapSphere 비용 | Nova 등에서 매번 새 배열 생성 | NonAlloc 버전 사용 |
-
-### 7.3 설계 이슈
-
-| 문제 | 현상 | 개선안 |
-|------|------|--------|
-| Burrow 상태 복잡 | CanBurrow 플래그로 상태 판정 | 명시적 State enum |
-| 다중 조건 미지원 | 단일 Condition만 가능 | AND/OR 복합 조건 |
-| 우선순위 불명확 | 첫 번째 매칭 조건 선택 | Priority 필드 추가 |
-| Buff 시스템 중복 | Behavior 배율 vs Controller 버프 | 통합 BuffSystem |
-| 이벤트 부족 | OnAttackPerformed만 존재 | 행동별 이벤트 추가 |
-
-### 7.4 코드 품질
-
-| 문제 | 예시 | 개선안 |
-|------|------|--------|
-| 매직 넘버 | `_justAttackedTimer = 0.5f` | const 정의 |
-| 문자열 조건 | `"HP<30"` 파싱 | 타입 세이프 빌더 |
-| null 체크 중복 | 각 메서드마다 반복 | Guard 클래스 |
+| SO 이름 | 테스트 목적 |
+|---------|------------|
+| BugBehavior_Test_Orbit | OrbitMovement 검증 |
+| BugBehavior_Test_OrbitPoison | Orbit + PoisonAttack 조합 |
+| BugBehavior_Test_Spread | SpreadAttack 검증 |
+| BugBehavior_Test_Explode | ExplodeOnDeath 검증 |
+| BugBehavior_Test_Regen | RegenPassive 검증 |
 
 ---
 
-## 8. 개선 권장사항
+## 9. 에디터 도구
 
-### 우선순위 높음
+### 9.1 BugBehaviorSampleCreator
 
-1. **조건부 Attack 초기화 완성**
-   - `InitializeFromScriptableObjects()`에 ConditionalAttacks 처리 추가
-   - 위치: `BugController.cs:330` 부근
+메뉴: `DrillCorp > Bug Behaviors > Create All Samples`
 
-2. **런타임 초기화 완성**
-   - `InitializeFromRuntimeData()`에 Skills/Triggers 처리 추가
-   - 위치: `BugController.cs:481` (TODO 주석)
+샘플 SO를 자동 생성하는 에디터 도구.
 
-3. **Factory 중앙화**
-   - `BehaviorFactory` 클래스 생성
-   - 모든 Create() 메서드를 한 곳으로 이동
+**생성 항목:**
+- Movement SO (8종)
+- Attack SO (5종)
+- Passive SO (6종)
+- Skill SO (4종)
+- Trigger SO (3종)
+- BugBehavior 조합 (5종 + 테스트용)
 
-### 우선순위 중간
-
-4. **성능 최적화**
-   - UpdatePassive 필요한 Passive만 별도 리스트 관리
-   - 조건 평가 캐싱 (상태 변경 시에만)
-
-5. **상태 시스템 명확화**
-   - `BugState` enum 추가 (Normal, Burrowed, Stunned 등)
-   - Burrow 상태를 BugController에서 직접 관리
-
-6. **다중 조건 지원**
-   - `ConditionGroup` 클래스 추가 (AND/OR 연산)
-   - Priority 필드로 우선순위 명시
-
-### 우선순위 낮음
-
-7. **이벤트 시스템 확장**
-   - `OnPassiveActivated`, `OnSkillUsed`, `OnTriggered` 추가
-
-8. **Buff 시스템 통합**
-   - `BuffManager` 클래스로 모든 버프 관리
-
-9. **코드 정리**
-   - 매직 넘버 → const
-   - 문자열 조건 → 빌더 패턴
+**주의사항:**
+Unity AssetDatabase 타이밍 이슈로 인해 **3단계 패턴** 적용:
+1. 빈 에셋 생성
+2. SaveAssets + Refresh
+3. 다시 로드 후 값 설정
 
 ---
 
-## 9. 리팩토링 작업 목록
+## 10. 향후 개선 방향
 
-### Phase 1: 버그 수정
-- [ ] 조건부 Attack 초기화 코드 추가
-- [ ] Skills/Triggers 런타임 초기화 완성
+### 완료됨 (Phase 1-4)
 
-### Phase 2: 구조 개선
-- [ ] BehaviorFactory 클래스 생성
-- [ ] 각 Base의 Create()를 Factory로 이동
-- [ ] BugState enum 추가
+- [x] 조건부 Attack 초기화 완성
+- [x] SO 생성 안정화 (3단계 패턴)
+- [x] LinearMovement 옵션 추가 (Strafe/Orbit/Retreat)
+- [x] HoverMovement Strafe 옵션
+- [x] BuffAllySkill, HealAllySkill 구현
+- [x] BeamAttack 구현
+- [x] Google Sheets 연동 (Phase 4)
+  - BugData 시트에 행동 컬럼 추가
+  - Import 시 BugBehaviorData SO 자동 생성
+  - BugData에 BehaviorData 필드 추가
 
-### Phase 3: 성능 최적화
-- [ ] Passive 업데이트 필터링
-- [ ] 조건 평가 캐싱
-- [ ] OverlapSphere → NonAlloc
+### 고려 중
 
-### Phase 4: 기능 확장
-- [ ] 다중 조건 (ConditionGroup)
-- [ ] 조건 우선순위 (Priority)
-- [ ] ConditionalBehavior Duration 구현
-
-### Phase 5: 코드 품질
-- [ ] 매직 넘버 상수화
+- [ ] BehaviorFactory 중앙화
+- [ ] BugState enum 추가 (Normal, Burrowed, Stunned 등)
+- [ ] 다중 조건 지원 (AND/OR)
 - [ ] 이벤트 시스템 확장
-- [ ] Buff 시스템 통합
+- [ ] Phase 5: 기존 BugBase 코드 제거
+
+---
+
+## 11. 참고 문서
+
+- 개발 계획: `docs/BugBehaviorDevelopmentPlan.md`
+- 데이터 시트 로그: `docs/DevLog_04_DataSheet.md`
+- 데이터 구조: `docs/DATA_STRUCTURE.md`

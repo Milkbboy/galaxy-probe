@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.BugData
   _bugId: 1
   _bugName: Beetle
-  _description: "\uD0F1\uCEE4"
+  _description: "\uAE30\uBCF8 \uB3CC\uACA9\uD615"
   _maxHealth: 20
-  _moveSpeed: 0.5
+  _moveSpeed: 1.5
   _attackDamage: 8
   _attackCooldown: 1.5
-  _attackRange: 1
+  _behaviorData: {fileID: 11400000, guid: 8d2c7572b5a587a44ad65148fe210f14, type: 2}
   _prefab: {fileID: 8779006998046517225, guid: f2354471f422968499e6bb49825e0230, type: 3}
   _tintColor: {r: 1, g: 1, b: 1, a: 1}
   _scale: 1

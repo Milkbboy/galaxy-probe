@@ -45,13 +45,60 @@
 | HpBarOffsetY | 실수 | | HP바 Y 오프셋 | 0.1 |
 | HpBarOffsetZ | 실수 | | HP바 Z 오프셋 | 0.8 |
 
-### 예시 데이터
+### 행동 컬럼 (선택)
 
-| BugId | BugName | Description | MaxHealth | MoveSpeed | AttackDamage | AttackCooldown | AttackRange | Scale | CurrencyReward |
-|-------|---------|-------------|-----------|-----------|--------------|----------------|-------------|-------|----------------|
-| 1 | Beetle | 기본 근접 벌레 | 10 | 2 | 5 | 1 | 1 | 1 | 1 |
-| 2 | Ant | 빠른 소형 벌레 | 5 | 4 | 3 | 0.5 | 0.8 | 0.7 | 1 |
-| 3 | Spider | 원거리 공격 벌레 | 15 | 1.5 | 8 | 2 | 3 | 1.2 | 3 |
+| 컬럼명 | 타입 | 필수 | 설명 | 예시 |
+|--------|------|------|------|------|
+| MovementType | 문자열 | | 이동 방식 | Linear, Hover, Orbit |
+| MovementParam1 | 실수 | | 이동 파라미터1 | 0.3, 3 |
+| MovementParam2 | 실수 | | 이동 파라미터2 | 2, 90 |
+| AttackType | 문자열 | | 공격 방식 | Melee, Projectile, Cleave |
+| AttackParam1 | 실수 | | 공격 파라미터1 | 8 (투사체 속도) |
+| AttackParam2 | 실수 | | 공격 파라미터2 | 90 (Cleave 각도) |
+| Passives | 문자열 | | 패시브 (Type:P1:P2) | Armor:5, Shield:20:2 |
+| Skills | 문자열 | | 스킬 (Type:CD:P1:P2) | Nova:5:10:3 |
+| Triggers | 문자열 | | 트리거 (Type:P1:P2) | Enrage:30:50 |
+
+### 이동 타입 (MovementType)
+
+| 타입 | 설명 | Param1 | Param2 |
+|------|------|--------|--------|
+| Linear | 직선 이동 | - | - |
+| Hover | 부유 이동 | 높이 | 주기 |
+| Burst | 돌진 | 대기시간 | 속도배율 |
+| Ranged | 사거리 유지 | 거리 | 횡이동배율 |
+| Orbit | 선회 | 반경 | 각속도 |
+| Teleport | 순간이동 | 쿨다운 | 거리 |
+
+### 공격 타입 (AttackType)
+
+| 타입 | 설명 | Param1 | Param2 |
+|------|------|--------|--------|
+| Melee | 근접 | - | - |
+| Projectile | 투사체 | 속도 | - |
+| Cleave | 부채꼴 범위 | 각도 | - |
+| Spread | 다발 발사 | 발수 | 각도 |
+| Beam | 레이저 | 지속시간 | 틱간격 |
+
+### 패시브/스킬/트리거 형식
+
+콤마로 구분하여 복수 입력 가능:
+- **Passives**: `Armor:5`, `Shield:20:2`, `Dodge:30`
+- **Skills**: `Nova:5:10:3` (Type:쿨다운:Param1:Param2)
+- **Triggers**: `Enrage:30:50`, `ExplodeOnDeath:10:2`
+
+### 예시 데이터 (전체 컬럼)
+
+| BugId | BugName | Description | MaxHealth | MoveSpeed | AttackDamage | AttackCooldown | AttackRange | Scale | CurrencyReward | DropChance | HpBarOffsetX | HpBarOffsetY | HpBarOffsetZ | MovementType | MovementParam1 | MovementParam2 | AttackType | AttackParam1 | AttackParam2 | Passives | Skills | Triggers |
+|-------|---------|-------------|-----------|-----------|--------------|----------------|-------------|-------|----------------|------------|--------------|--------------|--------------|--------------|----------------|----------------|------------|--------------|--------------|----------|--------|----------|
+| 1 | Beetle | 기본 돌격형 | 20 | 1.5 | 8 | 1.5 | 1.5 | 1 | 2 | 1 | 0 | 0.1 | 0.8 | Linear | 0 | 0 | Melee | 0 | 0 | | | |
+| 2 | Fly | 빠른 부유형 | 8 | 4 | 3 | 0.5 | 1.5 | 0.8 | 1 | 1 | 0 | 0.1 | 0.8 | Hover | 0.3 | 2 | Melee | 0 | 0 | | | |
+| 3 | Tank | 방어형 탱커 | 40 | 1 | 10 | 2 | 1.5 | 1.2 | 3 | 1 | 0 | 0.1 | 0.8 | Linear | 0 | 0 | Melee | 0 | 0 | Armor:5 | | |
+| 4 | Spitter | 원거리 공격 | 15 | 2 | 5 | 1.2 | 5 | 1 | 2 | 1 | 0 | 0.1 | 0.8 | Ranged | 4 | 0.5 | Projectile | 8 | 0 | | | |
+| 5 | Bomber | 자폭형 | 12 | 3 | 5 | 1 | 1.5 | 1 | 2 | 1 | 0 | 0.1 | 0.8 | Linear | 0 | 0 | Melee | 0 | 0 | | | ExplodeOnDeath:10:2 |
+| 6 | Elite | 엘리트 | 50 | 1.5 | 12 | 1.5 | 2 | 1.3 | 5 | 1 | 0 | 0.1 | 0.8 | Linear | 0 | 0 | Cleave | 90 | 0 | Shield:20:2 | | Enrage:30:50 |
+| 7 | Orbiter | 선회형 | 18 | 2 | 6 | 1 | 1.5 | 1 | 2 | 1 | 0 | 0.1 | 0.8 | Orbit | 3 | 90 | Melee | 0 | 0 | | | |
+| 8 | Healer | 힐러 | 25 | 1.5 | 4 | 2 | 1.5 | 1 | 3 | 1 | 0 | 0.1 | 0.8 | Linear | 0 | 0 | Melee | 0 | 0 | Regen:2 | HealAlly:6:10:4 | |
 
 ---
 
@@ -254,3 +301,4 @@ Import된 ScriptableObject 위치:
 | 날짜 | 변경 내용 |
 |------|-----------|
 | 2024-01-XX | 최초 작성 |
+| 2026-04-06 | BugData 시트에 행동 컬럼 추가 (MovementType, AttackType, Passives, Skills, Triggers) |

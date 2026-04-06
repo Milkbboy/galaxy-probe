@@ -1,4 +1,5 @@
 using UnityEngine;
+using DrillCorp.Bug.Behaviors.Data;
 
 namespace DrillCorp.Data
 {
@@ -15,6 +16,10 @@ namespace DrillCorp.Data
         [SerializeField] private float _moveSpeed = 2f;
         [SerializeField] private float _attackDamage = 5f;
         [SerializeField] private float _attackCooldown = 1f;
+
+        [Header("Behavior")]
+        [Tooltip("행동 데이터 (이동, 공격, 패시브, 스킬, 트리거 조합)")]
+        [SerializeField] private BugBehaviorData _behaviorData;
 
         [Header("Visuals")]
         [SerializeField] private GameObject _prefab;
@@ -34,6 +39,7 @@ namespace DrillCorp.Data
         public float MoveSpeed => _moveSpeed;
         public float AttackDamage => _attackDamage;
         public float AttackCooldown => _attackCooldown;
+        public BugBehaviorData BehaviorData => _behaviorData;
         public GameObject Prefab => _prefab;
         public Color TintColor => _tintColor;
         public float Scale => _scale;

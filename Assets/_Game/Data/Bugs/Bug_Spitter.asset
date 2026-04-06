@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c59824505c402d4fa528e0631f3a8d3, type: 3}
+  m_Name: Bug_Spitter
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.BugData
+  _bugId: 4
+  _bugName: Spitter
+  _description: "\uC6D0\uAC70\uB9AC \uACF5\uACA9"
+  _maxHealth: 15
+  _moveSpeed: 2
+  _attackDamage: 5
+  _attackCooldown: 1.2
+  _behaviorData: {fileID: 11400000, guid: d38a5b45053f40640ac36ebed9da79b1, type: 2}
+  _prefab: {fileID: 4828040156217863924, guid: 565a67743fa6d3044a70ae498fca7941, type: 3}
+  _tintColor: {r: 1, g: 1, b: 1, a: 1}
+  _scale: 1
+  _hpBarOffset: {x: 0, y: 0.1, z: 0.8}
+  _currencyReward: 2
+  _dropChance: 1

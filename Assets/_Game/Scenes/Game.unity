@@ -2382,7 +2382,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Wave.WaveManager
   _waveDataAssets:
-  - {fileID: 11400000, guid: 4fe18707671a9014291d003bdcadf67b, type: 2}
   - {fileID: 11400000, guid: d491bdb9813d78f448cb6995c2003eff, type: 2}
   - {fileID: 11400000, guid: 87d5c1a5aa38f2f4b9eabf8fb0893906, type: 2}
   - {fileID: 11400000, guid: b3e35dcad459db044b46ebf930f1ba30, type: 2}

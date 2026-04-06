@@ -15,7 +15,7 @@
 | Phase 1 | 기본 행동 | ✅ 완료 |
 | Phase 2 | 확장 행동 | ✅ 완료 |
 | Phase 3 | 고급 행동 | ✅ 완료 |
-| Phase 4 | Google Sheets 연동 | ⬜ 미진행 |
+| Phase 4 | Google Sheets 연동 | ✅ 완료 |
 | Phase 5 | 기존 코드 제거 | ⬜ 미진행 |
 
 ---
@@ -230,29 +230,40 @@ Assets/_Game/Scripts/Bug/Behaviors/
 
 ---
 
-## Phase 4: Google Sheets 연동 ⬜
+## Phase 4: Google Sheets 연동 ✅
 
 ### 목표
 - 기획자가 시트에서 벌레 행동 조합 가능
 
-### 구현 항목
-- [ ] `GoogleSheetsImporter` 확장
-  - BugBehaviors 시트 파싱
-  - ConditionalBehaviors 시트 파싱
-  - 문자열 → RuntimeBehaviorSet 변환
+### 완료 항목
+- [x] `GoogleSheetsImporter` 확장
+  - BugData 시트에 행동 컬럼 추가 방식 채택 (별도 시트 X)
+  - 행동 문자열 파싱 → BugBehaviorData SO 자동 생성
+  - BugData에 BehaviorData 참조 자동 연결
 
-- [ ] Import 시 자동 조합
-  - `Movement: Hover:0.5:2` → HoverMovement(0.5, 2)
-  - `Passives: Armor:10, Dodge:20` → ArmorPassive(10), DodgePassive(20)
+- [x] Import 시 자동 조합
+  - `MovementType: Hover`, `MovementParam1: 0.5` → HoverMovement SO 생성
+  - `Passives: Armor:5, Dodge:20` → Passive SO들 생성 및 연결
+  - `Triggers: ExplodeOnDeath:10:2` → Trigger SO 생성 및 연결
 
-### 시트 구조
+### 시트 구조 (BugData 시트 확장)
 ```
-BugBehaviors 시트:
-| BugId | Movement | BasicAttack | Skills | Passives | Triggers |
+BugData 시트 추가 컬럼:
+| ... | MovementType | MovementParam1 | MovementParam2 | AttackType | AttackRange | AttackParam1 | Passives | Skills | Triggers |
 
-ConditionalBehaviors 시트:
-| BugId | Category | Default | Condition | SwitchTo |
+예시:
+| Beetle | Linear | 0 | 0 | Melee | 1.5 | 0 | | |
+| Tank | Linear | 0 | 0 | Melee | 1.5 | 0 | Armor:5 | |
+| Bomber | Linear | 0 | 0 | Melee | 1.5 | 0 | | ExplodeOnDeath:10:2 |
 ```
+
+### 생성되는 SO 위치
+- `Assets/_Game/Data/BugBehaviors/Imported/` - Import된 SO 저장
+  - `BugBehavior_[BugName].asset` - 행동 조합
+  - `Movement_[Type]_[Param1]_[Param2].asset` - 이동 SO
+  - `Attack_[Type]_[Range].asset` - 공격 SO
+  - `Passive_[Type]_[Param1]_[Param2].asset` - 패시브 SO
+  - `Trigger_[Type]_[Param1]_[Param2].asset` - 트리거 SO
 
 ---
 
@@ -279,17 +290,17 @@ ConditionalBehaviors 시트:
 - Phase 0: 기반 구조 ✅
 - Phase 1: 기본 행동 ✅
 - Phase 2: 확장 행동 ✅
+- Phase 3: 고급 행동 ✅
+- Phase 4: Google Sheets 연동 ✅
 
 ### 다음 작업
-1. Phase 3: 고급 행동 (보스급 벌레)
-   - TeleportMovement, BurrowMovement
-   - HomingAttack, BeamAttack
-   - BuffAllySkill, SlowSkill
-   - TransformTrigger, SplitOnDeathTrigger
+1. Phase 5: 기존 코드 제거
+   - BugBase 시스템 완전 제거
+   - 모든 벌레가 BugController 사용
 
 ### 공존 상태
 ```
-BugBase (기존)     ← 기존 프리펩들 사용 중
+BugBase (기존)     ← 기존 프리펩들 사용 중 (제거 예정)
 BugController (신규) ← 새 프리펩에서 사용 가능
 ```
 
@@ -306,3 +317,4 @@ BugController (신규) ← 새 프리펩에서 사용 가능
 | 2024-XX-XX | BeamAttack 구현 완료. HomingAttack 제외 결정 (머신 고정이라 유도 의미 없음) |
 | 2024-XX-XX | BuffAllySkill, HealAllySkill 완료 (Aura 방식). SlowSkill, StunSkill 제외 결정 (머신 고정이라 디버프 대상 없음) |
 | 2024-XX-XX | Phase 3 나머지 Passives, Triggers 제외 결정 (현재 필요성 낮음). Phase 3 완료 |
+| 2026-04-03 | Phase 4 완료: GoogleSheetsImporter 확장. BugData 시트에 행동 컬럼 추가 방식 채택. BugData에 BehaviorData 필드 추가 |

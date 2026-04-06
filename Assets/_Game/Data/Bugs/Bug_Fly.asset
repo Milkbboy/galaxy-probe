@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.BugData
   _bugId: 2
   _bugName: Fly
-  _description: "\uBE60\uB974\uACE0 \uC57D\uD55C \uB0A0\uBC8C\uB808"
+  _description: "\uBE60\uB978 \uBD80\uC720\uD615"
   _maxHealth: 8
-  _moveSpeed: 2
+  _moveSpeed: 4
   _attackDamage: 3
   _attackCooldown: 0.5
-  _attackRange: 2
-  _prefab: {fileID: 5321672167020227983, guid: c465e412070045441a0392c5325413c1, type: 3}
+  _behaviorData: {fileID: 11400000, guid: 3e1e239d3f7e3384a82ff9960f0d8fc2, type: 2}
+  _prefab: {fileID: 7414465423929483405, guid: 2c77fa963ae016c46bcfaec9d1834ab8, type: 3}
   _tintColor: {r: 1, g: 1, b: 1, a: 1}
   _scale: 0.8
-  _hpBarOffset: {x: 0, y: 0.1, z: 0.7}
+  _hpBarOffset: {x: 0, y: 0.1, z: 0.8}
   _currencyReward: 1
   _dropChance: 1

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine.Networking;
 using DrillCorp.Data;
+using DrillCorp.Bug.Behaviors.Data;
 
 namespace DrillCorp.Editor
 {
@@ -27,6 +28,9 @@ namespace DrillCorp.Editor
         // 미리보기 데이터
         private int _previewTab = 0;
         private readonly string[] _previewTabNames = { "BugData", "WaveData", "SpawnGroups", "MachineData", "UpgradeData" };
+
+        // BugBehavior 폴더 경로
+        private const string BEHAVIOR_DATA_PATH = "Assets/_Game/Data/BugBehaviors";
         private Dictionary<string, List<List<string>>> _previewData = new Dictionary<string, List<List<string>>>();
         private Vector2 _previewScrollPosition;
         private bool _isLoading = false;
@@ -872,11 +876,21 @@ namespace DrillCorp.Editor
 
             var headers = rows[0];
             string savePath = "Assets/_Game/Data/Bugs";
+            string behaviorSavePath = $"{BEHAVIOR_DATA_PATH}/Imported";
 
+            // 폴더 생성
             if (!AssetDatabase.IsValidFolder(savePath))
             {
                 AssetDatabase.CreateFolder("Assets/_Game/Data", "Bugs");
             }
+            EnsureBehaviorFolders();
+
+            // 기존 Movement/Attack SO 캐시 (참조용)
+            var movementCache = LoadBehaviorCache<MovementBehaviorData>($"{BEHAVIOR_DATA_PATH}/Movement");
+            var attackCache = LoadBehaviorCache<AttackBehaviorData>($"{BEHAVIOR_DATA_PATH}/Attack");
+            var passiveCache = LoadBehaviorCache<PassiveBehaviorData>($"{BEHAVIOR_DATA_PATH}/Passive");
+            var skillCache = LoadBehaviorCache<SkillBehaviorData>($"{BEHAVIOR_DATA_PATH}/Skill");
+            var triggerCache = LoadBehaviorCache<TriggerBehaviorData>($"{BEHAVIOR_DATA_PATH}/Trigger");
 
             for (int i = 1; i < rows.Count; i++)
             {
@@ -919,10 +933,436 @@ namespace DrillCorp.Editor
                 so.ApplyModifiedPropertiesWithoutUndo();
                 EditorUtility.SetDirty(bugData);
 
-                Debug.Log($"[GoogleSheetsImporter] Imported: {bugName}");
+                // === Behavior 데이터 처리 ===
+                string movementType = GetValue(row, headers, "MovementType", "");
+                string attackType = GetValue(row, headers, "AttackType", "");
+
+                // 행동 컬럼이 있으면 BugBehaviorData 생성/갱신
+                if (!string.IsNullOrEmpty(movementType) || !string.IsNullOrEmpty(attackType))
+                {
+                    var behaviorData = CreateOrUpdateBugBehaviorData(
+                        bugName,
+                        behaviorSavePath,
+                        row,
+                        headers,
+                        movementCache,
+                        attackCache,
+                        passiveCache,
+                        skillCache,
+                        triggerCache
+                    );
+
+                    // BugData에 BehaviorData 참조 설정
+                    so = new SerializedObject(bugData);
+                    var behaviorProp = so.FindProperty("_behaviorData");
+                    if (behaviorProp != null)
+                    {
+                        behaviorProp.objectReferenceValue = behaviorData;
+                    }
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    EditorUtility.SetDirty(bugData);
+
+                    Debug.Log($"[GoogleSheetsImporter] Imported with Behavior: {bugName}");
+                }
+                else
+                {
+                    Debug.Log($"[GoogleSheetsImporter] Imported: {bugName}");
+                }
             }
 
             AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+
+        /// <summary>
+        /// Behavior 폴더 구조 확인 및 생성
+        /// </summary>
+        private void EnsureBehaviorFolders()
+        {
+            string[] folders = { "Imported", "Movement", "Attack", "Passive", "Skill", "Trigger" };
+
+            if (!AssetDatabase.IsValidFolder(BEHAVIOR_DATA_PATH))
+            {
+                AssetDatabase.CreateFolder("Assets/_Game/Data", "BugBehaviors");
+            }
+
+            foreach (var folder in folders)
+            {
+                string path = $"{BEHAVIOR_DATA_PATH}/{folder}";
+                if (!AssetDatabase.IsValidFolder(path))
+                {
+                    AssetDatabase.CreateFolder(BEHAVIOR_DATA_PATH, folder);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 특정 폴더의 Behavior SO들을 이름으로 캐시
+        /// </summary>
+        private Dictionary<string, T> LoadBehaviorCache<T>(string folderPath) where T : ScriptableObject
+        {
+            var cache = new Dictionary<string, T>(System.StringComparer.OrdinalIgnoreCase);
+
+            if (!AssetDatabase.IsValidFolder(folderPath))
+                return cache;
+
+            var guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}", new[] { folderPath });
+            foreach (var guid in guids)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var asset = AssetDatabase.LoadAssetAtPath<T>(path);
+                if (asset != null)
+                {
+                    // 파일명에서 키 추출 (Movement_Linear -> Linear)
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
+                    string[] parts = fileName.Split('_');
+                    string key = parts.Length > 1 ? parts[1] : fileName;
+                    cache[key] = asset;
+                }
+            }
+
+            return cache;
+        }
+
+        /// <summary>
+        /// BugBehaviorData SO 생성 또는 업데이트
+        /// </summary>
+        private BugBehaviorData CreateOrUpdateBugBehaviorData(
+            string bugName,
+            string savePath,
+            List<string> row,
+            List<string> headers,
+            Dictionary<string, MovementBehaviorData> movementCache,
+            Dictionary<string, AttackBehaviorData> attackCache,
+            Dictionary<string, PassiveBehaviorData> passiveCache,
+            Dictionary<string, SkillBehaviorData> skillCache,
+            Dictionary<string, TriggerBehaviorData> triggerCache)
+        {
+            string assetPath = $"{savePath}/BugBehavior_{bugName}.asset";
+
+            BugBehaviorData behaviorData = AssetDatabase.LoadAssetAtPath<BugBehaviorData>(assetPath);
+            if (behaviorData == null)
+            {
+                behaviorData = ScriptableObject.CreateInstance<BugBehaviorData>();
+                AssetDatabase.CreateAsset(behaviorData, assetPath);
+                AssetDatabase.SaveAssets();
+            }
+
+            var so = new SerializedObject(behaviorData);
+
+            // === Movement 설정 ===
+            string movementTypeStr = GetValue(row, headers, "MovementType", "Linear");
+            float movementParam1 = GetFloatValue(row, headers, "MovementParam1", 0f);
+            float movementParam2 = GetFloatValue(row, headers, "MovementParam2", 0f);
+
+            // 기존 SO 있으면 참조, 없으면 새로 생성
+            MovementBehaviorData movementSO = FindOrCreateMovementSO(
+                movementTypeStr, movementParam1, movementParam2, movementCache);
+
+            var movementProp = so.FindProperty("_defaultMovement");
+            if (movementProp != null)
+            {
+                movementProp.objectReferenceValue = movementSO;
+            }
+
+            // === Attack 설정 ===
+            string attackTypeStr = GetValue(row, headers, "AttackType", "Melee");
+            float attackRange = GetFloatValue(row, headers, "AttackRange", 1.5f);
+            float attackParam1 = GetFloatValue(row, headers, "AttackParam1", 0f);
+            float attackParam2 = GetFloatValue(row, headers, "AttackParam2", 0f);
+
+            AttackBehaviorData attackSO = FindOrCreateAttackSO(
+                attackTypeStr, attackRange, attackParam1, attackParam2, attackCache);
+
+            var attackProp = so.FindProperty("_defaultAttack");
+            if (attackProp != null)
+            {
+                attackProp.objectReferenceValue = attackSO;
+            }
+
+            // === Passives 설정 ===
+            string passivesStr = GetValue(row, headers, "Passives", "");
+            var passiveSOList = ParseAndCreatePassives(passivesStr, passiveCache);
+            SetSOListProperty(so, "_passives", passiveSOList);
+
+            // === Skills 설정 ===
+            string skillsStr = GetValue(row, headers, "Skills", "");
+            var skillSOList = ParseAndCreateSkills(skillsStr, skillCache);
+            SetSOListProperty(so, "_skills", skillSOList);
+
+            // === Triggers 설정 ===
+            string triggersStr = GetValue(row, headers, "Triggers", "");
+            var triggerSOList = ParseAndCreateTriggers(triggersStr, triggerCache);
+            SetSOListProperty(so, "_triggers", triggerSOList);
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(behaviorData);
+
+            return behaviorData;
+        }
+
+        /// <summary>
+        /// Movement SO 찾거나 새로 생성
+        /// </summary>
+        private MovementBehaviorData FindOrCreateMovementSO(
+            string typeStr, float param1, float param2,
+            Dictionary<string, MovementBehaviorData> cache)
+        {
+            // 기존 캐시에서 찾기 (파라미터 무시하고 타입만으로)
+            if (cache.TryGetValue(typeStr, out var existing))
+            {
+                return existing;
+            }
+
+            // 없으면 Imported 폴더에 새로 생성
+            if (!System.Enum.TryParse(typeStr, true, out MovementType movementType))
+            {
+                movementType = MovementType.Linear;
+            }
+
+            string assetPath = $"{BEHAVIOR_DATA_PATH}/Imported/Movement_{typeStr}_{param1}_{param2}.asset";
+
+            // 이미 같은 파라미터로 생성된 것 있는지 확인
+            var existingImported = AssetDatabase.LoadAssetAtPath<MovementBehaviorData>(assetPath);
+            if (existingImported != null)
+                return existingImported;
+
+            var newSO = ScriptableObject.CreateInstance<MovementBehaviorData>();
+            AssetDatabase.CreateAsset(newSO, assetPath);
+
+            var so = new SerializedObject(newSO);
+            SetSerializedEnumField(so, "_type", (int)movementType);
+            SetSerializedField(so, "_displayName", $"{typeStr} (Imported)");
+            SetSerializedField(so, "_param1", param1);
+            SetSerializedField(so, "_param2", param2);
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            cache[typeStr] = newSO;
+            return newSO;
+        }
+
+        /// <summary>
+        /// Attack SO 찾거나 새로 생성
+        /// </summary>
+        private AttackBehaviorData FindOrCreateAttackSO(
+            string typeStr, float range, float param1, float param2,
+            Dictionary<string, AttackBehaviorData> cache)
+        {
+            if (cache.TryGetValue(typeStr, out var existing))
+            {
+                return existing;
+            }
+
+            if (!System.Enum.TryParse(typeStr, true, out AttackType attackType))
+            {
+                attackType = AttackType.Melee;
+            }
+
+            string assetPath = $"{BEHAVIOR_DATA_PATH}/Imported/Attack_{typeStr}_{range}.asset";
+
+            var existingImported = AssetDatabase.LoadAssetAtPath<AttackBehaviorData>(assetPath);
+            if (existingImported != null)
+                return existingImported;
+
+            var newSO = ScriptableObject.CreateInstance<AttackBehaviorData>();
+            AssetDatabase.CreateAsset(newSO, assetPath);
+
+            var so = new SerializedObject(newSO);
+            SetSerializedEnumField(so, "_type", (int)attackType);
+            SetSerializedField(so, "_displayName", $"{typeStr} (Imported)");
+            SetSerializedField(so, "_range", range);
+            SetSerializedField(so, "_param1", param1);
+            SetSerializedField(so, "_param2", param2);
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            cache[typeStr] = newSO;
+            return newSO;
+        }
+
+        /// <summary>
+        /// Passives 문자열 파싱 및 SO 리스트 생성
+        /// 형식: "Armor:5, Shield:20:2"
+        /// </summary>
+        private List<PassiveBehaviorData> ParseAndCreatePassives(
+            string passivesStr,
+            Dictionary<string, PassiveBehaviorData> cache)
+        {
+            var result = new List<PassiveBehaviorData>();
+            if (string.IsNullOrEmpty(passivesStr)) return result;
+
+            string[] entries = passivesStr.Split(',');
+            foreach (var entry in entries)
+            {
+                string trimmed = entry.Trim();
+                if (string.IsNullOrEmpty(trimmed)) continue;
+
+                var (type, param1, param2) = PassiveBehaviorData.Parse(trimmed);
+                string typeStr = type.ToString();
+
+                // 캐시 확인
+                if (cache.TryGetValue(typeStr, out var existing))
+                {
+                    result.Add(existing);
+                    continue;
+                }
+
+                // 새로 생성
+                string assetPath = $"{BEHAVIOR_DATA_PATH}/Imported/Passive_{typeStr}_{param1}_{param2}.asset";
+                var existingImported = AssetDatabase.LoadAssetAtPath<PassiveBehaviorData>(assetPath);
+                if (existingImported != null)
+                {
+                    result.Add(existingImported);
+                    continue;
+                }
+
+                var newSO = ScriptableObject.CreateInstance<PassiveBehaviorData>();
+                AssetDatabase.CreateAsset(newSO, assetPath);
+
+                var so = new SerializedObject(newSO);
+                SetSerializedEnumField(so, "_type", (int)type);
+                SetSerializedField(so, "_displayName", $"{typeStr} (Imported)");
+                SetSerializedField(so, "_param1", param1);
+                SetSerializedField(so, "_param2", param2);
+                so.ApplyModifiedPropertiesWithoutUndo();
+
+                result.Add(newSO);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Skills 문자열 파싱 및 SO 리스트 생성
+        /// 형식: "Nova:5:10:3" (Type:Cooldown:Param1:Param2)
+        /// </summary>
+        private List<SkillBehaviorData> ParseAndCreateSkills(
+            string skillsStr,
+            Dictionary<string, SkillBehaviorData> cache)
+        {
+            var result = new List<SkillBehaviorData>();
+            if (string.IsNullOrEmpty(skillsStr)) return result;
+
+            string[] entries = skillsStr.Split(',');
+            foreach (var entry in entries)
+            {
+                string trimmed = entry.Trim();
+                if (string.IsNullOrEmpty(trimmed)) continue;
+
+                var (type, cooldown, param1, param2, stringParam) = SkillBehaviorData.Parse(trimmed);
+                string typeStr = type.ToString();
+
+                if (cache.TryGetValue(typeStr, out var existing))
+                {
+                    result.Add(existing);
+                    continue;
+                }
+
+                string assetPath = $"{BEHAVIOR_DATA_PATH}/Imported/Skill_{typeStr}_{cooldown}.asset";
+                var existingImported = AssetDatabase.LoadAssetAtPath<SkillBehaviorData>(assetPath);
+                if (existingImported != null)
+                {
+                    result.Add(existingImported);
+                    continue;
+                }
+
+                var newSO = ScriptableObject.CreateInstance<SkillBehaviorData>();
+                AssetDatabase.CreateAsset(newSO, assetPath);
+
+                var so = new SerializedObject(newSO);
+                SetSerializedEnumField(so, "_type", (int)type);
+                SetSerializedField(so, "_displayName", $"{typeStr} (Imported)");
+                SetSerializedField(so, "_cooldown", cooldown);
+                SetSerializedField(so, "_param1", param1);
+                SetSerializedField(so, "_param2", param2);
+                if (!string.IsNullOrEmpty(stringParam))
+                {
+                    SetSerializedField(so, "_stringParam", stringParam);
+                }
+                so.ApplyModifiedPropertiesWithoutUndo();
+
+                result.Add(newSO);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Triggers 문자열 파싱 및 SO 리스트 생성
+        /// 형식: "Enrage:30:50, ExplodeOnDeath:10:2"
+        /// </summary>
+        private List<TriggerBehaviorData> ParseAndCreateTriggers(
+            string triggersStr,
+            Dictionary<string, TriggerBehaviorData> cache)
+        {
+            var result = new List<TriggerBehaviorData>();
+            if (string.IsNullOrEmpty(triggersStr)) return result;
+
+            string[] entries = triggersStr.Split(',');
+            foreach (var entry in entries)
+            {
+                string trimmed = entry.Trim();
+                if (string.IsNullOrEmpty(trimmed)) continue;
+
+                var (type, param1, param2, param3, stringParam) = TriggerBehaviorData.Parse(trimmed);
+                string typeStr = type.ToString();
+
+                if (cache.TryGetValue(typeStr, out var existing))
+                {
+                    result.Add(existing);
+                    continue;
+                }
+
+                string assetPath = $"{BEHAVIOR_DATA_PATH}/Imported/Trigger_{typeStr}_{param1}_{param2}.asset";
+                var existingImported = AssetDatabase.LoadAssetAtPath<TriggerBehaviorData>(assetPath);
+                if (existingImported != null)
+                {
+                    result.Add(existingImported);
+                    continue;
+                }
+
+                var newSO = ScriptableObject.CreateInstance<TriggerBehaviorData>();
+                AssetDatabase.CreateAsset(newSO, assetPath);
+
+                var so = new SerializedObject(newSO);
+                SetSerializedEnumField(so, "_type", (int)type);
+                SetSerializedField(so, "_displayName", $"{typeStr} (Imported)");
+                SetSerializedField(so, "_param1", param1);
+                SetSerializedField(so, "_param2", param2);
+                SetSerializedField(so, "_param3", param3);
+                if (!string.IsNullOrEmpty(stringParam))
+                {
+                    SetSerializedField(so, "_stringParam", stringParam);
+                }
+                so.ApplyModifiedPropertiesWithoutUndo();
+
+                result.Add(newSO);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// SO 리스트를 SerializedProperty에 설정
+        /// </summary>
+        private void SetSOListProperty<T>(SerializedObject so, string propertyName, List<T> list) where T : ScriptableObject
+        {
+            var prop = so.FindProperty(propertyName);
+            if (prop == null) return;
+
+            prop.arraySize = list.Count;
+            for (int i = 0; i < list.Count; i++)
+            {
+                prop.GetArrayElementAtIndex(i).objectReferenceValue = list[i];
+            }
+        }
+
+        /// <summary>
+        /// Enum 필드 설정
+        /// </summary>
+        private void SetSerializedEnumField(SerializedObject so, string fieldName, int value)
+        {
+            var prop = so.FindProperty(fieldName);
+            if (prop != null) prop.enumValueIndex = value;
         }
 
         private async Task ImportWaveDataAsync()

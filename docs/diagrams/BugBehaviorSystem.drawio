@@ -1,0 +1,328 @@
+<mxfile host="app.diagrams.net" modified="2026-04-06T00:00:00.000Z" agent="Claude" version="21.0.0">
+  <diagram name="데이터 계층 구조" id="hierarchy">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- 제목 -->
+        <mxCell id="title1" value="Bug Behavior 데이터 계층 구조" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="400" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Wave 레이어 -->
+        <mxCell id="wave_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="80" y="80" width="1040" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="wave_label" value="Wave Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="90" y="85" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="wave" value="WaveData&#xa;─────────&#xa;• 웨이브 번호&#xa;• 스폰 정보[]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="500" y="105" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Bug 레이어 -->
+        <mxCell id="bug_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="80" y="200" width="1040" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="bug_label" value="Bug Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="90" y="205" width="100" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="bug1" value="BugData&#xa;─────────&#xa;• HP, Speed, Damage&#xa;• BehaviorData 참조" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="200" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="bug2" value="BugData&#xa;─────────&#xa;• HP, Speed, Damage&#xa;• BehaviorData 참조" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="520" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="bug3" value="BugData&#xa;─────────&#xa;• HP, Speed, Damage&#xa;• BehaviorData 참조" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="840" y="230" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- 화살표: Wave -> Bugs -->
+        <mxCell id="arrow_w1" value="" style="endArrow=classic;html=1;strokeWidth=2;exitX=0.25;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="wave" target="bug1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow_w2" value="" style="endArrow=classic;html=1;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="wave" target="bug2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow_w3" value="" style="endArrow=classic;html=1;strokeWidth=2;exitX=0.75;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="wave" target="bug3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Behavior 레이어 -->
+        <mxCell id="behavior_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="80" y="340" width="1040" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="behavior_label" value="Behavior Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="90" y="345" width="120" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="bh1" value="BugBehaviorData&#xa;─────────&#xa;행동 조합" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="210" y="370" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bh2" value="BugBehaviorData&#xa;─────────&#xa;행동 조합" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="530" y="370" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="bh3" value="BugBehaviorData&#xa;─────────&#xa;행동 조합" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="850" y="370" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- 화살표: Bug -> Behavior -->
+        <mxCell id="arrow_b1" value="" style="endArrow=classic;html=1;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="bug1" target="bh1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow_b2" value="" style="endArrow=classic;html=1;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="bug2" target="bh2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow_b3" value="" style="endArrow=classic;html=1;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="bug3" target="bh3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Individual Behaviors 레이어 -->
+        <mxCell id="ind_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="80" y="480" width="1040" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="ind_label" value="Individual Behaviors" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="90" y="485" width="150" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="movement" value="Movement&#xa;─────────&#xa;Linear, Hover,&#xa;Burst, Orbit..." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="120" y="520" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="attack" value="Attack&#xa;─────────&#xa;Melee, Projectile,&#xa;Cleave, Spread..." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="300" y="520" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="passive" value="Passive&#xa;─────────&#xa;Armor, Dodge,&#xa;Shield, Regen..." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="480" y="520" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="skill" value="Skill&#xa;─────────&#xa;Nova, Spawn,&#xa;BuffAlly, HealAlly" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="660" y="520" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="trigger" value="Trigger&#xa;─────────&#xa;Enrage,&#xa;ExplodeOnDeath..." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="840" y="520" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- 화살표: BehaviorData -> Individual -->
+        <mxCell id="arrow_i1" value="" style="endArrow=classic;html=1;strokeWidth=1;dashed=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="bh2" target="movement">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="600" y="450" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow_i2" value="" style="endArrow=classic;html=1;strokeWidth=1;dashed=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="bh2" target="attack">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="600" y="450" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow_i3" value="" style="endArrow=classic;html=1;strokeWidth=1;dashed=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="bh2" target="passive">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="600" y="450" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow_i4" value="" style="endArrow=classic;html=1;strokeWidth=1;dashed=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="bh2" target="skill">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="600" y="450" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow_i5" value="" style="endArrow=classic;html=1;strokeWidth=1;dashed=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="bh2" target="trigger">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="600" y="450" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 범례 -->
+        <mxCell id="legend_title" value="범례" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="80" y="640" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="80" y="665" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend1_text" value="Wave: 하나의 게임 세션" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="105" y="665" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="80" y="690" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend2_text" value="Bug: 스탯 + 행동 참조" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="105" y="690" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend3" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="300" y="665" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend3_text" value="BugBehavior: 행동 조합" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="325" y="665" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="300" y="690" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend4_text" value="Individual: 개별 행동 SO" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="325" y="690" width="180" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Import 흐름도" id="import-flow">
+    <mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- 제목 -->
+        <mxCell id="title2" value="Google Sheets → Unity SO Import 흐름" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="350" y="20" width="500" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Google Sheets -->
+        <mxCell id="sheets" value="Google Sheets&#xa;─────────────&#xa;BugData 시트&#xa;(스탯 + 행동 컬럼)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4285f4;strokeColor=#1a73e8;strokeWidth=2;fontColor=#ffffff;align=center" vertex="1" parent="1">
+          <mxGeometry x="500" y="80" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Import 버튼 -->
+        <mxCell id="import_btn" value="Import BugData" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#34a853;strokeColor=#1e8e3e;strokeWidth=2;fontColor=#ffffff;align=center;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="520" y="190" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow_s1" value="" style="endArrow=classic;html=1;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="sheets" target="import_btn">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- GoogleSheetsImporter -->
+        <mxCell id="importer" value="GoogleSheetsImporter&#xa;─────────────────&#xa;• 시트 데이터 읽기&#xa;• 문자열 파싱&#xa;• SO 생성/업데이트" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="480" y="260" width="240" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow_s2" value="" style="endArrow=classic;html=1;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="import_btn" target="importer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 분기점 -->
+        <mxCell id="decision" value="기존 SO&#xa;존재?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="540" y="380" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow_s3" value="" style="endArrow=classic;html=1;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0" edge="1" parent="1" source="importer" target="decision">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 캐시 폴더 -->
+        <mxCell id="cache_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;dashed=1" vertex="1" parent="1">
+          <mxGeometry x="120" y="370" width="280" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="cache_title" value="캐시 폴더 (수동 생성)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="130" y="375" width="150" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="cache1" value="Movement/&#xa;Movement_Linear.asset" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=center;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="140" y="400" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="cache2" value="Attack/&#xa;Attack_Melee.asset" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=center;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="270" y="400" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="cache3" value="Passive/&#xa;Passive_Armor.asset" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=center;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="140" y="450" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="cache4" value="Skill/&#xa;Skill_Nova.asset" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=center;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="270" y="450" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="cache5" value="Trigger/&#xa;Trigger_Enrage.asset" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=center;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="200" y="500" width="120" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- 재사용 화살표 -->
+        <mxCell id="arrow_yes" value="YES" style="endArrow=classic;html=1;strokeWidth=2;exitX=0;exitY=0.5;entryX=1;entryY=0.5;fontStyle=1;labelBackgroundColor=#ffffff" edge="1" parent="1" source="decision" target="cache_box">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="430" y="420" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="reuse_text" value="재사용" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;fontColor=#34a853" vertex="1" parent="1">
+          <mxGeometry x="420" y="395" width="50" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Imported 폴더 -->
+        <mxCell id="imported_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;dashed=1" vertex="1" parent="1">
+          <mxGeometry x="780" y="370" width="280" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="imported_title" value="Imported/ 폴더 (자동 생성)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="790" y="375" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="imported1" value="BugBehavior_Tank.asset" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=center;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="800" y="400" width="140" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="imported2" value="Movement_Orbit_3_90.asset" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=center;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="800" y="445" width="140" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="imported3" value="Passive_Shield_20_2.asset" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=center;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="800" y="490" width="140" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="imported4" value="Trigger_Enrage_30_50.asset" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=center;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="800" y="535" width="140" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="new_label" value="(파라미터 포함 파일명)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#666666" vertex="1" parent="1">
+          <mxGeometry x="950" y="460" width="110" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- 새로 생성 화살표 -->
+        <mxCell id="arrow_no" value="NO" style="endArrow=classic;html=1;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontStyle=1;labelBackgroundColor=#ffffff" edge="1" parent="1" source="decision" target="imported_box">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="750" y="420" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="create_text" value="새로 생성" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;fontColor=#ea4335" vertex="1" parent="1">
+          <mxGeometry x="700" y="395" width="60" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- 최종 결과 -->
+        <mxCell id="result_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2" vertex="1" parent="1">
+          <mxGeometry x="350" y="620" width="500" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="result_title" value="최종 결과" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="360" y="625" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="result1" value="BugData&#xa;─────────&#xa;• 스탯 정보&#xa;• BehaviorData 참조" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="380" y="650" width="140" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="result2" value="BugBehaviorData&#xa;─────────────&#xa;• Movement SO&#xa;• Attack SO&#xa;• Passives[], Skills[], Triggers[]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;align=center" vertex="1" parent="1">
+          <mxGeometry x="560" y="650" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow_link" value="" style="endArrow=classic;html=1;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="result1" target="result2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 화살표: 폴더들 -> 결과 -->
+        <mxCell id="arrow_f1" value="" style="endArrow=classic;html=1;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.25;entryY=0;dashed=1" edge="1" parent="1" source="cache_box" target="result_box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow_f2" value="" style="endArrow=classic;html=1;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.75;entryY=0;dashed=1" edge="1" parent="1" source="imported_box" target="result_box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- 범례 -->
+        <mxCell id="legend_box2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;strokeWidth=1" vertex="1" parent="1">
+          <mxGeometry x="80" y="620" width="220" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="legend_t2" value="범례" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="90" y="625" width="40" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;dashed=1" vertex="1" parent="1">
+          <mxGeometry x="90" y="650" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg1_t" value="수동 생성 (캐시)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="115" y="650" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;dashed=1" vertex="1" parent="1">
+          <mxGeometry x="90" y="680" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg2_t" value="자동 생성 (Import)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="115" y="680" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg3" value="" style="endArrow=classic;html=1;strokeWidth=2;dashed=1" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="90" y="720" as="sourcePoint" />
+            <mxPoint x="110" y="720" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="leg3_t" value="SO 참조 연결" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="115" y="710" width="80" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

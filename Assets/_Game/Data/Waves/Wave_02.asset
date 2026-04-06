@@ -20,7 +20,7 @@ MonoBehaviour:
     StartDelay: 0
     SpawnInterval: 0.4
     RandomPosition: 1
-  - BugData: {fileID: 11400000, guid: 0979a09a05ba65f43aea855d3b473a6b, type: 2}
+  - BugData: {fileID: 11400000, guid: 7939781804bb73e4a9533f13d727ab1c, type: 2}
     Count: 5
     StartDelay: 5
     SpawnInterval: 0.3
