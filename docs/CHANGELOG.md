@@ -6,10 +6,15 @@
 
 ---
 
-## [Unreleased]
+## [Unreleased] - 2026-04-13
 
 ### Added
-- 추가 예정 기능
+- **카메라 시스템 (Nuclear Throne 방식)**: 마우스 쪽으로 카메라가 따라가는 방식
+  - `CameraSettingsData` ScriptableObject: 파라미터 관리 ([Range] 속성)
+  - `DynamicCamera`: Position Lerp 기반 카메라 제어
+  - `DebugCameraUI`: F1 토글 디버그 UI (런타임 슬라이더, Save to Asset)
+  - Gizmo 시각화 (MaxOffset 범위, 현재 타겟 위치)
+  - 상세 문서: `docs/CameraSystem.md`
 
 ---
 
