@@ -49,13 +49,17 @@ namespace DrillCorp.Machine
 
         private bool _isSessionActive;
 
-        // 디버그용
+        [Header("Debug")]
+        [Tooltip("시작 시 무적 상태 (디버그/테스트용)")]
+        [SerializeField] private bool _startInvincible = true;
+
         private bool _isInvincible;
         public bool IsInvincible => _isInvincible;
 
         private void Awake()
         {
             ApplyMachineData();
+            _isInvincible = _startInvincible;
         }
 
         private void Start()

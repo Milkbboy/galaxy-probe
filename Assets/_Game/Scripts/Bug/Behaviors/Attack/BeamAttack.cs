@@ -67,7 +67,7 @@ namespace DrillCorp.Bug.Behaviors.Attack
 
             if (_beamVfxPrefab != null)
             {
-                _activeBeam = Object.Instantiate(_beamVfxPrefab, _bug.transform.position, Quaternion.identity);
+                _activeBeam = Object.Instantiate(_beamVfxPrefab, _bug.transform.position, Quaternion.identity, _bug.transform);
                 _lineRenderer = _activeBeam.GetComponent<LineRenderer>();
             }
             else

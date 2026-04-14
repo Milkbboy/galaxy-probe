@@ -32,7 +32,7 @@ namespace DrillCorp.CameraSystem
             _isVisible = _showOnStart;
 
             if (_dynamicCamera == null)
-                _dynamicCamera = FindFirstObjectByType<DynamicCamera>();
+                _dynamicCamera = FindAnyObjectByType<DynamicCamera>();
 
             LoadFromSettings();
         }
