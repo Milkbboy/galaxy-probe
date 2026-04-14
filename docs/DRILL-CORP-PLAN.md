@@ -268,49 +268,91 @@ BugBase (추상)
 
 ---
 
-### Phase 1 — 카메라 줌인/아웃
+### 전체 진행 상황 (2026-04-13 기준)
 
-**목표**: 마우스 위치에 따라 카메라가 줌인/줌아웃
+| Phase | 내용 | 상태 |
+|-------|------|------|
+| **Phase 0 (추가)** | Bug Behavior 시스템 | ✅ 완료 |
+| **Phase 1** | 카메라 (Nuclear Throne 방식) | ✅ 완료 |
+| **Phase 2** | 벌레 군집 (Formation) | ✅ 완료 |
+| **Phase 3** | 무기 시스템 (주무기 4종) | ✅ 완료 |
+| **Phase 4** | 미니맵 | ⏳ 대기 |
+| **Phase 5 (추가)** | 기존 BugBase 코드 제거 | ⏳ 대기 |
 
-- [ ] 머신 ↔ 마우스 월드 좌표 거리 계산
-- [ ] Orthographic Size Lerp 보간
-- [ ] 최소/최대 줌 범위 설정 (ScriptableObject)
-- [ ] 줌 속도 조절
-
-**완료 기준**: 마우스를 멀리 보내면 자연스럽게 줌아웃되고, 가까이 오면 줌인
+> **참고**: 기획서 Phase 2 (군집)와 별개로 **Bug Behavior 시스템**이 먼저 구축됨.
+> 개별 행동(Movement/Attack/Passive/Skill/Trigger) 조합 기반.
+> 상세: `docs/BugBehaviorSystemAnalysis.md`
 
 ---
 
-### Phase 2 — 벌레 등장 (군집)
+### Phase 0 (추가) — Bug Behavior 시스템 ✅
+
+**목표**: 데이터 기반 행동 조합으로 다양한 적 유형 생성
+
+- [x] 5가지 행동 인터페이스 (Movement/Attack/Passive/Skill/Trigger)
+- [x] 각 카테고리별 구현체 (총 26종)
+- [x] BugBehaviorData SO (행동 조합)
+- [x] 조건부 행동 전환 시스템
+- [x] Google Sheets Import 연동
+- [x] BugController (통합 관리자)
+
+**관련 문서**: `BugBehaviorSystemAnalysis.md`, `BugBehaviorImportGuide.md`
+
+---
+
+### Phase 1 — 카메라 (Nuclear Throne 방식) ✅
+
+**목표**: 마우스 쪽으로 카메라가 따라가 전방 시야 확보
+
+- [x] 머신 ↔ 마우스 블렌드 위치 계산
+- [x] Position Lerp 기반 부드러운 이동
+- [x] MaxOffset 클램프 (안전장치)
+- [x] CameraSettingsData SO ([Range] 슬라이더)
+- [x] DebugCameraUI (F1 런타임 조정)
+- [x] Gizmo 시각화
+
+**구현 완료**: 2026-04-13
+**관련 문서**: `CameraSystem.md`
+
+> 최초 기획은 "줌인/줌아웃" 방식이었으나, 에임 정확도와 피로감 문제로 Nuclear Throne 방식으로 변경.
+
+---
+
+### Phase 2 — 벌레 등장 (군집) ⏳
 
 **목표**: 600마리 이상 군집으로 등장, 60fps 유지
+
+> **주의**: 현재 Bug Behavior 시스템과 **통합 설계 필요**.
+> Formation(군집)은 개별 Bug를 묶는 상위 개념이어야 함.
 
 #### 2-1. BugPool (Object Pooling)
 - [ ] BugPool 싱글톤 구현
 - [ ] 풀 사이즈 설정 (ScriptableObject)
 - [ ] Get / Return 메서드
 
-#### 2-2. BugBase 이동
+#### 2-2. FormationLeader 이동
 - [ ] FormationLeader 머신 방향 이동
-- [ ] 소속 버그 오프셋 위치 추적
-- [ ] Phase 1/2/3 전환 로직 (머신 거리 기반)
+- [x] 소속 버그 오프셋 위치 추적 (기존 BugController와 연동)
+- [x] Phase 1/2/3 전환 로직 (머신 거리 기반)
 
 #### 2-3. FormationGroup
-- [ ] 진형 종류 (Cluster / Line / Swarm)
-- [ ] 진형 내 벌레 수 랜덤 (소/중/대형)
-- [ ] 맵 외곽 스폰 위치 계산
+- [x] 진형 종류 (Cluster / Line / Swarm)
+- [x] 진형 내 벌레 수 랜덤 (소/중/대형)
+- [x] 맵 외곽 스폰 위치 계산
 
-#### 2-4. WaveManager
-- [ ] 웨이브 데이터 ScriptableObject
-- [ ] 1분 타이머 연동
-- [ ] 웨이브별 진형 구성 설정
+#### 2-4. WaveManager 확장
+- [x] 웨이브 데이터 ScriptableObject (기존)
+- [x] FormationSpawnEntry 추가 + 병렬 스폰 코루틴
+- [ ] 1분 타이머 연동 (향후)
 
 #### 2-5. 최적화 적용
-- [ ] GPU Instancing 머티리얼 설정
-- [ ] Update 분산 (BugManager)
-- [ ] OnBecameInvisible 비활성화
+- [x] Update 분산 구조 (BugManager 준비)
+- [x] OffscreenVisibilityTracker
+- [ ] GPU Instancing 머티리얼 설정 (에디터 작업)
+- [ ] 투사체/VFX Object Pool (별도 작업)
 
-**완료 기준**: 600마리 군집이 외곽에서 등장해 머신으로 밀려오고 60fps 유지
+**완료 기준**: ✅ 600마리 군집이 외곽에서 등장해 머신으로 밀려오는 구조 완성
+**미해결 이슈**: 리더 사망 처리, 투사체 풀, GPU Instancing
 
 ---
 
@@ -357,44 +399,44 @@ BugBase (추상)
 ### 클래스 구조 전체
 
 ```
-Systems/
-├── WaveManager.cs          - 웨이브 진행, 1분 타이머
+Systems/                    ⏳ Phase 2에서 구현
+├── WaveManager.cs          - 웨이브 진행, 1분 타이머 (일부 구현)
 ├── FormationSpawner.cs     - 외곽 스폰 위치 계산
 ├── FormationGroup.cs       - 군집 리더 + 벌레 오프셋
 ├── BugPool.cs              - Object Pool
 ├── BugManager.cs           - Update 분산 관리
-└── MiniMapController.cs    - 미니맵
+└── MiniMapController.cs    - 미니맵 (Phase 4)
 
-Bugs/
-├── BugBase.cs              - 공통 (HP, 이동, 공격)
-├── BeetleBug.cs
-├── FlyBug.cs
-└── CentipedeBug.cs
+Bugs/                       ✅ Bug Behavior 시스템 완성
+├── BugController.cs        - 통합 관리자 (BugBase 대체)
+├── Behaviors/
+│   ├── Movement/           - 8종 (Linear, Hover, Orbit, ...)
+│   ├── Attack/             - 5종 (Melee, Projectile, ...)
+│   ├── Passive/            - 6종 (Armor, Shield, ...)
+│   ├── Skill/              - 4종 (Nova, Spawn, ...)
+│   └── Trigger/            - 3종 (Enrage, ExplodeOnDeath, ...)
+└── (BugBase/BeetleBug/... ─ Phase 5에서 제거 예정)
 
-Weapons/
-├── WeaponBase.cs           - 추상 클래스
-├── Shotgun.cs
-├── BurstGun.cs
-├── LaserBeam.cs
-├── LockOn.cs
-└── Machine/
-    ├── MachineGunController.cs
-    ├── BlackHoleLauncher.cs
-    ├── ChainLightning.cs
-    ├── ClusterBomb.cs
-    ├── SonicWave.cs
-    ├── DroneSwarm.cs
-    └── Flamethrower.cs
+Weapons/                    ⏳ Phase 3에서 구현
+├── WeaponBase.cs
+├── Shotgun.cs / BurstGun.cs / LaserBeam.cs / LockOn.cs
+└── Machine/                - 7종 (자동포, 블랙홀, ...)
 
-Camera/
-└── DynamicCamera.cs        - 줌인/아웃
+Camera/                     ✅ Phase 1 완료
+├── DynamicCamera.cs        - Nuclear Throne 방식
+├── CameraSettingsData.cs   - SO
+└── DebugCameraUI.cs        - F1 런타임 디버그
 
 ScriptableObjects/
-├── WaveData.cs
-├── FormationData.cs
-├── WeaponData.cs
-├── OperatorData.cs
-└── CameraSettings.cs
+├── WaveData.cs             ✅ 구현
+├── BugData.cs              ✅ 구현
+├── BugBehaviorData.cs      ✅ 구현
+├── CameraSettingsData.cs   ✅ 구현
+├── MachineData.cs          ✅ 구현
+├── UpgradeData.cs          ✅ 구현
+├── FormationData.cs        ⏳ Phase 2
+├── WeaponData.cs           ⏳ Phase 3
+└── OperatorData.cs         ⏳ Phase 3
 ```
 
 ---
@@ -407,3 +449,6 @@ ScriptableObjects/
 - 스테이지 / 행성 종류
 - 머신 무기 슬롯 수 (몇 개까지?)
 - 스킬 트리 깊이 (얼마나 복잡하게?)
+- **Phase 2 통합 설계**: Formation(군집)과 기존 Bug Behavior 시스템을 어떻게 결합할지
+  - 안 1) Formation이 Bug들을 그룹핑하고, 개별 Bug는 기존 Behavior로 동작
+  - 안 2) FormationMovement를 Movement Behavior 중 하나로 추가

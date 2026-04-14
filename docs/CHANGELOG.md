@@ -16,6 +16,38 @@
   - Gizmo 시각화 (MaxOffset 범위, 현재 타겟 위치)
   - 상세 문서: `docs/CameraSystem.md`
 
+- **무기 시스템 (Phase 3)**: 오퍼레이터 주무기 4종 구현
+  - `WeaponBase` + `WeaponData` 추상 베이스
+  - `BulletPool` + `Bullet`: 투사체 Object Pool
+  - `ShotgunWeapon`: 산탄 6발 + 긴 딜레이
+  - `BurstGunWeapon`: 고속 단발 연사
+  - `LaserBeamWeapon`: Raycast 빔 + Heat 과열 시스템
+  - `LockOnWeapon`: 범위 타게팅 + 일괄 미사일
+  - `WeaponSwitcher`: 디버그용 숫자키 교체 (1~4)
+  - `AimController` 리팩토링: 무기 위임 방식
+  - 상세 문서: `docs/WeaponSystem.md`
+
+- **Formation(군집) 시스템**: Phase 2 구현
+  - `BugPool` + `PooledBug` + `BugPoolConfig`: Object Pooling (600+ 동시 스폰 지원)
+  - `FormationData` SO: Cluster/Line/Swarm 3가지 진형 타입
+  - `FormationGroup` + `FormationMember`: 리더 이동 + 멤버 오프셋 추적
+  - `FormationSpawner`: 외곽 스폰 + 진형 조립
+  - `FormationOffsetCalculator`: 진형 패턴 계산 (static)
+  - `BugManager` + `OffscreenVisibilityTracker`: Update 분산 준비
+  - Phase 1/2/3 자동 전환 (머신 거리 기반 제어권 이양)
+  - 상세 문서: `docs/FormationSystem.md`
+
+### Changed
+- `BugController`: Formation 연동 (MovementExternallyControlled 플래그, Pool 복귀, ResetForPool)
+- `WaveData`: FormationSpawnEntry 추가 (레거시 SpawnGroup과 공존)
+- `WaveManager`: FormationSpawner 참조 + Formation 스폰 코루틴
+
+### Fixed
+- NaN 에러: FormationSpawner가 BugPool에서 Get한 Bug를 Initialize하지 않던 문제
+- HP바 NaN 방어: `UpdateHpBar`에 `_maxHealth > 0` 체크 추가
+- 리더 제어권 누락: FormationGroup.Setup에서 리더 자동 제어권 획득
+- 멤버 회전 동기화: UpdateMembers에 리더 rotation Slerp 적용
+
 ---
 
 ## [0.2.0] - 2024-03-26
