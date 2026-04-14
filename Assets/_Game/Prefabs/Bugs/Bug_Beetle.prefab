@@ -131,6 +131,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8774029419386604783}
   - component: {fileID: 6715379429640969810}
+  - component: {fileID: 6476591271920197172}
   m_Layer: 0
   m_Name: Bug_Beetle
   m_TagString: Untagged
@@ -174,6 +175,29 @@ MonoBehaviour:
   _fxSocket: {fileID: 6351300253361132931}
   _deathVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
   _hitFlashDuration: 0.1
+--- !u!136 &6476591271920197172
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8779006998046517225}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.31
+  m_Height: 0.85
+  m_Direction: 2
+  m_Center: {x: 0, y: 0, z: 0.08}
 --- !u!1001 &5417755366917744120
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -241,7 +265,11 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: 25aded79ce40c104f933a1cc33cc5f35, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: c2f62622abf392248ad1ff97b9ad9029, type: 2}
+      objectReference: {fileID: 2100000, guid: 6f3221327616f054596e5941a923c793, type: 2}
+    - target: {fileID: -5754084199372789682, guid: 25aded79ce40c104f933a1cc33cc5f35, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 6681220759168203318, guid: f74e01832dbbae3419e43eafa1a3887b, type: 3}
     - target: {fileID: 919132149155446097, guid: 25aded79ce40c104f933a1cc33cc5f35, type: 3}
       propertyPath: m_Name
       value: SM_Bug_B_01

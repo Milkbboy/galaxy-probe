@@ -15,16 +15,20 @@ MonoBehaviour:
   _waveNumber: 99
   _waveName: Test - All Behaviors
   _spawnGroups:
-  - BugData: {fileID: 11400000, guid: bef216b0fcfb72040a8953a8c85286c1, type: 2}
-    Count: 1
+  - BugData: {fileID: 11400000, guid: aed580012a09de34f96ca09ac584fa27, type: 2}
+    Count: 2
     StartDelay: 0
     SpawnInterval: 0
-    RandomPosition: 1
-  - BugData: {fileID: 11400000, guid: c2e22c7232ee998458ee7f7f32ee8ea2, type: 2}
-    Count: 1
+    RandomPosition: 0
+  _formationSpawns:
+  - FormationData: {fileID: 11400000, guid: dd0437720cbe1414494e2f6826b938f6, type: 2}
+    Count: 30
+    StartDelay: 1
+    SpawnInterval: 5
+  - FormationData: {fileID: 11400000, guid: f9756020b20a0f14e99d91b9b28260ac, type: 2}
+    Count: 3
     StartDelay: 0
-    SpawnInterval: 0
-    RandomPosition: 1
+    SpawnInterval: 3
   _waveDuration: 120
   _delayBeforeNextWave: 5
   _healthMultiplier: 1

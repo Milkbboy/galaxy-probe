@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DrillCorp.Core;
 using DrillCorp.Bug;
+using DrillCorp.Bug.Formation;
 using DrillCorp.Data;
 
 namespace DrillCorp.Wave
@@ -15,6 +16,8 @@ namespace DrillCorp.Wave
 
         [Header("References")]
         [SerializeField] private BugSpawner _bugSpawner;
+        [Tooltip("Formation 스폰용 (없으면 레거시 방식만 동작)")]
+        [SerializeField] private FormationSpawner _formationSpawner;
 
         private int _currentWaveIndex = -1;
         private int _remainingBugs;
@@ -73,17 +76,34 @@ namespace DrillCorp.Wave
 
             GameEvents.OnWaveStarted?.Invoke(_currentWaveIndex + 1);
 
-            // Spawn each group
-            foreach (var group in waveData.SpawnGroups)
+            // Formation 스폰 (병렬)
+            if (waveData.HasFormationSpawns && _formationSpawner != null)
             {
-                if (group.BugData == null) continue;
-
-                yield return new WaitForSeconds(group.StartDelay);
-
-                for (int i = 0; i < group.Count; i++)
+                foreach (var entry in waveData.FormationSpawns)
                 {
-                    _bugSpawner.SpawnBugFromData(group.BugData, _currentHealthMult, _currentDamageMult, _currentSpeedMult);
-                    yield return new WaitForSeconds(group.SpawnInterval);
+                    if (entry.FormationData == null) continue;
+                    StartCoroutine(SpawnFormationCoroutine(entry));
+                }
+            }
+            else if (waveData.HasFormationSpawns && _formationSpawner == null)
+            {
+                Debug.LogWarning("[WaveManager] Formation 스폰이 설정되었지만 FormationSpawner가 없습니다.");
+            }
+
+            // 레거시 개별 스폰
+            if (waveData.SpawnGroups != null)
+            {
+                foreach (var group in waveData.SpawnGroups)
+                {
+                    if (group.BugData == null) continue;
+
+                    yield return new WaitForSeconds(group.StartDelay);
+
+                    for (int i = 0; i < group.Count; i++)
+                    {
+                        _bugSpawner.SpawnBugFromData(group.BugData, _currentHealthMult, _currentDamageMult, _currentSpeedMult);
+                        yield return new WaitForSeconds(group.SpawnInterval);
+                    }
                 }
             }
 
@@ -104,6 +124,23 @@ namespace DrillCorp.Wave
             }
         }
 
+
+        private IEnumerator SpawnFormationCoroutine(FormationSpawnEntry entry)
+        {
+            yield return new WaitForSeconds(entry.StartDelay);
+
+            for (int i = 0; i < entry.Count; i++)
+            {
+                var group = _formationSpawner.Spawn(entry.FormationData);
+                if (group == null)
+                {
+                    Debug.LogWarning($"[WaveManager] Formation 스폰 실패: {entry.FormationData.DisplayName}");
+                }
+
+                if (i < entry.Count - 1)
+                    yield return new WaitForSeconds(entry.SpawnInterval);
+            }
+        }
 
         private void OnBugKilled(int bugId)
         {

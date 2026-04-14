@@ -12,6 +12,7 @@ using DrillCorp.Bug.Behaviors.Attack;
 using DrillCorp.Bug.Behaviors.Passive;
 using DrillCorp.Bug.Behaviors.Skill;
 using DrillCorp.Bug.Behaviors.Trigger;
+using DrillCorp.Bug.Pool;
 using DrillCorp.VFX;
 
 namespace DrillCorp.Bug
@@ -49,6 +50,9 @@ namespace DrillCorp.Bug
         private bool _allyJustDied;
         private bool _isDead;
         private bool _isInvulnerable;
+
+        // === Formation Control ===
+        private bool _movementExternallyControlled;
 
         // === Buff ===
         private Dictionary<object, BuffInfo> _activeBuffs = new Dictionary<object, BuffInfo>();
@@ -100,6 +104,17 @@ namespace DrillCorp.Bug
         public IAttackBehavior CurrentAttack => _currentAttack;
         public IReadOnlyList<IPassiveBehavior> Passives => _passives;
         public bool IsInvulnerable => _isInvulnerable;
+        public bool MovementExternallyControlled => _movementExternallyControlled;
+
+        /// <summary>
+        /// 외부 시스템(Formation 등)이 이동을 제어하는지 설정
+        /// true: BugController는 자체 Movement 비활성, 외부가 Transform 제어
+        /// false: 기본 개별 Movement 동작
+        /// </summary>
+        public void SetMovementExternallyControlled(bool controlled)
+        {
+            _movementExternallyControlled = controlled;
+        }
 
         #region Unity Lifecycle
 
@@ -170,8 +185,11 @@ namespace DrillCorp.Bug
                 // 조건부 행동 체크 및 전환
                 UpdateConditionalBehaviors();
 
-                // 이동
-                _currentMovement?.UpdateMovement(_target);
+                // 이동 (Formation이 제어 중이면 스킵)
+                if (!_movementExternallyControlled)
+                {
+                    _currentMovement?.UpdateMovement(_target);
+                }
 
                 // 기본 공격
                 if (_currentAttack != null && _target != null)
@@ -683,7 +701,7 @@ namespace DrillCorp.Bug
 
         private void UpdateHpBar()
         {
-            if (_hpBar != null)
+            if (_hpBar != null && _maxHealth > 0f)
             {
                 _hpBar.SetHealth(_currentHealth / _maxHealth);
             }
@@ -887,7 +905,49 @@ namespace DrillCorp.Bug
             // 행동 정리
             CleanupBehaviors();
 
-            Destroy(gameObject);
+            // Pool 반환 or Destroy
+            var pooled = GetComponent<PooledBug>();
+            if (pooled != null && pooled.IsPooled)
+            {
+                ResetForPool();
+                pooled.ReturnToPool();
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        /// <summary>
+        /// 풀 복귀 전 상태 초기화 (다음 Get() 시 재사용 가능)
+        /// </summary>
+        private void ResetForPool()
+        {
+            _isDead = false;
+            _isInvulnerable = false;
+            _movementExternallyControlled = false;
+            _aliveTime = 0f;
+            _hitCount = 0;
+            _attackCount = 0;
+            _justAttacked = false;
+            _justAttackedTimer = 0f;
+            _allyJustDied = false;
+            _activeBuffs.Clear();
+            _buffedDamageMultiplier = 1f;
+            _buffedSpeedMultiplier = 1f;
+
+            _currentMovement = null;
+            _defaultMovement = null;
+            _conditionalMovements.Clear();
+            _currentAttack = null;
+            _defaultAttack = null;
+            _conditionalAttacks.Clear();
+            _skills.Clear();
+            _passives.Clear();
+            _triggers.Clear();
+
+            _hpBar = null;
+            _buffLabel = null;
         }
 
         private void CleanupBehaviors()
@@ -897,9 +957,19 @@ namespace DrillCorp.Bug
             _currentAttack?.Cleanup();
             _defaultAttack?.Cleanup();
 
-            foreach (var skill in _skills) skill.Cleanup();
-            foreach (var passive in _passives) passive.Cleanup();
-            foreach (var trigger in _triggers) trigger.Cleanup();
+            // 조건부 행동들도 정리 (VFX, Indicator 등 남지 않도록)
+            foreach (var cond in _conditionalMovements)
+            {
+                cond?.Behavior?.Cleanup();
+            }
+            foreach (var cond in _conditionalAttacks)
+            {
+                cond?.Behavior?.Cleanup();
+            }
+
+            foreach (var skill in _skills) skill?.Cleanup();
+            foreach (var passive in _passives) passive?.Cleanup();
+            foreach (var trigger in _triggers) trigger?.Cleanup();
         }
 
         private void PlayDeathVfx()

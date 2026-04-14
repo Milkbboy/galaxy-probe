@@ -22,7 +22,7 @@ MonoBehaviour:
   _behaviorData: {fileID: 11400000, guid: e8e4211fc547fc54f937513549ccb816, type: 2}
   _prefab: {fileID: 6199813105992505615, guid: 494f495043576f44eba4b167fca70d5e, type: 3}
   _tintColor: {r: 1, g: 1, b: 1, a: 1}
-  _scale: 1
+  _scale: 0.3
   _hpBarOffset: {x: 0, y: 0.1, z: 0.8}
   _currencyReward: 2
   _dropChance: 1

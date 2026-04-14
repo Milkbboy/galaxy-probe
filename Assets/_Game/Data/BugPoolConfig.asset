@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e57f738f09809774c82de6e625d778b0, type: 3}
+  m_Name: BugPoolConfig
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Pool.BugPoolConfig
+  _entries:
+  - BugData: {fileID: 11400000, guid: bef216b0fcfb72040a8953a8c85286c1, type: 2}
+    InitialSize: 200
+    AllowGrow: 0
+  - BugData: {fileID: 11400000, guid: 0979a09a05ba65f43aea855d3b473a6b, type: 2}
+    InitialSize: 150
+    AllowGrow: 0
+  - BugData: {fileID: 11400000, guid: d2e61367234a1fb4d8fd996438751dae, type: 2}
+    InitialSize: 30
+    AllowGrow: 0
+  - BugData: {fileID: 11400000, guid: be3f536bea735b94f81fe841d488f254, type: 2}
+    InitialSize: 50
+    AllowGrow: 0
+  - BugData: {fileID: 11400000, guid: 7939781804bb73e4a9533f13d727ab1c, type: 2}
+    InitialSize: 50
+    AllowGrow: 0
+  - BugData: {fileID: 11400000, guid: c2e22c7232ee998458ee7f7f32ee8ea2, type: 2}
+    InitialSize: 10
+    AllowGrow: 0
+  - BugData: {fileID: 11400000, guid: c3dbbe661c6c8b64ebf154af89f4b888, type: 2}
+    InitialSize: 30
+    AllowGrow: 0
+  - BugData: {fileID: 11400000, guid: 3594161d79dd3b14483169c0f8dcd1e5, type: 2}
+    InitialSize: 10
+    AllowGrow: 0
+  _maxActiveTotal: 1000

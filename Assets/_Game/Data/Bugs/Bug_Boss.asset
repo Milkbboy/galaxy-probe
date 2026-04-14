@@ -10,19 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2c59824505c402d4fa528e0631f3a8d3, type: 3}
-  m_Name: Bug_Spitter
+  m_Name: Bug_Boss
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.BugData
-  _bugId: 4
-  _bugName: Spitter
-  _description: "\uC6D0\uAC70\uB9AC \uACF5\uACA9"
-  _maxHealth: 15
-  _moveSpeed: 2
-  _attackDamage: 5
-  _attackCooldown: 1.2
-  _behaviorData: {fileID: 11400000, guid: d38a5b45053f40640ac36ebed9da79b1, type: 2}
-  _prefab: {fileID: 4828040156217863924, guid: 565a67743fa6d3044a70ae498fca7941, type: 3}
+  _bugId: 3
+  _bugName: Boss
+  _description: "\uCCB4\uB825 \uB9CE\uC740 \uBCF4\uC2A4"
+  _maxHealth: 500
+  _moveSpeed: 0.5
+  _attackDamage: 10
+  _attackCooldown: 2
+  _behaviorData: {fileID: 11400000, guid: b28eae1bcfba1c54dabbac0796f42253, type: 2}
+  _prefab: {fileID: 4581373282193749054, guid: 5fe2be676ebad8446b732085bebaa560, type: 3}
   _tintColor: {r: 1, g: 1, b: 1, a: 1}
-  _scale: 0.35
+  _scale: 2
   _hpBarOffset: {x: 0, y: 0.1, z: 0.8}
-  _currencyReward: 2
+  _currencyReward: 3
   _dropChance: 1

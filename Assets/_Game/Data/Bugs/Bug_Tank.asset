@@ -15,14 +15,14 @@ MonoBehaviour:
   _bugId: 3
   _bugName: Tank
   _description: "\uBC29\uC5B4\uD615 \uD0F1\uCEE4"
-  _maxHealth: 40
+  _maxHealth: 300
   _moveSpeed: 1
   _attackDamage: 10
   _attackCooldown: 2
   _behaviorData: {fileID: 11400000, guid: b28eae1bcfba1c54dabbac0796f42253, type: 2}
-  _prefab: {fileID: 4581373282193749054, guid: 5fe2be676ebad8446b732085bebaa560, type: 3}
+  _prefab: {fileID: 4768174378865864379, guid: d7d091dd31ca4b443adfd241295228c0, type: 3}
   _tintColor: {r: 1, g: 1, b: 1, a: 1}
-  _scale: 1.2
+  _scale: 0.5
   _hpBarOffset: {x: 0, y: 0.1, z: 0.8}
   _currencyReward: 3
   _dropChance: 1
