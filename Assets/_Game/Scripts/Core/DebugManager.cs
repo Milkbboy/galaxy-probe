@@ -93,7 +93,9 @@ namespace DrillCorp.Core
         {
             if (!_showDebugUI) return;
 
-            GUILayout.BeginArea(new Rect(10, 10, 250, 150));
+            const float width = 250f;
+            const float height = 150f;
+            GUILayout.BeginArea(new Rect(Screen.width - width - 10f, 10f, width, height));
             GUILayout.BeginVertical("box");
 
             GUILayout.Label("<b>디버그 단축키</b>");

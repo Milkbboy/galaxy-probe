@@ -20,7 +20,8 @@ namespace DrillCorp.CameraSystem
         [SerializeField] private bool _showOnStart = false;
 
         private bool _isVisible;
-        private Rect _windowRect = new Rect(20f, 20f, 340f, 300f);
+        private Rect _windowRect = new Rect(0f, 0f, 340f, 300f);
+        private bool _windowInitialized;
 
         private float _orthographicSize;
         private float _mouseWeight;
@@ -63,6 +64,13 @@ namespace DrillCorp.CameraSystem
         {
             if (!_isVisible || _dynamicCamera == null || _dynamicCamera.Settings == null)
                 return;
+
+            if (!_windowInitialized)
+            {
+                _windowRect.x = Screen.width - _windowRect.width - 20f;
+                _windowRect.y = 170f;
+                _windowInitialized = true;
+            }
 
             _windowRect = GUI.Window(12345, _windowRect, DrawWindow, $"Camera Debug ({_toggleKey} to toggle)");
         }
