@@ -18,6 +18,11 @@ namespace DrillCorp.Aim
         [SerializeField] private bool _autoCalculateRadius = true;
         [SerializeField] private LayerMask _bugLayer;
 
+        [Tooltip("크로스헤어·링·라벨이 지면(Y=0)보다 얼마나 위에 떠있을지. " +
+                 "벌레 스프라이트에 가려지지 않도록 벌레 높이보다 크게 둘 것.")]
+        [Range(0.1f, 10f)]
+        [SerializeField] private float _crosshairHeight = 2f;
+
         [Header("References")]
         [Tooltip("머신 Transform (비우면 'Machine' 태그 자동 탐색)")]
         [SerializeField] private Transform _machineTransform;
@@ -233,7 +238,9 @@ namespace DrillCorp.Aim
 
         private void UpdateCrosshairPosition()
         {
-            transform.position = _aimPosition + Vector3.up * 0.1f;
+            // _aimPosition 자체는 Y=0 (지면) 기준 — 무기 Overlap/Raycast는 이 값 사용.
+            // 시각 요소만 _crosshairHeight 만큼 위로 띄워서 벌레에 안 가리게.
+            transform.position = _aimPosition + Vector3.up * _crosshairHeight;
         }
 
         private void CollectBugsInRange()
