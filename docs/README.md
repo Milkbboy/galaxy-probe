@@ -1,133 +1,63 @@
-# Drill-Corp 기획 문서 가이드
+# Drill-Corp 문서 인덱스
 
-Google Sheets 작업자를 위한 문서 안내입니다.
+> 최종 갱신: 2026-04-15
 
----
+## 🎯 시작점
 
-## 문서 읽는 순서
+| 목적 | 문서 |
+|---|---|
+| 프로젝트 전체 기획/로드맵 | [DRILL-CORP-PLAN.md](DRILL-CORP-PLAN.md) |
+| 아키텍처 개요 | [Architecture.md](Architecture.md) |
+| 데이터 계층(Wave→Bug→Behavior) | [DataStructure.md](DataStructure.md) |
+| 변경 이력 | [CHANGELOG.md](CHANGELOG.md) |
 
-### 1단계: 전체 구조 파악
+## 🧩 시스템별
 
-**[Data structure.md](Data%20structure.md)**
+| 시스템 | 문서 |
+|---|---|
+| Bug 행동 (BugController + Behaviors) | [BugBehaviorSystem.md](BugBehaviorSystem.md) |
+| Bug 행동 — 기획자 가이드/예시 | [BugBehaviorPatterns.md](BugBehaviorPatterns.md) |
+| 무기 시스템 (Shotgun/BurstGun/Laser/LockOn) | [WeaponSystem.md](WeaponSystem.md) |
+| 군집(Formation) 스폰 | [FormationSystem.md](FormationSystem.md) |
+| 카메라 (Nuclear Throne 방식) | [CameraSystem.md](CameraSystem.md) |
+| 미니맵 (RenderTexture) | [MinimapSystem.md](MinimapSystem.md) |
 
-![데이터 계층 구조](image/데이터%20계층%20구조.png)
+## 📊 데이터 / 연동
 
-- Wave → Bug → BugBehavior 계층 구조
-- 각 데이터 타입별 필드 정의
-- 밸런스 가이드라인
+| 목적 | 문서 |
+|---|---|
+| 시트 컬럼 정의 + 행동 파싱 문법 + Import 규칙 | [GoogleSheetsGuide.md](GoogleSheetsGuide.md) |
 
----
+스프레드시트: https://docs.google.com/spreadsheets/d/1hwgQ4IF-gQqVSX4xS_uqeKIPWUDy2NR4bC-OWmZQO_E/edit
 
-### 2단계: 행동 시스템 이해
+## 📖 개발 로그 (블로깅 원본, 보존)
 
-**[BugBehaviorSystemAnalysis.md](BugBehaviorSystemAnalysis.md)**
+| # | 주제 |
+|---|---|
+| 01 | [코어 시스템](DevLog_01_CoreSystem.md) |
+| 02 | [인게임 세션](DevLog_02_InGameSession.md) |
+| 03 | [UI](DevLog_03_UI.md) |
+| 04 | [데이터 시트](DevLog_04_DataSheet.md) |
+| 05 | [아웃게임](DevLog_05_OutGame.md) |
 
-행동 타입별 상세 파라미터:
+## 🗂️ 아카이브
 
-| 카테고리 | 타입 예시 | 파라미터 |
-|----------|----------|----------|
-| Movement | Linear, Hover, Orbit | param1, param2 |
-| Attack | Melee, Projectile, Cleave | range, param1 |
-| Passive | Armor, Shield, Regen | param1, param2 |
-| Skill | Nova, Spawn, BuffAlly | cooldown, param1, range |
-| Trigger | Enrage, ExplodeOnDeath | param1, param2 |
+`archive/` 폴더 — 참고용 과거 문서(프로토타입 분석, 완료된 구현 계획 등).
+현재 구현과 분리되어 있으니 최신 정보는 위 시스템 문서를 우선 참조.
 
----
+## 🖼️ 리소스
 
-### 3단계: 시트 작성법
-
-**[GoogleSheetsGuide.md](GoogleSheetsGuide.md)**
-
-- BugData 시트 컬럼 구조
-- 행동 문자열 작성 형식
-- 실제 예시 데이터 8종
-
-```
-예시:
-- Passives: "Armor:5" 또는 "Shield:20:2, Dodge:30"
-- Triggers: "Enrage:30:50" 또는 "ExplodeOnDeath:15:3"
-- Skills: "Nova:5:10:3" 또는 "Spawn:8:Beetle:2"
-```
-
----
-
-### 4단계: Import 동작 이해 (선택)
-
-**[BugBehaviorImportGuide.md](BugBehaviorImportGuide.md)**
-
-![Import 흐름도](image/Import%20흐름도.png)
-
-- Google Sheets → Unity SO 변환 과정
-- 기존 SO 재사용 규칙
-- 파일 생성 위치
+- 다이어그램 원본: `diagrams/BugBehaviorSystem.drawio`
+- 이미지: `image/`
 
 ---
 
-## 빠른 참조
-
-### Movement 타입
-
-| Type | 동작 |
-|------|------|
-| Linear | 직진 |
-| Hover | 부유 + 접근 |
-| Burst | 대기 → 돌진 |
-| Ranged | 사거리 유지 |
-| Orbit | 타겟 주위 공전 |
-
-### Attack 타입
-
-| Type | 동작 |
-|------|------|
-| Melee | 근접 즉발 |
-| Projectile | 투사체 발사 |
-| Cleave | 부채꼴 범위 |
-| Spread | 다발 발사 |
-| Beam | 지속 레이저 |
-
-### Passive 문자열
+## 빠른 참조 (Bug 행동 문자열)
 
 ```
-Armor:5           → 데미지 5 감소
-Dodge:30          → 30% 회피
-Shield:20:2       → 보호막 20, 초당 2 재생
-Regen:3           → 초당 3 회복
-PoisonAttack:3:5  → 3초간 초당 5 독 데미지
+Passives:  Armor:5 / Shield:20:2 / Dodge:30 / Regen:3 / PoisonAttack:3:5
+Skills:    Nova:5:10:3 / BuffAlly:10:50:4 / HealAlly:6:10:4 / Spawn:8:Beetle:2
+Triggers:  Enrage:30:50 / ExplodeOnDeath:10:2 / PanicBurrow:50:5
 ```
 
-### Trigger 문자열
-
-```
-Enrage:30:50        → HP 30% 이하 시 50% 강화
-ExplodeOnDeath:10:2 → 사망 시 데미지 10, 반경 2 폭발
-```
-
-### Skill 문자열
-
-```
-Nova:5:10:3       → 쿨다운 5초, 데미지 10, 범위 3
-BuffAlly:10:50:4  → 쿨다운 10초, 50% 버프, 범위 4
-Spawn:8:Beetle:2  → 쿨다운 8초, Beetle 2마리 소환
-```
-
----
-
-## 문서 목록
-
-| 문서 | 설명 |
-|------|------|
-| [Data structure.md](Data%20structure.md) | 전체 데이터 구조 |
-| [BugBehaviorSystemAnalysis.md](BugBehaviorSystemAnalysis.md) | 행동 시스템 상세 |
-| [GoogleSheetsGuide.md](GoogleSheetsGuide.md) | 시트 작성 가이드 |
-| [BugBehaviorImportGuide.md](BugBehaviorImportGuide.md) | Import 과정 설명 |
-| [BugBehaviorDevelopmentPlan.md](BugBehaviorDevelopmentPlan.md) | 개발 계획 (개발자용) |
-
----
-
-## 다이어그램 원본
-
-draw.io 편집용 파일: [diagrams/BugBehaviorSystem.drawio](diagrams/BugBehaviorSystem.drawio)
-
----
-
-*최종 갱신: 2026-04-06*
+전체 문법·타입표는 [GoogleSheetsGuide.md](GoogleSheetsGuide.md#패시브스킬트리거-파싱-문법) 참조.

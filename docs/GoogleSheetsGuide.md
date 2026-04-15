@@ -80,12 +80,53 @@
 | Spread | 다발 발사 | 발수 | 각도 |
 | Beam | 레이저 | 지속시간 | 틱간격 |
 
-### 패시브/스킬/트리거 형식
+### 패시브/스킬/트리거 파싱 문법
 
-콤마로 구분하여 복수 입력 가능:
-- **Passives**: `Armor:5`, `Shield:20:2`, `Dodge:30`
-- **Skills**: `Nova:5:10:3` (Type:쿨다운:Param1:Param2)
-- **Triggers**: `Enrage:30:50`, `ExplodeOnDeath:10:2`
+콤마로 복수 입력 가능. 콜론(`:`)으로 파라미터 구분.
+
+#### Passives — `Type:Param1:Param2`
+| 타입 | Param1 | Param2 | 예시 |
+|---|---|---|---|
+| Armor | 감소량 | - | `Armor:5` |
+| Dodge | 회피% | - | `Dodge:30` |
+| Shield | 최대량 | 재생속도 | `Shield:20:2` |
+| Regen | 초당회복 | - | `Regen:2` |
+| PoisonAttack | 지속시간 | 틱데미지 | `PoisonAttack:3:5` |
+
+복수 예: `Armor:5, Dodge:30`
+
+#### Skills — `Type:Cooldown:Param1:Param2`
+| 타입 | Cooldown | Param1 | Param2 | 예시 |
+|---|---|---|---|---|
+| Nova | 쿨 | 데미지 | 범위 | `Nova:5:10:3` |
+| BuffAlly | 쿨 | 버프% | 범위 | `BuffAlly:10:50:4` |
+| HealAlly | 쿨 | 회복량 | 범위 | `HealAlly:6:10:4` |
+| Spawn | 쿨 | **BugName** | 수량 | `Spawn:8:Beetle:2` |
+
+#### Triggers — `Type:Param1:Param2`
+| 타입 | Param1 | Param2 | 예시 |
+|---|---|---|---|
+| Enrage | HP% | 버프% | `Enrage:30:50` |
+| ExplodeOnDeath | 데미지 | 반경 | `ExplodeOnDeath:10:2` |
+| PanicBurrow | HP% | 쿨다운 | `PanicBurrow:50:5` |
+| SplitOnDeath | **BugName** | 수량 | `SplitOnDeath:Mini:3` |
+
+### Import 흐름 & SO 생성 규칙
+
+Import 시 BugData 한 행당 다음이 순차 생성:
+1. `Bug_<Name>.asset` (BugData)
+2. `BugBehavior_<Name>.asset` (조합)
+3. 각 Movement/Attack/Passive/Skill/Trigger SO
+4. BugData의 `_behaviorData`에 조합 SO 연결
+
+**캐시 & 출력 경로**
+- 기존 SO 재사용: `Assets/_Game/Data/BugBehaviors/{Movement,Attack,Passive,Skill,Trigger}/` 폴더에 **타입명과 일치**하는 SO가 있으면 그대로 사용 (파라미터 무시 → 정밀 제어 필요 시 수동 생성)
+- 신규 생성: `Assets/_Game/Data/BugBehaviors/Imported/` 에 저장
+  - 파일명: `Movement_<Type>_<P1>_<P2>.asset`, `Attack_<Type>_<Range>.asset`, `Passive_<Type>_<P1>_<P2>.asset`, `Skill_<Type>_<CD>.asset`, `Trigger_<Type>_<P1>_<P2>.asset`
+  - 반복 Import 시 누적되므로 주기적으로 정리 필요
+- 행동 컬럼이 전부 비어있으면 BugBehaviorData는 생성되지 않음 (MovementType 또는 AttackType 중 하나 필수)
+
+![Import 흐름도](image/Import%20흐름도.png)
 
 ### 예시 데이터 (전체 컬럼)
 
