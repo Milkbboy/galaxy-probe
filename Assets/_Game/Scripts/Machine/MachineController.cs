@@ -2,6 +2,7 @@ using UnityEngine;
 using DrillCorp.Core;
 using DrillCorp.Data;
 using DrillCorp.UI;
+using DrillCorp.UI.Minimap;
 
 namespace DrillCorp.Machine
 {
@@ -65,6 +66,7 @@ namespace DrillCorp.Machine
         private void Start()
         {
             InitializeSession();
+            MinimapIcon.Create(transform, new Color(0.3f, 0.8f, 1f), 2f, MinimapIcon.IconShape.Square);
         }
 
         private void ApplyMachineData()

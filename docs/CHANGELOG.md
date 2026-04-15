@@ -6,6 +6,19 @@
 
 ---
 
+## [Unreleased] - 2026-04-15
+
+### Added
+- **미니맵 시스템 (Phase 4)**: 화면 좌상단 실시간 미니맵
+  - `MinimapCamera`: 머신 상공에서 -Y를 내려다보는 Orthographic 세컨드 카메라 + RenderTexture 출력
+  - `MinimapUI`: RawImage에 RenderTexture 바인딩
+  - `MinimapIcon`: 월드 루트에 생성되어 target을 따라다니는 아이콘 (자식이 아니라 월드 루트 — 부모 회전/스케일 영향 차단, `BugHpBar` 패턴)
+  - 머신(파랑 사각형) + 벌레(빨강 원) 자동 표시
+  - 메시/머티리얼/셰이더 static 캐싱으로 수백 마리 동시 표시 지원 (SRP Batcher 친화적)
+  - 풀링 대응: `BugController.OnEnable/OnDisable/OnDestroy`에서 아이콘 활성/파괴 동기화
+  - 디버그 UI(DebugManager, DebugCameraUI) 우상단으로 이동하여 미니맵 자리 확보
+  - 상세 문서: `docs/MinimapSystem.md`
+
 ## [Unreleased] - 2026-04-13
 
 ### Added

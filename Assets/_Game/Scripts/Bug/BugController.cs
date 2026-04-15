@@ -14,6 +14,7 @@ using DrillCorp.Bug.Behaviors.Skill;
 using DrillCorp.Bug.Behaviors.Trigger;
 using DrillCorp.Bug.Pool;
 using DrillCorp.VFX;
+using DrillCorp.UI.Minimap;
 
 namespace DrillCorp.Bug
 {
@@ -152,6 +153,27 @@ namespace DrillCorp.Bug
             InitializeBehaviors();
             FindTarget();
             CreateHpBar();
+        }
+
+        private MinimapIcon _minimapIcon;
+        private void OnEnable()
+        {
+            if (_minimapIcon == null)
+                _minimapIcon = MinimapIcon.Create(transform, new Color(1f, 0.3f, 0.3f), 1f, MinimapIcon.IconShape.Circle);
+            else
+                _minimapIcon.gameObject.SetActive(true);
+        }
+
+        private void OnDisable()
+        {
+            if (_minimapIcon != null)
+                _minimapIcon.gameObject.SetActive(false);
+        }
+
+        private void OnDestroy()
+        {
+            if (_minimapIcon != null)
+                Destroy(_minimapIcon.gameObject);
         }
 
         private void Update()

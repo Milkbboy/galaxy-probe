@@ -3,6 +3,7 @@ using System.Collections;
 using DrillCorp.Core;
 using DrillCorp.Machine;
 using DrillCorp.Data;
+using DrillCorp.UI.Minimap;
 
 namespace DrillCorp.Bug
 {
@@ -114,6 +115,7 @@ namespace DrillCorp.Bug
         {
             FindTarget();
             CreateHpBar();
+            MinimapIcon.Create(transform, new Color(1f, 0.3f, 0.3f), 1f, MinimapIcon.IconShape.Circle);
         }
 
         protected virtual void CreateHpBar()
