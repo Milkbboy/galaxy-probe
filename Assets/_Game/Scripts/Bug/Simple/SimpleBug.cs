@@ -13,6 +13,11 @@ namespace DrillCorp.Bug.Simple
         [SerializeField] private float _contactDamagePerSecond = 16.8f; // 프로토타입 0.28/frame * 60fps
         [SerializeField] private float _contactRange = 0.73f;           // 프로토타입 44px 환산
 
+        [Header("Hitbox (무기 감지용)")]
+        [Tooltip("자동으로 SphereCollider 추가 + 'Bug' 레이어 지정")]
+        [SerializeField] private bool _autoSetupHitbox = true;
+        [SerializeField] private float _hitboxRadius = 0.5f;
+
         [Header("Minimap")]
         [SerializeField] private bool _showOnMinimap = true;
         [SerializeField] private float _minimapIconSize = 0.8f;
@@ -44,9 +49,24 @@ namespace DrillCorp.Bug.Simple
 
             transform.localScale = Vector3.one * data.Size;
 
+            if (_autoSetupHitbox) SetupHitbox();
+
             if (_showOnMinimap)
             {
                 MinimapIcon.Create(transform, data.Tint, _minimapIconSize, _minimapShape);
+            }
+        }
+
+        private void SetupHitbox()
+        {
+            int bugLayer = LayerMask.NameToLayer("Bug");
+            if (bugLayer != -1) gameObject.layer = bugLayer;
+
+            if (!TryGetComponent<Collider>(out _))
+            {
+                var col = gameObject.AddComponent<SphereCollider>();
+                col.isTrigger = true;
+                col.radius = _hitboxRadius;
             }
         }
 
