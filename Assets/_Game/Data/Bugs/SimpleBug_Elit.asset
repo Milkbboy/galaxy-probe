@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5dea3aa6cc0ce0b4e9106ac55c3fddc2, type: 3}
+  m_Name: SimpleBug_Elit
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Simple.SimpleBugData
+  BugName: Elite
+  Kind: 1
+  Prefab: {fileID: 5500000000000000101, guid: b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7, type: 3}
+  BaseHp: 10
+  BaseSpeed: 0.35
+  Size: 0.8
+  Score: 5
+  HpPerWave: 0.5
+  SpeedPerWave: 0.04
+  SpeedRandom: 0.15
+  Tint: {r: 1, g: 0.84, b: 0, a: 1}

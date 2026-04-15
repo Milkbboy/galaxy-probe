@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5dea3aa6cc0ce0b4e9106ac55c3fddc2, type: 3}
+  m_Name: SimpleBug_Normal
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Bug.Simple.SimpleBugData
+  BugName: Normal
+  Kind: 0
+  Prefab: {fileID: 5500000000000000001, guid: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6, type: 3}
+  BaseHp: 2
+  BaseSpeed: 0.5
+  Size: 0.4
+  Score: 1
+  HpPerWave: 0.5
+  SpeedPerWave: 0.06
+  SpeedRandom: 0.15
+  Tint: {r: 0.31764707, g: 0.8117647, b: 0.4, a: 1}
