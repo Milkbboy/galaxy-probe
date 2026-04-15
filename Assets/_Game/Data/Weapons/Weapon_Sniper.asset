@@ -15,7 +15,7 @@ MonoBehaviour:
   _displayName: "\uC800\uACA9\uCD1D"
   _description: "\uC5D0\uC784 \uBC94\uC704 \uB0B4 \uBAA8\uB4E0 \uC801\uC5D0\uAC8C
     \uB3D9\uC2DC \uD53C\uACA9"
-  _fireDelay: 0.4
+  _fireDelay: 0.5
   _damage: 1
   _hitVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
   _hitVfxLifetime: 1.5

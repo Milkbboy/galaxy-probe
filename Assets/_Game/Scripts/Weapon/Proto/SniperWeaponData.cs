@@ -17,11 +17,7 @@ namespace DrillCorp.Weapon.Proto
         [Range(0.1f, 10f)]
         [SerializeField] private float _customRange = 0.4f;
 
-        [Tooltip("크로스헤어 표시용 테마 색 (쿨바/호 색)")]
-        [SerializeField] private Color _themeColor = new Color(0.88f, 0.25f, 0.98f);
-
         public bool UseAimRadius => _useAimRadius;
         public float CustomRange => _customRange;
-        public Color ThemeColor => _themeColor;
     }
 }

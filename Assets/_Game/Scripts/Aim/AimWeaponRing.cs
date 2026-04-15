@@ -202,7 +202,8 @@ namespace DrillCorp.Aim
 
             int seg = Mathf.Max(1, Mathf.RoundToInt(_segments * _fillAmount));
             float totalAngle = Mathf.PI * 2f * _fillAmount;
-            float startAngle = -Mathf.PI / 2f; // 12시 방향
+            // Aim(X=+90)에서 로컬 (x,y)→월드 (x,0,y). 로컬 +Y가 화면 위 = 12시.
+            float startAngle = Mathf.PI / 2f;
 
             int vertCount = (seg + 1) * 2;
             var verts = new Vector3[vertCount];
@@ -212,7 +213,7 @@ namespace DrillCorp.Aim
             for (int i = 0; i <= seg; i++)
             {
                 float t = (float)i / seg;
-                float a = startAngle + totalAngle * t; // 시계방향으로 증가
+                float a = startAngle - totalAngle * t; // 각도 감소 = 화면상 시계방향(12→3→6→9)
                 float c = Mathf.Cos(a);
                 float s = Mathf.Sin(a);
 

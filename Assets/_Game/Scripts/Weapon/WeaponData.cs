@@ -16,6 +16,12 @@ namespace DrillCorp.Weapon
         [TextArea(2, 4)]
         [SerializeField] private string _description;
 
+        [Tooltip("좌측 슬롯 아이콘 (32x32 권장)")]
+        [SerializeField] private Sprite _icon;
+
+        [Tooltip("크로스헤어 호 / 쿨바 / 슬롯 테두리 색상")]
+        [SerializeField] private Color _themeColor = Color.white;
+
         [Header("Firing")]
         [Tooltip(
             "발사 간 딜레이 (초)\n" +
@@ -50,6 +56,8 @@ namespace DrillCorp.Weapon
 
         public string DisplayName => _displayName;
         public string Description => _description;
+        public Sprite Icon => _icon;
+        public Color ThemeColor => _themeColor;
         public float FireDelay => _fireDelay;
         public float Damage => _damage;
         public GameObject HitVfxPrefab => _hitVfxPrefab;

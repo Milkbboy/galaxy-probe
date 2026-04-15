@@ -18,7 +18,7 @@ namespace DrillCorp.Aim
         {
             _ring = GetComponent<AimWeaponRing>();
             if (_weapon == null)
-                _weapon = FindFirstObjectByType<SniperWeapon>();
+                _weapon = FindAnyObjectByType<SniperWeapon>();
         }
 
         private void Update()
