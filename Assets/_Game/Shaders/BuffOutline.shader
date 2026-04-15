@@ -145,7 +145,7 @@ Shader "DrillCorp/BuffOutline"
 
             half4 frag(Varyings input) : SV_Target
             {
-                half4 baseMap = TEXTURE2D_SAMPLE(_BaseMap, sampler_BaseMap, input.uv);
+                half4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv);
                 half4 color = baseMap * _BaseColor;
 
                 // 간단한 디퓨즈 라이팅

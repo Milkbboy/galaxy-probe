@@ -42,7 +42,7 @@ namespace DrillCorp.Bug.Simple
         {
             if (_machine == null)
             {
-                var mc = FindFirstObjectByType<DrillCorp.Machine.MachineController>();
+                var mc = FindAnyObjectByType<DrillCorp.Machine.MachineController>();
                 if (mc != null) _machine = mc.transform;
             }
         }
