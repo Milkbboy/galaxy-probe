@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ffe9b165dd46c64bae44af3c107dfd3, type: 3}
+  m_Name: Weapon_MachineGun
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Weapon.MachineGun.MachineGunData
+  _displayName: "\uAE30\uAD00\uCD1D"
+  _description: "\uC790\uB3D9 \uC5F0\uC0AC + \uC0B0\uD3EC. 40\uBC1C \uD0C4\uCC3D
+    / 5\uCD08 \uB9AC\uB85C\uB529."
+  _icon: {fileID: 21300000, guid: 0a48519ca82c51243ac5898252aed0f6, type: 3}
+  _themeColor: {r: 0.298, g: 0.765, b: 0.969, a: 1}
+  _fireDelay: 0.14
+  _damage: 0.5
+  _hitVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
+  _hitVfxLifetime: 1.5
+  _maxAmmo: 40
+  _reloadDuration: 5
+  _lowAmmoThreshold: 8
+  _bulletSpeed: 9
+  _bulletLifetime: 3
+  _bulletHitRadius: 0.15
+  _spreadAngle: 0.06
+  _bulletPrefab: {fileID: 740341238164292898, guid: af50c525c997de54092c2a059a0db609, type: 3}

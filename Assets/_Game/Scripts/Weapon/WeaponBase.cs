@@ -68,6 +68,15 @@ namespace DrillCorp.Weapon
         /// <summary>오버레이에 표시될 큰 텍스트. 기본: 남은 쿨 초.</summary>
         public virtual string OverlayText => CooldownRemaining >= 1f ? $"{CooldownRemaining:0.0}s" : $"{CooldownRemaining:0.00}s";
 
+        /// <summary>탄창 pip 행 표시 여부. 기관총 등 탄 기반 무기가 true 오버라이드.</summary>
+        public virtual bool ShowAmmoRow => false;
+
+        /// <summary>현재 탄 수 (pip 행에서 활성으로 표시할 개수)</summary>
+        public virtual int AmmoCurrent => 0;
+
+        /// <summary>최대 탄 수 (pip 행 총 개수)</summary>
+        public virtual int AmmoMax => 0;
+
         /// <summary>
         /// true면 AimController가 AimPosition 기준 Bug 감지를 스킵함
         /// (예: 레이저처럼 무기 자체가 자기 기준으로 타겟을 찾는 경우)

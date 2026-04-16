@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -46,6 +47,13 @@ namespace DrillCorp.UI.Weapon
         [Tooltip("쿨다운 오버레이 중앙 큰 텍스트 (남은 쿨타임)")]
         [SerializeField] private TMP_Text _overlayText;
 
+        [Tooltip("탄창 pip 행 컨테이너 (선택). _weapon.ShowAmmoRow=true일 때만 활성. " +
+                 "내부에 AmmoMax 개의 작은 Image를 동적 생성해 탄 잔량을 시각화한다.")]
+        [SerializeField] private RectTransform _ammoRowContainer;
+
+        [Tooltip("탄 소진된 pip 색 (배경)")]
+        [SerializeField] private Color _pipEmptyColor = new Color(1f, 1f, 1f, 0.15f);
+
         [Header("Style")]
         [Tooltip("잠김 슬롯 아이콘·바·테두리 틴트")]
         [SerializeField] private Color _lockedTint = new Color(0.5f, 0.5f, 0.5f, 1f);
@@ -54,6 +62,10 @@ namespace DrillCorp.UI.Weapon
         [SerializeField] private string _level = "Lv.1";
 
         private bool _isLocked;
+
+        // 탄창 pip 풀 — AmmoMax 만큼 한 번 생성 후 색만 갱신
+        private readonly List<Image> _pipPool = new List<Image>();
+        private int _cachedAmmoMax = -1; // 레이아웃 재계산 트리거용
 
         private void Start()
         {
@@ -89,6 +101,7 @@ namespace DrillCorp.UI.Weapon
                 }
                 if (_border != null) _border.color = WeaponBase.IdleBorderColor;
                 if (_coolOverlay != null) _coolOverlay.SetActive(false);
+                if (_ammoRowContainer != null) _ammoRowContainer.gameObject.SetActive(false);
                 return;
             }
 
@@ -122,6 +135,88 @@ namespace DrillCorp.UI.Weapon
                 if (_coolOverlay.activeSelf != show) _coolOverlay.SetActive(show);
                 if (show && _overlayText != null) _overlayText.text = _weapon.OverlayText;
             }
+
+            UpdateAmmoRow();
+        }
+
+        /// <summary>
+        /// 탄창 pip 행 갱신 (Phase 3.5 — 기관총 등 ShowAmmoRow=true 무기 전용)
+        /// AmmoMax 만큼 pip을 풀에서 확보하고, 현재 잔량 이하 인덱스는 무기 색,
+        /// 그 이상은 _pipEmptyColor로 표시. AmmoMax 변경 시 레이아웃 재계산.
+        /// </summary>
+        private void UpdateAmmoRow()
+        {
+            if (_ammoRowContainer == null) return;
+
+            if (!_weapon.ShowAmmoRow || _weapon.AmmoMax <= 0)
+            {
+                if (_ammoRowContainer.gameObject.activeSelf) _ammoRowContainer.gameObject.SetActive(false);
+                return;
+            }
+
+            if (!_ammoRowContainer.gameObject.activeSelf) _ammoRowContainer.gameObject.SetActive(true);
+
+            int max = _weapon.AmmoMax;
+            int current = Mathf.Clamp(_weapon.AmmoCurrent, 0, max);
+
+            // 풀 부족하면 pip 추가 생성
+            while (_pipPool.Count < max)
+            {
+                _pipPool.Add(CreatePip(_ammoRowContainer));
+            }
+            // 풀이 더 많으면 잉여 pip 비활성화
+            for (int i = max; i < _pipPool.Count; i++)
+            {
+                if (_pipPool[i] != null && _pipPool[i].gameObject.activeSelf)
+                    _pipPool[i].gameObject.SetActive(false);
+            }
+
+            // AmmoMax 변경 시에만 레이아웃 재계산 (매 프레임 안 해도 됨)
+            if (_cachedAmmoMax != max)
+            {
+                LayoutPips(max);
+                _cachedAmmoMax = max;
+            }
+
+            // 색 갱신 (현재 탄 ↓ 활성, ↑ 비어있음)
+            Color activeColor = _weapon.BarColor;
+            for (int i = 0; i < max; i++)
+            {
+                var pip = _pipPool[i];
+                if (pip == null) continue;
+                if (!pip.gameObject.activeSelf) pip.gameObject.SetActive(true);
+                pip.color = (i < current) ? activeColor : _pipEmptyColor;
+            }
+        }
+
+        private Image CreatePip(RectTransform parent)
+        {
+            var go = new GameObject("Pip", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            go.transform.SetParent(parent, false);
+            var img = go.GetComponent<Image>();
+            img.raycastTarget = false;
+            // sprite 없으면 단색 사각형으로 표시 (UGUI 기본 동작)
+            return img;
+        }
+
+        /// <summary>현재 풀의 pip을 컨테이너 너비에 맞춰 균등 배치.</summary>
+        private void LayoutPips(int count)
+        {
+            if (_ammoRowContainer == null || count <= 0) return;
+            float totalWidth = _ammoRowContainer.rect.width;
+            float gap = 1f;
+            float pipWidth = (totalWidth - gap * (count - 1)) / count;
+            pipWidth = Mathf.Max(1f, pipWidth);
+
+            for (int i = 0; i < count; i++)
+            {
+                var rt = _pipPool[i].rectTransform;
+                rt.anchorMin = new Vector2(0f, 0f);
+                rt.anchorMax = new Vector2(0f, 1f);
+                rt.pivot = new Vector2(0f, 0.5f);
+                rt.sizeDelta = new Vector2(pipWidth, 0f);
+                rt.anchoredPosition = new Vector2(i * (pipWidth + gap), 0f);
+            }
         }
 
 #if UNITY_EDITOR
@@ -148,8 +243,9 @@ namespace DrillCorp.UI.Weapon
                 Undo.DestroyObjectImmediate(rt.GetChild(i).gameObject);
             }
 
-            // 슬롯 높이 (VerticalLayoutGroup이 Width 제어하므로 x는 건드리지 않음)
-            rt.sizeDelta = new Vector2(rt.sizeDelta.x, 90f);
+            // 슬롯 높이 — Phase 3.5에서 100으로 증가 (탄창 pip 행 자리 확보, 폭탄/저격은 영향 없음)
+            // VerticalLayoutGroup이 Width 제어하므로 x는 건드리지 않음
+            rt.sizeDelta = new Vector2(rt.sizeDelta.x, 100f);
 
             var font = LoadD2CodingFont();
 
@@ -213,6 +309,20 @@ namespace DrillCorp.UI.Weapon
             coolFill.fillAmount = 1f;
             coolFill.raycastTarget = false;
             _coolBarFill = coolFill;
+
+            // 5.5) AmmoRow 컨테이너 (탄창 pip 행 — 기관총 등 ShowAmmoRow=true 무기 전용)
+            // CoolBar 바로 위에 위치, 빈 컨테이너만 생성. pip은 런타임에 동적 생성.
+            var ammoRowGo = new GameObject("AmmoRow", typeof(RectTransform));
+            Undo.RegisterCreatedObjectUndo(ammoRowGo, "Create AmmoRow");
+            ammoRowGo.transform.SetParent(rt, false);
+            var ammoRowRt = ammoRowGo.GetComponent<RectTransform>();
+            ammoRowRt.anchorMin = new Vector2(0.5f, 0f);
+            ammoRowRt.anchorMax = new Vector2(0.5f, 0f);
+            ammoRowRt.pivot = new Vector2(0.5f, 0f);
+            ammoRowRt.anchoredPosition = new Vector2(0f, 12f); // CoolBar(y=4, h=4) 위 4px 간격
+            ammoRowRt.sizeDelta = new Vector2(80f, 4f);        // CoolBar와 동일 너비, 4px 두께
+            ammoRowGo.SetActive(false); // 기본 숨김 — 무기 ShowAmmoRow=true일 때만 Update에서 활성
+            _ammoRowContainer = ammoRowRt;
 
             // 6) CoolOverlay (검은 반투명 + 큰 초 텍스트) — 폭탄/리로딩 등 ShowOverlay=true일 때만 활성
             var overlay = CreateUIImage(rt, "CoolOverlay");

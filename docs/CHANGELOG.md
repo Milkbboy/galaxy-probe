@@ -9,6 +9,18 @@
 ## [Unreleased] - 2026-04-16
 
 ### Added
+- **기관총 무기 (Phase 3 + 3.5)**: 자동 연사 + 산포 + 탄창/리로딩 + 탄창 pip 행 UI
+  - `MachineGunData` (SO): MaxAmmo 40, ReloadDuration 5s, FireDelay 0.14s, BulletSpeed 9, SpreadAngle ±3.4°
+  - `MachineGunWeapon`: WeaponBase 파생, **자체 Update 루프** (폭탄과 동일 보조 무기 패턴 — 메인 무기 슬롯과 병렬). `_firePoint` 옵션 필드로 Turret 배럴 끝에서 `_firePoint.forward` 방향 발사 (배럴 회전과 시각 일치). 적 유무 무관 — 마우스 방향으로 계속 연사
+  - `MachineGunBullet`: 자립형 투사체, XZ 직진, 매 프레임 OverlapSphere 충돌, 첫 명중 1마리에만 데미지 (관통 없음)
+  - `MachineGunAimRingBinder`: 에임 호에 `BarFillAmount` + `BarColor` 푸시 — 평상시 파랑(탄 잔량), 리로딩 빨강(차오름)
+  - `MachineGunPrefabCreator` (에디터 도구): `Tools → Drill-Corp → 3. 게임 초기 설정 → 7. 기관총 자산 일괄 생성` 메뉴로 스프라이트 + 프리펩 + 트레일 머티리얼 + SO 자동 생성
+  - **탄창 pip 행 (Phase 3.5)**:
+    - `WeaponBase`에 `ShowAmmoRow`/`AmmoCurrent`/`AmmoMax` 가상 프로퍼티 추가
+    - `WeaponSlotUI`에 동적 pip 풀 — 슬롯 하단 가는 행에 40개 작은 사각형, 발사 시 오른쪽부터 회색으로 전환
+    - 슬롯 높이 90→100 (`BuildDefaultHierarchy` 재실행 필요)
+  - 상세 문서: `docs/Phase3_MachineGun_Plan.md`
+
 - **폭탄 무기 (Phase 2)**: 좌클릭 수동 발사 + 투사체 비행 + AoE 폭발
   - `BombData` (SO): `_instant` 토글로 비행 모드/즉시 폭발 모드 전환
   - `BombWeapon`: `WeaponBase` 파생, **자체 Update 루프** — 메인 무기 슬롯과 무관하게 항상 활성 (프로토타입의 `canvas.click → fireBomb()`와 동일)
