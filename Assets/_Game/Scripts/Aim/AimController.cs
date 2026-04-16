@@ -112,7 +112,8 @@ namespace DrillCorp.Aim
             CalculateAimRadius();
             EnsureBugLayer();
             EnsureMachineTransform();
-            EnsureInfoLabel();
+            // EnsureInfoLabel은 Start로 이동 — TMPFontHolder.Awake가 먼저 실행돼야
+            // TMPFontHelper가 D2Coding을 반환. Awake끼리는 순서 보장 없음.
         }
 
         private void EnsureInfoLabel()
@@ -173,6 +174,9 @@ namespace DrillCorp.Aim
 
         private void Start()
         {
+            // Awake가 아닌 Start에서 — TMPFontHolder.Initialize가 먼저 호출되도록 보장
+            EnsureInfoLabel();
+
             if (_initialWeapon != null)
                 EquipWeapon(_initialWeapon);
         }

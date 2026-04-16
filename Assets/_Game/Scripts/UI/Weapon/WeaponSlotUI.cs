@@ -40,6 +40,12 @@ namespace DrillCorp.UI.Weapon
         [Tooltip("잠김 상태에서 슬롯을 덮는 오버레이 (선택)")]
         [SerializeField] private GameObject _lockedOverlay;
 
+        [Tooltip("쿨다운 오버레이 (검은 반투명 + 큰 초 표시, 선택). _weapon.ShowOverlay=true일 때만 활성")]
+        [SerializeField] private GameObject _coolOverlay;
+
+        [Tooltip("쿨다운 오버레이 중앙 큰 텍스트 (남은 쿨타임)")]
+        [SerializeField] private TMP_Text _overlayText;
+
         [Header("Style")]
         [Tooltip("잠김 슬롯 아이콘·바·테두리 틴트")]
         [SerializeField] private Color _lockedTint = new Color(0.5f, 0.5f, 0.5f, 1f);
@@ -82,6 +88,7 @@ namespace DrillCorp.UI.Weapon
                     _coolBarFill.color = _lockedTint;
                 }
                 if (_border != null) _border.color = WeaponBase.IdleBorderColor;
+                if (_coolOverlay != null) _coolOverlay.SetActive(false);
                 return;
             }
 
@@ -107,6 +114,14 @@ namespace DrillCorp.UI.Weapon
                 _coolBarFill.color = _weapon.BarColor;
             }
             if (_border != null) _border.color = _weapon.BorderColor;
+
+            // 쿨 오버레이 (Phase 2 폭탄 / Phase 3 리로딩 등)
+            if (_coolOverlay != null)
+            {
+                bool show = _weapon.ShowOverlay;
+                if (_coolOverlay.activeSelf != show) _coolOverlay.SetActive(show);
+                if (show && _overlayText != null) _overlayText.text = _weapon.OverlayText;
+            }
         }
 
 #if UNITY_EDITOR
@@ -198,6 +213,39 @@ namespace DrillCorp.UI.Weapon
             coolFill.fillAmount = 1f;
             coolFill.raycastTarget = false;
             _coolBarFill = coolFill;
+
+            // 6) CoolOverlay (검은 반투명 + 큰 초 텍스트) — 폭탄/리로딩 등 ShowOverlay=true일 때만 활성
+            var overlay = CreateUIImage(rt, "CoolOverlay");
+            SetStretch(overlay.rectTransform, new Vector2(2, 2), new Vector2(-2, -2));
+            overlay.color = new Color(0f, 0f, 0f, 0.65f);
+            overlay.sprite = whiteSprite;
+            overlay.raycastTarget = false;
+            overlay.gameObject.SetActive(false);
+            _coolOverlay = overlay.gameObject;
+
+            // 오버레이 중앙 큰 텍스트 (Stretch + 중앙 정렬)
+            var overlayTextGo = new GameObject("OverlayText", typeof(RectTransform));
+            Undo.RegisterCreatedObjectUndo(overlayTextGo, "Create OverlayText");
+            overlayTextGo.transform.SetParent(overlay.transform, false);
+            var overlayRt = overlayTextGo.GetComponent<RectTransform>();
+            overlayRt.anchorMin = Vector2.zero;
+            overlayRt.anchorMax = Vector2.one;
+            overlayRt.pivot = new Vector2(0.5f, 0.5f);
+            overlayRt.anchoredPosition = Vector2.zero;
+            overlayRt.offsetMin = Vector2.zero;
+            overlayRt.offsetMax = Vector2.zero;
+
+            var overlayTmp = overlayTextGo.AddComponent<TextMeshProUGUI>();
+            overlayTmp.text = "5.0s";
+            overlayTmp.fontSize = 18f;
+            overlayTmp.alignment = TextAlignmentOptions.Center;
+            overlayTmp.color = Color.white;
+            overlayTmp.fontStyle = FontStyles.Bold;
+            overlayTmp.raycastTarget = false;
+            overlayTmp.textWrappingMode = TextWrappingModes.NoWrap;
+            overlayTmp.overflowMode = TextOverflowModes.Overflow;
+            if (font != null) overlayTmp.font = font;
+            _overlayText = overlayTmp;
 
             EditorUtility.SetDirty(this);
             if (gameObject.scene.IsValid())

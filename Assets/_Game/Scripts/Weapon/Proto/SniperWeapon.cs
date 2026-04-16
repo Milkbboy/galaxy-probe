@@ -15,7 +15,7 @@ namespace DrillCorp.Weapon.Proto
         [SerializeField] private SniperWeaponData _data;
 
         public SniperWeaponData Data => _data;
-        public Color ThemeColor => _data != null ? _data.ThemeColor : Color.magenta;
+        // ThemeColor는 WeaponBase가 _baseData(= _data)에서 자동 제공 — 중복 정의 제거됨
 
         private void Awake()
         {

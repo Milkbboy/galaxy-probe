@@ -6,6 +6,24 @@
 
 ---
 
+## [Unreleased] - 2026-04-16
+
+### Added
+- **폭탄 무기 (Phase 2)**: 좌클릭 수동 발사 + 투사체 비행 + AoE 폭발
+  - `BombData` (SO): `_instant` 토글로 비행 모드/즉시 폭발 모드 전환
+  - `BombWeapon`: `WeaponBase` 파생, **자체 Update 루프** — 메인 무기 슬롯과 무관하게 항상 활성 (프로토타입의 `canvas.click → fireBomb()`와 동일)
+  - `BombProjectile`: 자립형 투사체 (스폰 시 데이터 캡처, 무기 전환 후에도 동작), `Detonate(pos, data, layer)` static 헬퍼
+  - `BombLandingMarker`: 비행 중 클릭 위치에 반투명 주황 원 표시 (펄스 알파)
+  - `BombExplosionFx`: 스프라이트 기반 폭발 burst (scale ease-out + 알파 페이드 + 자동 파괴) + TrailRenderer 비행 잔상
+  - `BombAimRingBinder`: 크로스헤어 호에 `_weapon.BarColor` 푸시 — 인스펙터 색 무시
+  - `BombPrefabCreator` (에디터 도구): `Tools → Drill-Corp → 3. 게임 초기 설정 → 6. 폭탄 자산 일괄 생성` 메뉴 한 번으로 스프라이트 3종(투사체/마커/폭발) + 프리펩 3종 + 트레일 머티리얼 + SO 자동 생성
+  - `WeaponSlotUI` 확장: `_coolOverlay` + `_overlayText` 자식 (검은 반투명 + 큰 초) — 쿨다운 중 표시. `Build Default Hierarchy`에 자동 생성 로직 포함
+  - 상세 문서: `docs/Phase2_Bomb_Plan.md`
+
+### Fixed
+- **`AimController.EnsureInfoLabel` 호출 순서** — `Awake → Start`로 이동. `TMPFontHolder.Awake()`보다 먼저 실행되면 D2Coding 폰트 미초기화 상태에서 라벨이 만들어져 한글 미지원 LiberationSans로 fallback (\uD074 등 미지원 경고). Start는 모든 Awake 후에 실행되므로 폰트 초기화 보장.
+- **`SniperWeapon.ThemeColor`** 중복 정의 제거 — `WeaponBase`가 이미 동일 프로퍼티 제공 (CS0108 경고).
+
 ## [Unreleased] - 2026-04-15
 
 ### Added
