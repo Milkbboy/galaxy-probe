@@ -164,9 +164,10 @@ DrillMachine (기존 Cube)
 - 자동 빌드: `[ContextMenu("Build Default Hierarchy")]` 로 자식 7개 + D2Coding 폰트 + Square_White 스프라이트 원클릭 구성
 - 프리팹: `Assets/_Game/Prefabs/UI/WeaponSlot_Sniper.prefab`
 
-### 4-4. 크로스헤어 기타 ⏳ 예정
-- **범위 원**: 현재는 기존 크로스헤어 스프라이트 사용 중 (유지)
-- **십자선 색**: 타겟 있을 때 보라로 변경 (개선 여지)
+### 4-4. 크로스헤어 기타 ✅ 완료
+- **범위 원**: 기존 크로스헤어 스프라이트 유지
+- **십자선 색**: 타겟 유무에 따라 `_normalColor` / `_readyColor` 전환 (`AimController.UpdateCrosshairColor`)
+- 주의: Inspector 기본 `_readyColor`가 `Color.red` — 프로젝트 테마 보라(`#e040fb`)로 세팅 권장
 
 ### 4-5. TurretController ⏳ 예정
 - 저격 배럴만 표시 (다른 배럴은 비활성)
@@ -176,7 +177,8 @@ DrillMachine (기존 Cube)
 - [x] 에임 쿨다운 호가 12시부터 시계방향 회전
 - [x] 쿨다운 진행이 에임 호에 실시간 반영
 - [x] 슬롯에 "대기/발사!/쿨" 상태가 실시간 반영 (쿨바 에임과 동기화)
-- [ ] 굴착기 포탑 배럴이 에임 방향 회전
+- [x] 크로스헤어 십자선 색 타겟 유무 반영
+- [ ] 굴착기 포탑 배럴이 에임 방향 회전 (TurretController)
 
 ---
 
@@ -224,17 +226,32 @@ DrillMachine (기존 Cube)
 
 ## 4.6 슬롯 UI 확장 전략 (무기별 쿨바 차이)
 
+> *용어: **거동(擧動)** = "어떻게 동작·반응하는가" — 시스템 동작 규칙을 가리키는 한자어*
+
 > 출처: `AIM_PROTOTYPE.md` §10-11 / `_.html` `updateWeaponUI` (L270-282)
 > Phase 1은 저격총만 대응 → Phase 2~4 진입 시 무기별로 쿨바/상태/오버레이 거동이 달라 확장 필요
 
-### 4.6.1 무기별 쿨바 거동 요약
+### 4.6.1 무기별 쿨바 거동(어떻게 동작하는가) 요약
 
-| 무기 | 쿨바 의미 | 색상 | 채움 방향 | 특수 요소 |
-|---|---|---|---|---|
-| **저격총** | 쿨다운 진행 | 초록 ↔ 보라 `#e040fb` | 빈→가득 (왼→오) | 에임 호와 동기화 — 타겟 유무 무관하게 항상 쿨 표시 |
-| **폭탄** | 쿨다운 진행 | 초록 ↔ 주황 `#f4a423` | 빈→가득 | **쿨 오버레이** (검은 덮개 + 큰 초) |
-| **기관총** | **탄창 잔량** | 하늘 `#4fc3f7` ↔ 빨강 `#ff6b6b` | **가득→빈** (쏠수록 감소) | **탄 pip row**, 탄≤8 테두리 경고, 리로딩 별도 바 |
-| **레이저** | **3단계** | 핑크/진빨/초록 | 상태별 상이 | 활성/쿨/준비 3상태, 오버레이 |
+프로토타입 `_.html`을 코드 트레이스한 결과 — 바와 에임 호는 **같은 `value (0~1)` 공식을 공유**하되, 무기별로 의미·방향·색이 다름.
+자세한 통합 공식은 §4.6.7 참조.
+
+| 무기 | 상황 | 바 공식 (`width = value*100%`) | 호 공식 (`lp`) | value 방향 | 색 | 역할 |
+|---|---|---|---|---|---|---|
+| **저격총** | 쿨 중 | `1 - sniperCD/cd` | 동일 | 0 → 1 (왼→오) | 보라 `#e040fb` | 쿨타임 |
+| | 준비 | `1` (100%) | `1` | 고정 | 초록 | 준비됨 |
+| **폭탄** | 쿨 중 | `1 - bombCD/cd` | 동일 | 0 → 1 (왼→오) | 주황 `#f4a423` | 쿨타임 + 오버레이 |
+| | 준비 | `1` (100%) | `1` | 고정 | 초록 | "[클릭]" 프롬프트 |
+| **기관총** | 평상시 (탄 남음) | `gunAmmo/maxAmmo` | 동일 | 1 → 0 (**오→왼 감소**) | 하늘 `#4fc3f7` | **탄창 잔량** |
+| | 리로딩 중 | `1 - gunReloadCD/reload` | 동일 | 0 → 1 (왼→오) | 빨강 `#ff6b6b` | 리로딩 진행 |
+| **레이저** | 빔 활성 중 | `life/maxLife` | **호는 `1` (프로토 허점)** | 1 → 0 (오→왼) | 핑크 `#ff6090` | **빔 수명** |
+| | 쿨 중 | `1 - laserCD/cd` | 동일 | 0 → 1 (왼→오) | 진빨강 `#ff1744` | 쿨타임 + 오버레이 |
+| | 준비 | `1` | `1` | 고정 | 초록 | 준비됨 |
+
+**핵심 패턴**:
+- 기관총·레이저는 **value 의미가 상황마다 뒤바뀜** (탄→쿨, 수명→쿨) → 의미 전환 순간 **색도 함께 바뀜**으로 모드 명확화
+- 저격총·폭탄은 항상 쿨타임 한 가지 의미
+- Drill-Corp 정책: **hasTarget 게이트는 적용 안 함** (에임 호와 완전 동기화 우선) — §4.5.6 참조
 
 ### 4.6.2 현재 구현 상태 (Phase 1 완료 기준)
 
@@ -254,32 +271,63 @@ DrillMachine (기존 Cube)
 슬롯은 **한 벌의 코드**로 모든 무기를 표시. 무기별 차이는 각 `WeaponBase` 파생이 오버라이드로 담당.
 
 ```csharp
-public abstract class WeaponBase
+// --- WeaponBase (Phase 1 완료 — 구현됨) ---
+public abstract class WeaponBase : MonoBehaviour
 {
-    // 기존 (Phase 1)
-    public virtual float CooldownProgress { get; }
-    public virtual bool CanFire { get; }
-    public virtual bool HasTarget { get; }
-    public string DisplayName { get; }
-    public Color ThemeColor { get; }
-
-    // 신규 (Phase 2~4에서 점진 추가)
-    // 쿨바는 에임 호와 동일한 CooldownProgress 를 표현 → 부드러운 애니메이션 보장.
-    // 레벨업으로 쿨이 줄면 쿨바도 그만큼 빨리 차오름 (같은 속도).
-    public virtual float BarFillAmount => CooldownProgress;
-    public virtual Color BarColor => CanFire ? readyGreen : ThemeColor;
-    public virtual string StateText => CanFire ? (HasTarget ? "발사!" : "대기")
-                                                 : $"{CooldownRemaining:0.0}s";
-    public virtual Color BorderColor => (CanFire && HasTarget) ? ThemeColor : idleBorder;
-    public virtual bool ShowOverlay => false;
+    public virtual float BarFillAmount => CooldownProgress;       // 0→1 차오름 (저격총/폭탄 기본)
+    public virtual Color BarColor => CanFire ? ReadyBarColor : ThemeColor;
+    public virtual string StateText =>
+        !CanFire ? $"{CooldownRemaining:0.0}s"
+                 : HasTarget ? "발사!" : "대기";
+    public virtual Color BorderColor => (CanFire && HasTarget) ? ThemeColor : IdleBorderColor;
+    public virtual bool ShowOverlay => false;                     // Phase 2+에서 오버라이드
     public virtual string OverlayText => $"{CooldownRemaining:0.0}s";
-    public virtual bool ShowAmmoRow => false;       // 기관총 전용
+    public virtual bool ShowAmmoRow => false;                     // 기관총 전용
     public virtual int AmmoCurrent => 0;
     public virtual int AmmoMax => 0;
 }
+
+// --- BombWeapon (Phase 2) ---
+public override bool ShowOverlay => !CanFire;
+public override string StateText => CanFire ? "[클릭]" : $"{CooldownRemaining:0.0}s";
+public override Color BorderColor => CanFire ? ReadyBarColor : IdleBorderColor;
+
+// --- GunWeapon (Phase 3) ---
+private static readonly Color GunBlue = new Color(0.31f, 0.77f, 0.97f);
+public override float BarFillAmount =>
+    IsReloading ? (1f - _reloadRemaining / _data.ReloadDuration)   // 리로딩 차오름
+                : (float)CurrentAmmo / MaxAmmo;                    // 탄창 잔량 (감소)
+public override Color BarColor => IsReloading ? WarningColor : GunBlue;
+public override string StateText => IsReloading ? "리로딩" : $"{CurrentAmmo}발";
+public override Color BorderColor =>
+    IsReloading           ? WarningColor
+  : CurrentAmmo <= 8      ? WarningColor
+                          : IdleBorderColor;
+public override bool ShowOverlay => IsReloading;
+public override string OverlayText => $"리로딩\n{_reloadRemaining:0.0}s";
+public override bool ShowAmmoRow => true;
+public override int AmmoCurrent => _currentAmmo;
+public override int AmmoMax => _data.MaxAmmo;
+
+// --- LaserWeapon (Phase 4) ---
+private static readonly Color LaserPink = new Color(1f, 0.376f, 0.565f);
+private static readonly Color LaserRed  = new Color(1f, 0.09f, 0.267f);
+public override float BarFillAmount =>
+    IsBeamActive ? (_beamLife / _data.BeamDuration)                // 수명 감소
+  : !CanFire    ? (1f - CooldownRemaining / _data.Cooldown)        // 쿨 진행
+                : 1f;                                              // 준비
+public override Color BarColor =>
+    IsBeamActive ? LaserPink
+  : !CanFire    ? LaserRed
+                : ReadyBarColor;
+public override string StateText =>
+    IsBeamActive ? $"{_beamLife:0.0}s"
+  : !CanFire    ? $"{CooldownRemaining:0.0}s"
+                : "자동발사";
+public override bool ShowOverlay => !CanFire && !IsBeamActive;     // 쿨 중에만
 ```
 
-`WeaponSlotUI.Update()`는 위 프로퍼티만 읽음 → 무기별 분기 없음.
+`WeaponSlotUI.Update()`는 위 프로퍼티만 읽음 → 무기별 분기 없음. 에임 호(`AimWeaponRing`)도 같은 `BarFillAmount`를 주입해 완전 동기화.
 
 ### 4.6.4 Phase별 UI 작업 체크리스트
 
@@ -328,6 +376,42 @@ public abstract class WeaponBase
 | **Phase 4 진행 중** | `LaserWeapon` 오버라이드만 (UI는 재사용) | ⏳ |
 
 **저격총은 WeaponBase 기본 구현 그대로 동작** — 모든 프로퍼티가 기본값이라 별도 오버라이드 불필요.
+
+### 4.6.6 바·호 공통 공식
+
+모든 무기의 바·호는 **단일 `value ∈ [0, 1]`** 공식으로 환원된다 (`_.html` L273-281 / L313 트레이스 기반).
+
+```
+value = 0~1 범위 상태값 — 의미는 무기·상황에 따라 다름
+  • 쿨다운 진행  : 1 - currentCD/maxCD       (0→1 증가, 왼→오 차오름)
+  • 탄창 잔량    : ammo/maxAmmo              (1→0 감소, 오→왼 축소)
+  • 빔 수명      : life/maxLife              (1→0 감소, 오→왼 축소)
+  • 준비 완료    : 1                         (고정)
+
+바 렌더링:
+  width = value * 100%       (부모 왼쪽 기준 — CSS .cool-bar)
+
+호 렌더링:
+  arc(center, radius, -π/2, -π/2 + 2π·value)   (12시 시작, 시계방향)
+```
+
+**의미 전환 시점**:
+- 기관총 `gunAmmo==0` 도달 → `reloadCD = reload` 세팅 → value 공식이 `ammo/max`에서 `1 - reloadCD/reload`로 전환 → **색도 하늘→빨강 전환**
+- 레이저 빔 소멸 → value 공식이 `life/maxLife`에서 `1 - laserCD/cd`로 전환 → **색 핑크→진빨강 전환**
+
+이 전환이 플레이어에게 모드 변화를 즉각 전달 — **값 자체가 아니라 색과 방향의 변화**가 UX 핵심.
+
+**Unity 구현 원칙**:
+1. `WeaponBase.BarFillAmount` 는 항상 `value` — 오버라이드로 무기 상황별 계산
+2. `WeaponBase.BarColor` 는 상태에 따른 색 — value 해석을 암시
+3. `AimWeaponRing.FillAmount = _weapon.BarFillAmount` — 호도 같은 값 주입 (현재 저격총 binder 패턴)
+
+### 4.6.7 알려진 프로토타입 허점
+
+`_.html` L281 (레이저) vs L313 (drawCrosshair):
+- **바는** 빔 활성 중 `life/maxLife` 표시 (수명 감소)
+- **호는** `lp = laserCD<=0 ? 1 : ...` — 활성 중에도 `laserCD=0`이라 완전 원으로 고정
+→ 활성 중엔 바·호 불일치. Unity 이식 시엔 **호도 빔 수명 표시**하도록 통일 권장 (같은 `BarFillAmount` 주입).
 
 ---
 
