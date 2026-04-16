@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed0aa690c10022942822d7151c1702ab, type: 3}
+  m_Name: Weapon_LaserBeam
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Weapon.Laser.LaserWeaponData
+  _displayName: "\uB808\uC774\uC800"
+  _description: "\uCFE8\uB2E4\uC6B4 \uC790\uB3D9\uBC1C\uC0AC. \uB9C8\uC6B0\uC2A4
+    \uCD94\uC801 6\uCD08 + 5\uCD08 \uCFE8."
+  _icon: {fileID: 21300000, guid: e384f0331a1c67d4ebfc6d76ecf850af, type: 3}
+  _themeColor: {r: 1, g: 0.09, b: 0.267, a: 1}
+  _fireDelay: 0
+  _damage: 0.8
+  _hitVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
+  _hitVfxLifetime: 0.5
+  _cooldown: 5
+  _beamDuration: 10
+  _beamSpeed: 1.725
+  _stopDistance: 0.033
+  _beamRadius: 1
+  _tickInterval: 0.1
+  _beamPrefab: {fileID: 4142905922988169902, guid: a9bc23ce6f3273949a90dec24e7c18c9, type: 3}
