@@ -15,6 +15,7 @@ using DrillCorp.Bug.Behaviors.Trigger;
 using DrillCorp.Bug.Pool;
 using DrillCorp.VFX;
 using DrillCorp.UI.Minimap;
+using DrillCorp.Audio;
 
 namespace DrillCorp.Bug
 {
@@ -705,6 +706,7 @@ namespace DrillCorp.Bug
             UpdateHpBar();
             PlayHitFlash();
             PlayHitVfx();
+            AudioManager.Instance?.PlayBugHit();
 
             if (_currentHealth <= 0f)
             {

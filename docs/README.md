@@ -1,6 +1,6 @@
 # Drill-Corp 문서 인덱스
 
-> 최종 갱신: 2026-04-15
+> 최종 갱신: 2026-04-17
 
 ## 🎯 시작점
 
@@ -21,6 +21,7 @@
 | 군집(Formation) 스폰 | [FormationSystem.md](FormationSystem.md) |
 | 카메라 (Nuclear Throne 방식) | [CameraSystem.md](CameraSystem.md) |
 | 미니맵 (RenderTexture) | [MinimapSystem.md](MinimapSystem.md) |
+| 사운드 (AudioManager + 파형 편집 툴) | [SoundSystem.md](SoundSystem.md) |
 
 ## 📊 데이터 / 연동
 

@@ -1,5 +1,6 @@
 using UnityEngine;
 using DrillCorp.Aim;
+using DrillCorp.Audio;
 
 namespace DrillCorp.Weapon.MachineGun
 {
@@ -141,6 +142,7 @@ namespace DrillCorp.Weapon.MachineGun
             if (bullet != null)
             {
                 bullet.Initialize(dir, _data, aim.BugLayer);
+                AudioManager.Instance?.PlayMachineGunFire();
             }
             else
             {

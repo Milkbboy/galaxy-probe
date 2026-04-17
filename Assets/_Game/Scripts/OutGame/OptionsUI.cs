@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using DrillCorp.Audio;
 
 namespace DrillCorp.OutGame
 {
@@ -139,7 +140,7 @@ namespace DrillCorp.OutGame
         {
             PlayerPrefs.SetFloat("SFXVolume", value);
             UpdateVolumeText(_sfxVolumeText, value);
-            // SFX AudioSource volume 적용은 AudioManager에서 처리
+            AudioManager.Instance?.SetSfxVolume(value);
         }
 
         private void UpdateVolumeText(TextMeshProUGUI text, float value)

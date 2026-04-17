@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using DrillCorp.Aim;
+using DrillCorp.Audio;
 
 namespace DrillCorp.Weapon.Bomb
 {
@@ -103,6 +104,7 @@ namespace DrillCorp.Weapon.Bomb
             if (proj != null)
             {
                 proj.Initialize(targetPos, _data, aim.BugLayer);
+                AudioManager.Instance?.PlayBombLaunch();
             }
             else
             {

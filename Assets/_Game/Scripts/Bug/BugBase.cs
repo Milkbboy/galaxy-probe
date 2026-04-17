@@ -4,6 +4,7 @@ using DrillCorp.Core;
 using DrillCorp.Machine;
 using DrillCorp.Data;
 using DrillCorp.UI.Minimap;
+using DrillCorp.Audio;
 
 namespace DrillCorp.Bug
 {
@@ -247,6 +248,7 @@ namespace DrillCorp.Bug
 
             UpdateHpBar();
             PlayHitFlash();
+            AudioManager.Instance?.PlayBugHit();
 
             if (IsDead)
             {

@@ -1,5 +1,6 @@
 using UnityEngine;
 using DrillCorp.Machine;
+using DrillCorp.Audio;
 
 namespace DrillCorp.Weapon.Bomb
 {
@@ -103,6 +104,8 @@ namespace DrillCorp.Weapon.Bomb
         public static void Detonate(Vector3 pos, BombData data, LayerMask bugLayer)
         {
             if (data == null) return;
+
+            AudioManager.Instance?.PlayBombExplosion();
 
             int count = Physics.OverlapSphereNonAlloc(
                 pos, data.ExplosionRadius, _overlapBuffer, bugLayer);

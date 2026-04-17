@@ -21,7 +21,7 @@ MonoBehaviour:
   _damage: 3
   _hitVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
   _hitVfxLifetime: 1.5
-  _explosionRadius: 1.8
+  _explosionRadius: 3
   _instant: 0
   _projectileSpeed: 10
   _projectileLifetime: 5

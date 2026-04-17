@@ -1,6 +1,8 @@
 using UnityEngine;
 using DrillCorp.Machine;
 using DrillCorp.UI.Minimap;
+using DrillCorp.Audio;
+using DrillCorp.Core;
 
 namespace DrillCorp.Bug.Simple
 {
@@ -93,10 +95,12 @@ namespace DrillCorp.Bug.Simple
         {
             if (_isDead) return;
             _hp -= damage;
+            AudioManager.Instance?.PlayBugHit();
             if (_hp <= 0f)
             {
                 _hp = 0f;
                 _isDead = true;
+                GameEvents.OnBugKilled?.Invoke(GetInstanceID());
                 Destroy(gameObject);
             }
         }

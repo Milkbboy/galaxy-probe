@@ -159,6 +159,11 @@ namespace DrillCorp.Weapon.Laser
             }
         }
 
+        private void OnDestroy()
+        {
+            DrillCorp.Audio.AudioManager.Instance?.StopLaserBeam();
+        }
+
         private void Update()
         {
             // 수명 감소 — 만료 시 자파괴 (자식 전부 함께 제거)

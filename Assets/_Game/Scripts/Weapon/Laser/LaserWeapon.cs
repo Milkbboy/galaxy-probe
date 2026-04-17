@@ -1,5 +1,6 @@
 using UnityEngine;
 using DrillCorp.Aim;
+using DrillCorp.Audio;
 
 namespace DrillCorp.Weapon.Laser
 {
@@ -99,6 +100,7 @@ namespace DrillCorp.Weapon.Laser
             if (_activeBeam != null)
             {
                 _activeBeam.Initialize(aim, _data, aim.BugLayer);
+                AudioManager.Instance?.StartLaserBeamLoop();
             }
             else
             {

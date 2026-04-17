@@ -1,5 +1,6 @@
 using UnityEngine;
 using DrillCorp.Aim;
+using DrillCorp.Audio;
 
 namespace DrillCorp.Weapon.Proto
 {
@@ -39,7 +40,10 @@ namespace DrillCorp.Weapon.Proto
             }
 
             if (hit > 0)
+            {
                 SpawnHitVfx(aim.AimPosition);
+                AudioManager.Instance?.PlaySniperFire();
+            }
         }
 
         /// <summary>

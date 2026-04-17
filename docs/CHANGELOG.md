@@ -6,6 +6,31 @@
 
 ---
 
+## [Unreleased] - 2026-04-17
+
+### Added
+- **사운드 시스템 (Phase 5)**: `AudioManager` 싱글톤 + 외부 WAV/OGG 기반 SFX 재생
+  - `Assets/_Game/Scripts/Audio/AudioManager.cs`: 8종 SFX 클립 필드 + 클립별 볼륨 슬라이더(0~2, 부스트 가능) + 디버그 Enable 토글(단독 테스트)
+  - AudioSource 구조: 공용 풀(8개, PlayOneShot 라운드로빈) + 기관총 전용(Stop→Play 연사 겹침 방지) + 레이저 전용(`loop=true`, 빔 수명 동안 지속)
+  - `GameEvents` 자동 구독: `OnBugKilled` → BugDeath, `OnMachineDamaged` → MachineDamaged(150ms 쓰로틀)
+  - `PlayOneShot` 동일 클립 30ms 가드 — 한 프레임 다중 호출 시 겹침 방지
+  - 트리거 통합: `MachineGunWeapon`, `SniperWeapon`, `BombWeapon`, `BombProjectile`, `LaserWeapon`(StartLaserBeamLoop), `LaserBeam.OnDestroy`(StopLaserBeam), `BugBase`/`BugController`/`SimpleBug`의 `TakeDamage`
+  - `SimpleBug.TakeDamage`에 `PlayBugHit` + `GameEvents.OnBugKilled` 훅 추가 (프로토 스타일 벌레가 이벤트를 발행하지 않아 사운드가 나지 않던 버그 수정)
+  - `OptionsUI` SFX 슬라이더 → `AudioManager.SetSfxVolume` 실연결
+  - 상세: `docs/SoundSystem.md`
+
+- **AudioTrimWindow 에디터 툴**: 파형 뷰어 + 드래그 핸들로 AudioClip 구간 편집
+  - `Tools → Drill-Corp → Audio → Trim AudioClip`
+  - `AudioClip.GetData` 기반 peak-per-column 렌더링을 `Texture2D`에 직접 픽셀 기록 (내부 API 미사용)
+  - 드래그 핸들 4종: Start / End / FadeIn / FadeOut — 숫자 필드와 양방향 바인딩
+  - Zoom: `View Start/End` 숫자 + `Fit All` / `Fit Sel` 버튼
+  - Preview: 원본 에셋을 Start 위치부터 재생, (End-Start)초 후 자동 Stop (Unity 6의 `PlayPreviewClip` 런타임 클립 무음 이슈 우회)
+  - Save: Trim + 선형 페이드 + forceMono 다운믹스 → 16-bit PCM WAV (`_Short` 접미사)
+  - Preset 버튼: "첫 0.3s (MachineGun 1-shot)" 원클릭 세팅
+
+### Removed
+- **SfxSynth.cs** 제거 — 프로토(_.html) Web Audio API 합성 방식을 이식했으나, 외부 파일 기반이 실무에서 더 유연하다고 판단. 관련 `_useSynthGunShot`/`_synthGunShotClip` 필드·분기 정리.
+
 ## [Unreleased] - 2026-04-16
 
 ### Added
