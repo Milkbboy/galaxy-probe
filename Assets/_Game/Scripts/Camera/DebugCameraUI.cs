@@ -20,9 +20,11 @@ namespace DrillCorp.CameraSystem
         [SerializeField] private bool _showOnStart = false;
 
         private bool _isVisible;
-        private Rect _windowRect = new Rect(0f, 0f, 340f, 300f);
+        private Rect _windowRect = new Rect(0f, 0f, 340f, 320f);
         private bool _windowInitialized;
 
+        private bool _isFixed;
+        private float _fixedOrthoSize;
         private float _orthographicSize;
         private float _mouseWeight;
         private float _maxOffset;
@@ -54,6 +56,8 @@ namespace DrillCorp.CameraSystem
                 return;
 
             var s = _dynamicCamera.Settings;
+            _isFixed = s.IsFixed;
+            _fixedOrthoSize = s.FixedOrthographicSize;
             _orthographicSize = s.OrthographicSize;
             _mouseWeight = s.MouseWeight;
             _maxOffset = s.MaxOffset;
@@ -81,17 +85,34 @@ namespace DrillCorp.CameraSystem
 
             GUILayout.Space(5f);
 
-            DrawSlider("Orthographic Size", ref _orthographicSize, 3f, 20f);
-            s.SetOrthographicSize(_orthographicSize);
+            bool newFixed = GUILayout.Toggle(_isFixed, "  카메라 고정 (Fixed Mode)");
+            if (newFixed != _isFixed)
+            {
+                _isFixed = newFixed;
+                s.SetIsFixed(_isFixed);
+            }
 
-            DrawSlider("Mouse Weight", ref _mouseWeight, 0f, 1f);
-            s.SetMouseWeight(_mouseWeight);
+            GUILayout.Space(8f);
 
-            DrawSlider("Max Offset", ref _maxOffset, 1f, 20f);
-            s.SetMaxOffset(_maxOffset);
+            if (_isFixed)
+            {
+                DrawSlider("Fixed Ortho Size", ref _fixedOrthoSize, 3f, 40f);
+                s.SetFixedOrthographicSize(_fixedOrthoSize);
+            }
+            else
+            {
+                DrawSlider("Orthographic Size", ref _orthographicSize, 3f, 20f);
+                s.SetOrthographicSize(_orthographicSize);
 
-            DrawSlider("Smooth Speed", ref _smoothSpeed, 1f, 20f);
-            s.SetSmoothSpeed(_smoothSpeed);
+                DrawSlider("Mouse Weight", ref _mouseWeight, 0f, 1f);
+                s.SetMouseWeight(_mouseWeight);
+
+                DrawSlider("Max Offset", ref _maxOffset, 1f, 20f);
+                s.SetMaxOffset(_maxOffset);
+
+                DrawSlider("Smooth Speed", ref _smoothSpeed, 1f, 20f);
+                s.SetSmoothSpeed(_smoothSpeed);
+            }
 
             GUILayout.Space(10f);
 

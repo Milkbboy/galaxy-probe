@@ -32,6 +32,9 @@ namespace DrillCorp.Weapon.Laser
                  "레이저는 메인 무기 슬롯과 무관하게 자체 발사 루프를 돈다 — 폭탄/기관총과 동일 패턴.")]
         [SerializeField] private AimController _aimController;
 
+        [Tooltip("게임 시작 직후 발사 지연 (초) — 씬 로딩/초기화 중 즉시 빔 스폰 방지")]
+        [SerializeField] private float _startDelay = 0.3f;
+
         public LaserWeaponData Data => _data;
 
         // 프로토 색상 상수 (_.html L281 slot bar / L307 beam)
@@ -40,6 +43,7 @@ namespace DrillCorp.Weapon.Laser
 
         private LaserBeam _activeBeam;
         private float _laserCD;    // 0 = 준비 완료
+        private float _fireEnableTime;   // Time.time 기준 이 시각 이후부터 발사 허용
 
         /// <summary>빔 활성 중 여부. _activeBeam이 파괴되면 Unity가 null로 처리하므로 자동 false.</summary>
         private bool IsActive => _activeBeam != null;
@@ -59,10 +63,14 @@ namespace DrillCorp.Weapon.Laser
 
             // _aim 캐싱 — UI 프로퍼티(HasTarget 등)가 _aim을 참조
             if (_aimController != null) _aim = _aimController;
+
+            _fireEnableTime = Time.time + _startDelay;
         }
 
         private void Update()
         {
+            if (Time.time < _fireEnableTime) return;
+
             // 빔 없을 때만 CD 감소 (프로토 L293: 빔 활성 중엔 laserCD 흐르지 않음)
             if (_activeBeam == null && _laserCD > 0f)
                 _laserCD = Mathf.Max(0f, _laserCD - Time.deltaTime);

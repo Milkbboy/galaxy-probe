@@ -44,7 +44,7 @@ namespace DrillCorp.CameraSystem
             _cameraHeight = transform.position.y;
 
             if (_settings != null)
-                _camera.orthographicSize = _settings.OrthographicSize;
+                _camera.orthographicSize = _settings.EffectiveOrthographicSize;
         }
 
         private void LateUpdate()
@@ -52,10 +52,16 @@ namespace DrillCorp.CameraSystem
             if (_settings == null || _machine == null)
                 return;
 
-            _camera.orthographicSize = _settings.OrthographicSize;
+            _camera.orthographicSize = _settings.EffectiveOrthographicSize;
 
             Vector3 targetPos = CalculateTargetPosition();
             _lastTargetPos = targetPos;
+
+            if (_settings.IsFixed)
+            {
+                transform.position = targetPos;
+                return;
+            }
 
             transform.position = Vector3.Lerp(
                 transform.position,
@@ -67,6 +73,10 @@ namespace DrillCorp.CameraSystem
         private Vector3 CalculateTargetPosition()
         {
             Vector3 machinePos = _machine.position;
+
+            if (_settings.IsFixed)
+                return new Vector3(machinePos.x, _cameraHeight, machinePos.z);
+
             Vector3 mouseWorld = GetMouseWorldPosition();
 
             if (mouseWorld == Vector3.zero)
@@ -109,8 +119,11 @@ namespace DrillCorp.CameraSystem
 
             Vector3 center = _machine.position;
 
-            Gizmos.color = _offsetRangeColor;
-            DrawCircle(center, _settings.MaxOffset);
+            if (!_settings.IsFixed)
+            {
+                Gizmos.color = _offsetRangeColor;
+                DrawCircle(center, _settings.MaxOffset);
+            }
 
             if (Application.isPlaying)
             {

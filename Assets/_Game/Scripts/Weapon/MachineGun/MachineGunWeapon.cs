@@ -39,6 +39,9 @@ namespace DrillCorp.Weapon.MachineGun
         )]
         [SerializeField] private Transform _firePoint;
 
+        [Tooltip("게임 시작 직후 발사 지연 (초) — 씬 로딩/초기화 중 즉시 발포 방지")]
+        [SerializeField] private float _startDelay = 0.3f;
+
         public MachineGunData Data => _data;
 
         // 프로토타입 #4fc3f7 (cool-bar.gun 색)
@@ -47,6 +50,7 @@ namespace DrillCorp.Weapon.MachineGun
         private int _currentAmmo;
         private float _reloadEndTime;     // Time.time 기준 리로딩 종료 시각
         private bool _isReloading;
+        private float _fireEnableTime;    // Time.time 기준 이 시각 이후부터 발사 허용
 
         public int CurrentAmmo => _currentAmmo;
         public bool IsReloading => _isReloading;
@@ -65,10 +69,14 @@ namespace DrillCorp.Weapon.MachineGun
 
             // _aim 캐싱 — UI 프로퍼티(HasTarget 등)가 _aim을 참조
             if (_aimController != null) _aim = _aimController;
+
+            _fireEnableTime = Time.time + _startDelay;
         }
 
         private void Update()
         {
+            if (Time.time < _fireEnableTime) return;
+
             // 자체 발사 루프 — AimController.TryFireWeapon에 의존하지 않음
             // (기관총은 보조 무기로 메인 무기 슬롯과 병렬 동작)
             if (_aimController != null) TryFire(_aimController);

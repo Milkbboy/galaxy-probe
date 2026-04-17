@@ -100,7 +100,7 @@ namespace DrillCorp.Bug.Simple
             {
                 _hp = 0f;
                 _isDead = true;
-                GameEvents.OnBugKilled?.Invoke(GetInstanceID());
+                GameEvents.OnBugKilled?.Invoke(_data != null ? (int)_data.Kind : 0);
                 Destroy(gameObject);
             }
         }

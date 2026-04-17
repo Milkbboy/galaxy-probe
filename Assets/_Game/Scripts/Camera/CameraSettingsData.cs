@@ -10,9 +10,22 @@ namespace DrillCorp.CameraSystem
     [CreateAssetMenu(fileName = "CameraSettings", menuName = "Drill-Corp/Camera Settings", order = 5)]
     public class CameraSettingsData : ScriptableObject
     {
-        [Header("Orthographic")]
+        [Header("Mode")]
         [Tooltip(
-            "카메라 Orthographic Size (화면에 보이는 높이의 절반)\n" +
+            "카메라 고정 모드 on/off\n" +
+            "• true: 머신 위치 고정, Fixed OrthoSize 사용 (넓은 시야)\n" +
+            "• false: Nuclear Throne 동적 추적 (기본 Dynamic 파라미터 사용)"
+        )]
+        [SerializeField] private bool _isFixed = true;
+
+        [Header("Fixed Mode")]
+        [Tooltip("고정 모드 전용 Orthographic Size (시야 확대용)")]
+        [Range(3f, 40f)]
+        [SerializeField] private float _fixedOrthographicSize = 25f;
+
+        [Header("Dynamic Mode - Orthographic")]
+        [Tooltip(
+            "동적 모드 Orthographic Size (화면에 보이는 높이의 절반)\n" +
             "• 작을수록 확대 (머신 크게 보임)\n" +
             "• 클수록 축소 (맵 넓게 보임)\n" +
             "• 권장: 8 (1920x1080 기준 스폰반경 10f가 화면에 들어옴)"
@@ -20,7 +33,7 @@ namespace DrillCorp.CameraSystem
         [Range(3f, 20f)]
         [SerializeField] private float _orthographicSize = 8f;
 
-        [Header("Nuclear Throne Offset")]
+        [Header("Dynamic Mode - Nuclear Throne Offset")]
         [Tooltip(
             "마우스 쪽으로 카메라가 따라가는 비율\n" +
             "• 0.0: 카메라 머신 고정 (마우스 무시)\n" +
@@ -41,7 +54,7 @@ namespace DrillCorp.CameraSystem
         [Range(1f, 20f)]
         [SerializeField] private float _maxOffset = 8f;
 
-        [Header("Smoothness")]
+        [Header("Dynamic Mode - Smoothness")]
         [Tooltip(
             "카메라 추적 속도 (Lerp 계수)\n" +
             "• 1~2: 매우 부드러움 (둔한 반응, 영화 같은 느낌)\n" +
@@ -53,11 +66,18 @@ namespace DrillCorp.CameraSystem
         [Range(1f, 20f)]
         [SerializeField] private float _smoothSpeed = 5f;
 
+        public bool IsFixed => _isFixed;
+        public float FixedOrthographicSize => _fixedOrthographicSize;
         public float OrthographicSize => _orthographicSize;
         public float MouseWeight => _mouseWeight;
         public float MaxOffset => _maxOffset;
         public float SmoothSpeed => _smoothSpeed;
 
+        /// <summary>현재 모드에 맞는 OrthoSize (DynamicCamera에서 이 값을 사용)</summary>
+        public float EffectiveOrthographicSize => _isFixed ? _fixedOrthographicSize : _orthographicSize;
+
+        public void SetIsFixed(bool value) => _isFixed = value;
+        public void SetFixedOrthographicSize(float value) => _fixedOrthographicSize = value;
         public void SetOrthographicSize(float value) => _orthographicSize = value;
         public void SetMouseWeight(float value) => _mouseWeight = value;
         public void SetMaxOffset(float value) => _maxOffset = value;
