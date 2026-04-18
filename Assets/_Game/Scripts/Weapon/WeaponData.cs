@@ -22,6 +22,20 @@ namespace DrillCorp.Weapon
         [Tooltip("크로스헤어 호 / 쿨바 / 슬롯 테두리 색상")]
         [SerializeField] private Color _themeColor = Color.white;
 
+        [Header("Unlock Meta (v2)")]
+        [Tooltip("고유 ID — 'sniper' / 'bomb' / 'gun' / 'laser' / 'saw'")]
+        [SerializeField] private string _weaponId;
+
+        [Tooltip("true면 플레이어가 기본 해금 상태로 시작. 저격총만 true.")]
+        [SerializeField] private bool _unlockedByDefault;
+
+        [Tooltip("해금 비용 (보석)")]
+        [Min(0)]
+        [SerializeField] private int _unlockGemCost;
+
+        [Tooltip("이 무기를 해금하기 전 반드시 해금되어야 하는 선행 무기 (req 체인)")]
+        [SerializeField] private WeaponData _requiredWeapon;
+
         [Header("Firing")]
         [Tooltip(
             "발사 간 딜레이 (초)\n" +
@@ -62,5 +76,11 @@ namespace DrillCorp.Weapon
         public float Damage => _damage;
         public GameObject HitVfxPrefab => _hitVfxPrefab;
         public float HitVfxLifetime => _hitVfxLifetime;
+
+        // === v2 Unlock Meta ===
+        public string WeaponId => _weaponId;
+        public bool UnlockedByDefault => _unlockedByDefault;
+        public int UnlockGemCost => _unlockGemCost;
+        public WeaponData RequiredWeapon => _requiredWeapon;
     }
 }

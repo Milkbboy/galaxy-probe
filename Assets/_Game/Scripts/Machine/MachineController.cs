@@ -138,7 +138,7 @@ namespace DrillCorp.Machine
             {
                 _isSessionActive = false;
                 GameEvents.OnSessionSuccess?.Invoke();
-                DataManager.Instance?.AddCurrency(_totalMined);
+                DataManager.Instance?.AddOre(_totalMined);
                 GameManager.Instance?.SessionSuccess();
             }
         }

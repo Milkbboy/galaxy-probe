@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b7c1eafbe5d48e48b20808b6384487e, type: 3}
+  m_Name: Ability_Sara_Meteor
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.AbilityData
+  _abilityId: sara_meteor
+  _characterId: sara
+  _displayName: "\uBC18\uC911\uB825 \uBA54\uD14C\uC624"
+  _description: 
+  _iconEmoji: "\u2604"
+  _icon: {fileID: 0}
+  _slotKey: 3
+  _abilityType: 5
+  _trigger: 1
+  _cooldownSec: 0
+  _durationSec: 15
+  _autoIntervalSec: 10
+  _damage: 0.5
+  _range: 5.5
+  _angle: 0
+  _maxInstances: 999
+  _unlockGemCost: 30
+  _requiredAbility: {fileID: 11400000, guid: adabcf0044d68924f996d77bdb55e7fe, type: 2}
+  _vfxPrefab: {fileID: 0}
+  _useSfx: {fileID: 0}

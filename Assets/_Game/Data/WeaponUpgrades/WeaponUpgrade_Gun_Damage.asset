@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1687cc255dc2704f85fe86fa6ba2b64, type: 3}
+  m_Name: WeaponUpgrade_Gun_Damage
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.WeaponUpgradeData
+  _upgradeId: gun_dmg
+  _weaponId: gun
+  _displayName: "\uAE30\uAD00\uCD1D \uB370\uBBF8\uC9C0"
+  _icon: {fileID: 0}
+  _targetStat: 0
+  _maxLevel: 5
+  _valuePerLevel: 0.25
+  _isPercentage: 1
+  _operation: 1
+  _baseCostOre: 70
+  _baseCostGem: 5
+  _oreCostMultiplier: 2
+  _gemCostMultiplier: 2
+  _manualCosts: []

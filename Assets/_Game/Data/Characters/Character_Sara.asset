@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52cbdc1864e0f8b46b7826a7a696f2b4, type: 3}
+  m_Name: Character_Sara
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.CharacterData
+  _characterId: sara
+  _displayName: "\uC0AC\uB77C"
+  _title: "\uBC29\uC5B4 \uC804\uBB38\uAC00"
+  _description: "\uBE14\uB799\uD640\xB7\uCDA9\uACA9\uD30C\xB7\uBC18\uC911\uB825 \uBA54\uD14C\uC624\uB85C
+    \uC804\uC7A5\uC744 \uC81C\uC5B4\uD558\uB294 \uC81C\uC5B4 \uC804\uBB38\uAC00"
+  _themeColor: {r: 0.30980393, g: 0.7647059, b: 0.96862745, a: 1}
+  _portrait: {fileID: 0}
+  _defaultMachine: {fileID: 11400000, guid: 12076d972bce84945b159479e8862f3b, type: 2}
+  _abilities:
+  - {fileID: 11400000, guid: 1270747385b52af418c16338f295cda6, type: 2}
+  - {fileID: 11400000, guid: adabcf0044d68924f996d77bdb55e7fe, type: 2}
+  - {fileID: 11400000, guid: 2b2228556b6df054fb37a84db51e3dc2, type: 2}

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1687cc255dc2704f85fe86fa6ba2b64, type: 3}
+  m_Name: WeaponUpgrade_Sniper_Cooldown
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.WeaponUpgradeData
+  _upgradeId: sniper_cd
+  _weaponId: sniper
+  _displayName: "\uC800\uACA9\uCD1D \uC5F0\uC0AC"
+  _icon: {fileID: 0}
+  _targetStat: 2
+  _maxLevel: 4
+  _valuePerLevel: -0.2
+  _isPercentage: 1
+  _operation: 1
+  _baseCostOre: 45
+  _baseCostGem: 2
+  _oreCostMultiplier: 2.1
+  _gemCostMultiplier: 2.2
+  _manualCosts: []

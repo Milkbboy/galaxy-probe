@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b7c1eafbe5d48e48b20808b6384487e, type: 3}
+  m_Name: Ability_Sara_BlackHole
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.AbilityData
+  _abilityId: sara_blackhole
+  _characterId: sara
+  _displayName: "\uBE14\uB799\uD640"
+  _description: 
+  _iconEmoji: "\U0001F300"
+  _icon: {fileID: 0}
+  _slotKey: 1
+  _abilityType: 3
+  _trigger: 0
+  _cooldownSec: 30
+  _durationSec: 10
+  _autoIntervalSec: 0
+  _damage: 0
+  _range: 18
+  _angle: 0
+  _maxInstances: 1
+  _unlockGemCost: 30
+  _requiredAbility: {fileID: 0}
+  _vfxPrefab: {fileID: 0}
+  _useSfx: {fileID: 0}

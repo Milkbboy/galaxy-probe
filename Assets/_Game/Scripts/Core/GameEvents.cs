@@ -24,13 +24,19 @@ namespace DrillCorp.Core
         public static Action OnSessionFailed;
 
         // 채굴/재화
-        public static Action<int> OnCurrencyChanged;        // 현재 재화량
+        public static Action<int> OnCurrencyChanged;        // 레거시 (Ore와 동일) — 기존 UI 호환용
+        public static Action<int> OnOreChanged;             // v2 — 광석 변동
+        public static Action<int> OnGemsChanged;            // v2 — 보석 변동
         public static Action<int> OnMiningGained;           // 획득한 채굴량
 
         // 강화 시스템
         public static Action<string, int> OnUpgradePurchased;  // 업그레이드 ID, 새 레벨
+        public static Action<string> OnWeaponUpgraded;         // v2 — 무기 강화 ID
+        public static Action<string> OnWeaponUnlocked;         // v2 — 해금된 무기 ID
+        public static Action<string> OnAbilityUnlocked;        // v2 — 해금된 어빌리티 ID
 
-        // 머신 선택
-        public static Action<int> OnMachineSelected;          // 선택한 머신 ID
+        // 머신/캐릭터 선택
+        public static Action<int> OnMachineSelected;          // 선택한 머신 ID (레거시)
+        public static Action<string> OnCharacterSelected;     // v2 — 선택된 캐릭터 ID
     }
 }

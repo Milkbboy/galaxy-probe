@@ -12,14 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15450dabafaec2142b028d59d9acb95a, type: 3}
   m_Name: Upgrade_MiningRate
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.UpgradeData
-  _upgradeId: mining_rate
-  _displayName: Mining
-  _description: Increase mining rate
+  _upgradeId: mine_speed
+  _displayName: "\uCC44\uAD74 \uC18D\uB3C4 \uD5A5\uC0C1"
+  _description: "\uCD08\uB2F9 \uCC44\uAD74 +2"
   _icon: {fileID: 0}
   _upgradeType: 5
-  _maxLevel: 10
+  _maxLevel: 5
   _baseValue: 0
-  _valuePerLevel: 5
-  _isPercentage: 1
-  _baseCost: 100
-  _costMultiplier: 1.4
+  _valuePerLevel: 2
+  _isPercentage: 0
+  _baseCost: 80
+  _baseCostGem: 0
+  _costMultiplier: 1.5
+  _oreCostSchedule: [80, 160, 280, 440, 640]
+  _gemCostSchedule: []

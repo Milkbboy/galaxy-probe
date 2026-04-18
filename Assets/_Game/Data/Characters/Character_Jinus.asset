@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52cbdc1864e0f8b46b7826a7a696f2b4, type: 3}
+  m_Name: Character_Jinus
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.CharacterData
+  _characterId: jinus
+  _displayName: "\uC9C0\uB204\uC2A4"
+  _title: "\uCC44\uAD74 \uC804\uBB38\uAC00"
+  _description: "\uB4DC\uB860 \uD3EC\uD0D1\xB7\uCC44\uAD74 \uB4DC\uB860\xB7\uB4DC\uB860
+    \uAC70\uBBF8\uB85C \uC804\uC7A5\uC744 \uC7A5\uC545\uD558\uB294 \uC790\uC6D0 \uC804\uBB38\uAC00"
+  _themeColor: {r: 0.31764707, g: 0.8117647, b: 0.4, a: 1}
+  _portrait: {fileID: 0}
+  _defaultMachine: {fileID: 11400000, guid: db758143b0d108c45b9865ea85e8c4d9, type: 2}
+  _abilities:
+  - {fileID: 11400000, guid: 4c53d43b3a6112546b1244de1c36e06d, type: 2}
+  - {fileID: 11400000, guid: ac10f7af23447604ea723eab116ce60d, type: 2}
+  - {fileID: 11400000, guid: 4ac236350a8ad5b468f0914bd1fedf15, type: 2}

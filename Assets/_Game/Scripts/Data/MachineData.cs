@@ -23,6 +23,10 @@ namespace DrillCorp.Data
         [SerializeField] private float _miningRate = 10f;
         [SerializeField] private float _miningBonus = 0f;
 
+        [Tooltip("v2 — 세션 승리를 위한 기본 채굴 목표량. MiningTarget 업그레이드로 증가.")]
+        [Min(0f)]
+        [SerializeField] private float _baseMiningTarget = 100f;
+
         [Header("Weapon")]
         [SerializeField] private float _attackDamage = 20f;
         [SerializeField] private float _attackCooldown = 0.5f;
@@ -50,6 +54,7 @@ namespace DrillCorp.Data
         public float MiningRate => _miningRate;
         public float MiningBonus => _miningBonus;
         public float TotalMiningRate => _miningRate * (1f + _miningBonus);
+        public float BaseMiningTarget => _baseMiningTarget;
 
         // Properties - Weapon
         public float AttackDamage => _attackDamage;

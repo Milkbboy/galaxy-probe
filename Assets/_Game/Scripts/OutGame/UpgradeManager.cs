@@ -69,15 +69,22 @@ namespace DrillCorp.OutGame
                 return false;
             }
 
-            int cost = data.GetCostForLevel(currentLevel);
-            if (DataManager.Instance == null || DataManager.Instance.Currency < cost)
+            var (ore, gem) = data.GetCostsForLevel(currentLevel);
+            var dm = DataManager.Instance;
+            if (dm == null || dm.Ore < ore || dm.Gems < gem)
             {
-                Debug.Log($"[UpgradeManager] Not enough currency for {upgradeId}");
+                Debug.Log($"[UpgradeManager] Not enough currency for {upgradeId} (need {ore}광석/{gem}보석)");
                 return false;
             }
 
-            // 비용 차감 및 레벨 증가
-            DataManager.Instance.SpendCurrency(cost);
+            // 비용 차감 (둘 중 하나라도 실패하면 환불 후 중단)
+            if (ore > 0 && !dm.SpendOre(ore)) return false;
+            if (gem > 0 && !dm.SpendGems(gem))
+            {
+                if (ore > 0) dm.AddOre(ore); // 환불
+                return false;
+            }
+
             _upgradeLevels[upgradeId] = currentLevel + 1;
             SaveUpgrades();
 
@@ -152,8 +159,9 @@ namespace DrillCorp.OutGame
             if (currentLevel >= data.MaxLevel)
                 return false;
 
-            int cost = data.GetCostForLevel(currentLevel);
-            return DataManager.Instance != null && DataManager.Instance.Currency >= cost;
+            var (ore, gem) = data.GetCostsForLevel(currentLevel);
+            var dm = DataManager.Instance;
+            return dm != null && dm.Ore >= ore && dm.Gems >= gem;
         }
 
         private void SaveUpgrades()

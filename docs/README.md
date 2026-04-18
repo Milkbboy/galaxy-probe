@@ -11,6 +11,21 @@
 | 데이터 계층(Wave→Bug→Behavior) | [DataStructure.md](DataStructure.md) |
 | 변경 이력 | [CHANGELOG.md](CHANGELOG.md) |
 
+## 🚀 v2 아웃게임 통합 (Hub UI 완료, 인게임 연결 대기)
+
+`docs/v2.html` 프로토타입의 아웃게임 고도화를 Unity에 이식하기 위한 계획·설계 문서.
+
+**현재 상태**: Title 씬 HubPanel 5개 서브패널 + 데이터 v2 정렬 100% 완료. 인게임 어빌리티/보석 드랍/회전톱날은 미착수. → 상세는 [V2_IntegrationPlan.md §8](V2_IntegrationPlan.md)
+
+| 목적 | 문서 |
+|---|---|
+| **총론 — 갭 분석 · 씬 구성 판단 · 작업 순서** | [V2_IntegrationPlan.md](V2_IntegrationPlan.md) |
+| 캐릭터 3종 + 어빌리티 9종 설계 | [CharacterAbilitySystem.md](CharacterAbilitySystem.md) |
+| 무기 해금 체인 · 무기별 강화 · 회전톱날 | [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md) |
+| 보석 드랍·채집 · 이중 재화 · mineTarget 승리 | [GemMiningSystem.md](GemMiningSystem.md) |
+| 신규 4개 시트 스키마 · UpgradeData 확장 | [GoogleSheetsGuide_v2Addendum.md](GoogleSheetsGuide_v2Addendum.md) |
+| 프로토타입 원본 (HTML) | [v2.html](v2.html) |
+
 ## 🧩 시스템별
 
 | 시스템 | 문서 |
@@ -28,6 +43,7 @@
 | 목적 | 문서 |
 |---|---|
 | 시트 컬럼 정의 + 행동 파싱 문법 + Import 규칙 | [GoogleSheetsGuide.md](GoogleSheetsGuide.md) |
+| v2 신규 시트 (Character/Weapon/WeaponUpgrade/Ability) + UpgradeData 확장 | [GoogleSheetsGuide_v2Addendum.md](GoogleSheetsGuide_v2Addendum.md) |
 
 스프레드시트: https://docs.google.com/spreadsheets/d/1hwgQ4IF-gQqVSX4xS_uqeKIPWUDy2NR4bC-OWmZQO_E/edit
 

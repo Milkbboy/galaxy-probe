@@ -110,7 +110,7 @@ namespace DrillCorp.UI
 
             if (_successCurrencyText != null && DataManager.Instance != null)
             {
-                _successCurrencyText.text = $"보유 재화: {DataManager.Instance.Data.Currency}";
+                _successCurrencyText.text = $"보유 재화: {DataManager.Instance.Ore}";
             }
         }
 

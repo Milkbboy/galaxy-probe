@@ -316,37 +316,8 @@ namespace DrillCorp.Editor
                 AssetDatabase.CreateAsset(upgrade, path + "Upgrade_MiningRate.asset");
             }
 
-            // Upgrade_AttackDamage
-            if (!File.Exists(path + "Upgrade_AttackDamage.asset"))
-            {
-                var upgrade = ScriptableObject.CreateInstance<UpgradeData>();
-                SetUpgradeData(upgrade, "attack_damage", "Damage", "Increase attack damage",
-                    UpgradeType.AttackDamage, maxLevel: 10, baseValue: 0f, valuePerLevel: 5f,
-                    isPercent: true, baseCost: 120, costMult: 1.5f);
-                AssetDatabase.CreateAsset(upgrade, path + "Upgrade_AttackDamage.asset");
-            }
-
-            // Upgrade_AttackSpeed
-            if (!File.Exists(path + "Upgrade_AttackSpeed.asset"))
-            {
-                var upgrade = ScriptableObject.CreateInstance<UpgradeData>();
-                SetUpgradeData(upgrade, "attack_speed", "Attack Speed", "Increase attack speed",
-                    UpgradeType.AttackSpeed, maxLevel: 10, baseValue: 0f, valuePerLevel: 5f,
-                    isPercent: true, baseCost: 120, costMult: 1.5f);
-                AssetDatabase.CreateAsset(upgrade, path + "Upgrade_AttackSpeed.asset");
-            }
-
-            // Upgrade_FuelEfficiency
-            if (!File.Exists(path + "Upgrade_FuelEfficiency.asset"))
-            {
-                var upgrade = ScriptableObject.CreateInstance<UpgradeData>();
-                SetUpgradeData(upgrade, "fuel_efficiency", "Fuel Efficiency", "Reduce fuel consumption",
-                    UpgradeType.FuelEfficiency, maxLevel: 10, baseValue: 0f, valuePerLevel: 3f,
-                    isPercent: true, baseCost: 80, costMult: 1.4f);
-                AssetDatabase.CreateAsset(upgrade, path + "Upgrade_FuelEfficiency.asset");
-            }
-
-            Debug.Log("[DataSetupEditor] Upgrade assets created");
+            // 옛 AttackDamage/AttackSpeed/FuelEfficiency는 v2 스펙에서 제외됨 — 무기별 강화로 이동.
+            Debug.Log("[DataSetupEditor] Upgrade assets created (v2 호환: 굴착기/보석 6종만)");
         }
 
         private static void SetUpgradeData(UpgradeData upgrade, string id, string displayName, string desc,

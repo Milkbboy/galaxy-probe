@@ -13,6 +13,12 @@ namespace DrillCorp.OutGame
         [SerializeField] private GameObject _machineSelectPanel;
         [SerializeField] private GameObject _optionsPanel;
 
+        [Tooltip("v2 통합 HubPanel — UPGRADE 버튼이 이걸 열도록 재활용")]
+        [SerializeField] private GameObject _hubPanel;
+
+        [Tooltip("true면 UPGRADE 버튼이 기존 UpgradePanel 대신 HubPanel을 연다 (v2 동작)")]
+        [SerializeField] private bool _useHubForUpgrade = true;
+
         [Header("Main Panel")]
         [SerializeField] private Button _startButton;
         [SerializeField] private Button _upgradeButton;
@@ -62,7 +68,10 @@ namespace DrillCorp.OutGame
 
         private void OnUpgradeClicked()
         {
-            ShowUpgradePanel();
+            if (_useHubForUpgrade && _hubPanel != null)
+                ShowHubPanel();
+            else
+                ShowUpgradePanel();
         }
 
         private void OnMachineClicked()
@@ -112,12 +121,20 @@ namespace DrillCorp.OutGame
                 _optionsPanel.SetActive(true);
         }
 
+        public void ShowHubPanel()
+        {
+            SetAllPanelsActive(false);
+            if (_hubPanel != null)
+                _hubPanel.SetActive(true);
+        }
+
         private void SetAllPanelsActive(bool active)
         {
             if (_mainPanel != null) _mainPanel.SetActive(active);
             if (_upgradePanel != null) _upgradePanel.SetActive(active);
             if (_machineSelectPanel != null) _machineSelectPanel.SetActive(active);
             if (_optionsPanel != null) _optionsPanel.SetActive(active);
+            if (_hubPanel != null) _hubPanel.SetActive(active);
         }
 
         private void OnCurrencyChanged(int currency)
@@ -129,7 +146,7 @@ namespace DrillCorp.OutGame
         {
             if (_currencyText != null && DataManager.Instance != null)
             {
-                _currencyText.text = $"{DataManager.Instance.Currency:N0}";
+                _currencyText.text = $"{DataManager.Instance.Ore:N0}";
             }
         }
     }

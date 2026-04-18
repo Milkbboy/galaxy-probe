@@ -6,6 +6,51 @@
 
 ---
 
+## [Unreleased] - 2026-04-18
+
+### Added — v2 Hub UI 통합 완료
+- **HubPanel** (Title 씬): 5개 서브패널 + TopBar 자동 생성 에디터
+  - `Scripts/Editor/V2HubCanvasSetupEditor.cs`: `Tools → Drill-Corp → 3. 게임 초기 설정 → Title → 3. v2 Hub Canvas 추가` 메뉴로 캔버스·SO 연결까지 자동화. `EnsureUpgradeManagerLinks()`가 `Assets/_Game/Data/Upgrades` 폴더의 모든 SO를 매니저에 자동 연결
+  - `Scripts/Editor/V2DataSetupEditor.cs`: 3 캐릭터·9 어빌리티·15 무기 강화 SO를 한 번에 생성
+  - 좌·중·우 3컬럼 마소너리(1:1:1, `flexibleWidth: 1` + `preferredWidth: 0`로 컬럼 균등 분배)
+
+- **5개 Sub-Panel UI** (`Scripts/OutGame/`)
+  - `HubController.cs`: TopBar 광석/보석 표시 + 치트(+1000)/초기화(2단계 확인)/뒤로/채굴 시작
+  - `CharacterSelectUI.cs`: 빅터/사라/지누스 카드 클릭 선택, 첫 OnEnable 시 `LayoutRebuilder.ForceRebuildLayoutImmediate`로 중첩 CSF 1프레임 지연 회피
+  - `WeaponShopUI.cs`: 5종 무기 카드(2열 마소너리 Col1/Col2). **patch-pattern**: 첫 OnEnable에 1회 빌드, 이후 이벤트(`OnOreChanged`/`OnGemsChanged`/`OnWeaponUnlocked`/`OnWeaponUpgraded`)는 텍스트·색상·interactable만 패치. 잠김↔해금 전환 시에만 카드 Body 재구성
+  - `AbilityShopUI.cs`: 선택 캐릭터의 3 어빌리티만 필터 표시. `OnCharacterSelected` 시 옛 카드 `SetActive(false)` 후 Destroy → 같은 프레임 새 카드와 안 섞이게
+  - `ExcavatorUpgradeUI.cs`: 굴착기 강화 4종(`UpgradeType.MaxHealth/Armor/MiningRate/MiningTarget`) 단행 카드, Name·Effect·Lv·Cost 4컬럼
+  - `GemUpgradeUI.cs`: 보석 채집 2종(`GemDropRate/GemCollectSpeed`) 동일 패턴
+  - `StatDisplayUI.cs`: 9행 실시간 합산(광석·보석·캐릭터·최대체력·받는피해·채굴속도·목표채굴량·보석출현확률·채집속도)
+
+- **데이터 모델 확장**
+  - `Scripts/Core/DataManager.cs`: `Ore`/`Gems`/`SelectedCharacterId`/`UnlockedWeapons`/`UnlockedAbilities`/`LastSessionResult` 추가, `SpendOre`/`SpendGems`/`TryUnlockWeapon`/`TryUnlockAbility`/`SelectCharacter` API
+  - `Scripts/Core/GameEvents.cs`: `OnOreChanged`/`OnGemsChanged`/`OnWeaponUpgraded`/`OnWeaponUnlocked`/`OnAbilityUnlocked`/`OnCharacterSelected`
+  - `Scripts/Data/CharacterData.cs`, `AbilityData.cs`, `WeaponUpgradeData.cs` (신규)
+  - `Scripts/OutGame/WeaponUpgradeManager.cs`: 무기별 누적 보너스(`GetBonus(weaponId, stat)`) — PlayerPrefs 영속
+  - `Scripts/Data/UpgradeData.cs`: `_oreCostSchedule`/`_gemCostSchedule` 명시 배열 추가 (v2 핸드튜닝 비용)
+  - `Scripts/OutGame/UpgradeManager.cs`: `TryUpgrade`/`CanUpgrade` 이중 재화(광석+보석) 처리, 보석 차감 실패 시 광석 환불
+
+### Changed — Upgrade SO를 v2.html 스펙으로 정렬
+- `Upgrade_MiningRate.asset`: ID `mining_rate` → **`mine_speed`**, schedule `[80,160,280,440,640]`광석, 효과 `초당 +2`
+- `Upgrade_MiningTarget.asset`: schedule `[100,200,350,550,800]`광석, 효과 `목표량 +50`
+- `Upgrade_MaxHealth.asset`: ID `max_health` → **`excavator_hp`**, schedule `[60,130,230,370,540]`광석, 효과 `+30 HP`
+- `Upgrade_Armor.asset`: ID `armor` → **`excavator_armor`**, maxLv 10→3, schedule `[150,300,500]`광석, 효과 `-15% 받는 피해`
+- `Upgrade_GemDrop.asset`: schedule `[15,30,50,75,105]`보석, 효과 `+2% 등장 확률`
+- `Upgrade_GemSpeed.asset`: schedule `[10,22,38,58,82]`보석, 효과 `+20% 채집 속도`
+
+### Removed — v2.html에 없는 옛 강화 SO
+- `Upgrade_AttackDamage.asset`, `Upgrade_AttackSpeed.asset`, `Upgrade_FuelEfficiency.asset` (무기별 강화는 `WeaponUpgradeData`로 분리됨)
+- `Scripts/Editor/DataSetupEditor.cs`의 위 3종 생성 블록 제거
+
+### Fixed
+- 중첩 ContentSizeFitter 1프레임 지연 → `AddVerticalItemContainer`의 VLG `childControlHeight = true`로 변경, 1프레임 내 안정 수렴
+- `WeaponShopUI` 전체 destroy/recreate로 인한 레이아웃 폭주 → patch-pattern 도입
+- `AbilityShopUI` 캐릭터 전환 시 옛 카드와 새 카드 6장 동시 존재 → `SetActive(false)` 즉시 레이아웃 제외
+- `StatDisplayUI` 베이스값 더블카운트 (예: HP 230 = 100 + 100 + 30) → SO `_baseValue=0` 통일, UI에서만 베이스 추가
+
+---
+
 ## [Unreleased] - 2026-04-17
 
 ### Added
