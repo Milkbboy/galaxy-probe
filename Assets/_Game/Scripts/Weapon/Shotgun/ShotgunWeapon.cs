@@ -36,7 +36,7 @@ namespace DrillCorp.Weapon.Shotgun
         private void SpawnMuzzleVfx(Vector3 pos)
         {
             if (_data.MuzzleVfxPrefab == null) return;
-            var vfx = Instantiate(_data.MuzzleVfxPrefab, pos, Quaternion.identity);
+            var vfx = Instantiate(_data.MuzzleVfxPrefab, pos, _data.MuzzleVfxPrefab.transform.rotation);
             Destroy(vfx, _data.MuzzleVfxLifetime);
         }
     }

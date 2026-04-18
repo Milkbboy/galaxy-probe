@@ -169,7 +169,7 @@ namespace DrillCorp.Weapon
         protected void SpawnHitVfx(Vector3 worldPos)
         {
             if (_baseData == null || _baseData.HitVfxPrefab == null) return;
-            var vfx = Instantiate(_baseData.HitVfxPrefab, worldPos, Quaternion.identity);
+            var vfx = Instantiate(_baseData.HitVfxPrefab, worldPos, _baseData.HitVfxPrefab.transform.rotation);
             Destroy(vfx, _baseData.HitVfxLifetime);
         }
     }

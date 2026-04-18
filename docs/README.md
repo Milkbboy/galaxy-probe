@@ -34,6 +34,7 @@
 | Bug 행동 (BugController + Behaviors) | [BugBehaviorSystem.md](BugBehaviorSystem.md) |
 | Bug 행동 — 기획자 가이드/예시 | [BugBehaviorPatterns.md](BugBehaviorPatterns.md) |
 | 무기 시스템 (Shotgun/BurstGun/Laser/LockOn) | [WeaponSystem.md](WeaponSystem.md) |
+| **VFX 3D 전환 계획 (Polygon Arsenal 기반)** | [VFX_3D_MigrationPlan.md](VFX_3D_MigrationPlan.md) |
 | 군집(Formation) 스폰 | [FormationSystem.md](FormationSystem.md) |
 | 카메라 (Nuclear Throne 방식) | [CameraSystem.md](CameraSystem.md) |
 | 미니맵 (RenderTexture) | [MinimapSystem.md](MinimapSystem.md) |

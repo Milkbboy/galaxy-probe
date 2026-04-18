@@ -115,8 +115,26 @@ namespace DrillCorp.Weapon.Laser
                 Debug.LogWarning("[LaserWeapon] BeamPrefab에 LaserBeam 컴포넌트가 없습니다.");
             }
 
+            // 지면 그을림 이펙트 — 빔과 동일 위치에 형제(sibling)로 스폰.
+            // 빔이 마우스 추적으로 이동하면 스코치도 따라가고, 빔 파괴 후엔 마지막 위치에서 잔상 fade.
+            SpawnScorch(spawnPos, obj.transform);
+
             // 스폰 순간 즉시 풀 쿨다운 세팅 (프로토 L269) — 빔 수명 동안 멈춰있다가 소멸 후 감소 시작
             _laserCD = _data.Cooldown;
+        }
+
+        private void SpawnScorch(Vector3 spawnPos, Transform followTarget)
+        {
+            if (_data.ScorchPrefab == null) return;
+
+            var scorch = Instantiate(_data.ScorchPrefab, spawnPos, _data.ScorchPrefab.transform.rotation);
+            float diameter = _data.BeamRadius * 2f * _data.ScorchScaleMultiplier;
+            scorch.transform.localScale = Vector3.one * diameter;
+
+            var decay = scorch.GetComponent<DrillCorp.VFX.LaserScorchDecay>();
+            if (decay == null) decay = scorch.AddComponent<DrillCorp.VFX.LaserScorchDecay>();
+            decay.Initialize(_data.ScorchStopAfter, _data.ScorchTotalLifetime);
+            decay.SetFollowTarget(followTarget);
         }
 
         // ────── UI 오버라이드 (슬롯 바 WeaponSlotUI용) ──────

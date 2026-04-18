@@ -182,7 +182,7 @@ namespace DrillCorp.Weapon.LockOn
                 return;
             }
 
-            var markerObj = Instantiate(_markerPrefab, target.position, Quaternion.identity);
+            var markerObj = Instantiate(_markerPrefab, target.position, _markerPrefab.transform.rotation);
             var marker = markerObj.GetComponent<LockOnMarker>();
             if (marker == null) marker = markerObj.AddComponent<LockOnMarker>();
             marker.SetTarget(target);

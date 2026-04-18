@@ -17,15 +17,19 @@ MonoBehaviour:
     \uD3ED\uBC1C AoE."
   _icon: {fileID: 21300000, guid: 52e696e01c842084ba1e22b31b6dbe64, type: 3}
   _themeColor: {r: 0.957, g: 0.643, b: 0.137, a: 1}
+  _weaponId: 
+  _unlockedByDefault: 0
+  _unlockGemCost: 0
+  _requiredWeapon: {fileID: 0}
   _fireDelay: 5
   _damage: 3
-  _hitVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
+  _hitVfxPrefab: {fileID: 7903679358744212561, guid: 6658f58bb70074b4bac2628c31d3aa4a, type: 3}
   _hitVfxLifetime: 1.5
   _explosionRadius: 3
   _instant: 0
   _projectileSpeed: 10
   _projectileLifetime: 5
-  _projectilePrefab: {fileID: 1511890090998158378, guid: 9d51805256b1c5e43a40da6727687e36, type: 3}
-  _explosionVfxPrefab: {fileID: 6580274799959955326, guid: fb1871b170d710f4d9a0c515cfacb86b, type: 3}
+  _projectilePrefab: {fileID: 3707287639599102714, guid: d9f10f8b64d2a934ab805b1c7b34c888, type: 3}
+  _explosionVfxPrefab: {fileID: 2047001706292195396, guid: 2f5522b14c8d2f048bfeec38a49e2a70, type: 3}
   _explosionVfxLifetime: 1.5
   _landingMarkerPrefab: {fileID: 6231776354757396270, guid: 868b59755b9adfb45a96a4a806ac42e0, type: 3}

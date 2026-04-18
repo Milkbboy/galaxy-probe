@@ -17,9 +17,13 @@ MonoBehaviour:
     / 5\uCD08 \uB9AC\uB85C\uB529."
   _icon: {fileID: 21300000, guid: 0a48519ca82c51243ac5898252aed0f6, type: 3}
   _themeColor: {r: 0.298, g: 0.765, b: 0.969, a: 1}
+  _weaponId: 
+  _unlockedByDefault: 0
+  _unlockGemCost: 0
+  _requiredWeapon: {fileID: 0}
   _fireDelay: 0.14
   _damage: 0.5
-  _hitVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
+  _hitVfxPrefab: {fileID: 4591266971867463079, guid: 7529b7b0e920f2d4c91a67491c692bfb, type: 3}
   _hitVfxLifetime: 1.5
   _maxAmmo: 40
   _reloadDuration: 5
@@ -28,4 +32,4 @@ MonoBehaviour:
   _bulletLifetime: 3
   _bulletHitRadius: 0.15
   _spreadAngle: 0.06
-  _bulletPrefab: {fileID: 740341238164292898, guid: af50c525c997de54092c2a059a0db609, type: 3}
+  _bulletPrefab: {fileID: 3942934141633754841, guid: 6d98b624982c0da4fb753eed44aec5ca, type: 3}

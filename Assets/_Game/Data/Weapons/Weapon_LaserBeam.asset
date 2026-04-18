@@ -17,6 +17,10 @@ MonoBehaviour:
     \uCD94\uC801 6\uCD08 + 5\uCD08 \uCFE8."
   _icon: {fileID: 21300000, guid: e384f0331a1c67d4ebfc6d76ecf850af, type: 3}
   _themeColor: {r: 1, g: 0.09, b: 0.267, a: 1}
+  _weaponId: 
+  _unlockedByDefault: 0
+  _unlockGemCost: 0
+  _requiredWeapon: {fileID: 0}
   _fireDelay: 0
   _damage: 0.8
   _hitVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
@@ -28,3 +32,7 @@ MonoBehaviour:
   _beamRadius: 1
   _tickInterval: 0.1
   _beamPrefab: {fileID: 4142905922988169902, guid: a9bc23ce6f3273949a90dec24e7c18c9, type: 3}
+  _scorchPrefab: {fileID: 5916145937693747247, guid: 7380fcbe047e25a43a257229fc527121, type: 3}
+  _scorchScaleMultiplier: 1
+  _scorchStopAfter: 6
+  _scorchTotalLifetime: 8

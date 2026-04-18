@@ -42,6 +42,22 @@ namespace DrillCorp.Weapon.Laser
         [Tooltip("LaserBeam 컴포넌트가 붙은 빔 프리펩 (4겹 SR + LifeArc LineRenderer 자식 포함)")]
         [SerializeField] private GameObject _beamPrefab;
 
+        [Header("Laser — Scorch (지면 그을림 이펙트)")]
+        [Tooltip("빔과 함께 지면에 스폰되는 장판형 화염 프리펩 (PA DamageAuraFire Variant). 비어있으면 스폰 생략.")]
+        [SerializeField] private GameObject _scorchPrefab;
+
+        [Tooltip("스코치 스케일 배수 — BeamRadius × 이 값 × 2 = 지름. 1.0이면 빔 피해 범위와 동일")]
+        [Range(0.2f, 3f)]
+        [SerializeField] private float _scorchScaleMultiplier = 1.0f;
+
+        [Tooltip("스코치 방출 정지 시간 (초) — 이 시간 후 새 파티클 방출 중단, 기존 파티클 자연 소멸")]
+        [Range(0.5f, 20f)]
+        [SerializeField] private float _scorchStopAfter = 6f;
+
+        [Tooltip("스코치 완전 파괴 시간 (초) — StopAfter + 잔상 페이드 마진. 보통 BeamDuration + 2s")]
+        [Range(0.6f, 25f)]
+        [SerializeField] private float _scorchTotalLifetime = 8f;
+
         public float Cooldown => _cooldown;
         public float BeamDuration => _beamDuration;
         public float BeamSpeed => _beamSpeed;
@@ -49,5 +65,9 @@ namespace DrillCorp.Weapon.Laser
         public float BeamRadius => _beamRadius;
         public float TickInterval => _tickInterval;
         public GameObject BeamPrefab => _beamPrefab;
+        public GameObject ScorchPrefab => _scorchPrefab;
+        public float ScorchScaleMultiplier => _scorchScaleMultiplier;
+        public float ScorchStopAfter => _scorchStopAfter;
+        public float ScorchTotalLifetime => _scorchTotalLifetime;
     }
 }
