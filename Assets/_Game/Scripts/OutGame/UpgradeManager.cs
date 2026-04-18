@@ -203,6 +203,7 @@ namespace DrillCorp.OutGame
                 _upgradeLevels[key] = 0;
             }
             SaveUpgrades();
+            GameEvents.OnUpgradePurchased?.Invoke(string.Empty, 0); // UI 갱신 트리거
         }
 
         [System.Serializable]

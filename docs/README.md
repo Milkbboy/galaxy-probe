@@ -24,6 +24,7 @@
 | 무기 해금 체인 · 무기별 강화 · 회전톱날 | [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md) |
 | 보석 드랍·채집 · 이중 재화 · mineTarget 승리 | [GemMiningSystem.md](GemMiningSystem.md) |
 | 신규 4개 시트 스키마 · UpgradeData 확장 | [GoogleSheetsGuide_v2Addendum.md](GoogleSheetsGuide_v2Addendum.md) |
+| Hub UI 구현 트러블슈팅 (CSF 캐스케이드·patch-pattern·컬럼 폭 누수) | [V2HubUI_Troubleshooting.md](V2HubUI_Troubleshooting.md) |
 | 프로토타입 원본 (HTML) | [v2.html](v2.html) |
 
 ## 🧩 시스템별

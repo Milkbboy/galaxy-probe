@@ -173,6 +173,7 @@ namespace DrillCorp.OutGame
             foreach (var key in new List<string>(_levels.Keys))
                 _levels[key] = 0;
             SaveLevels();
+            GameEvents.OnWeaponUpgraded?.Invoke(string.Empty); // UI 갱신 트리거
         }
     }
 }

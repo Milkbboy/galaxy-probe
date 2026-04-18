@@ -249,25 +249,26 @@ namespace DrillCorp.Editor
             sle.flexibleWidth = 1;
 
             // 오른쪽: 재화·치트·리셋·시작
-            // 주의: D2Coding 폰트에 이모지가 없어 □로 표시되므로 텍스트만 사용.
-            //       아이콘이 필요하면 추후 Sprite로 교체.
-            CreateCurrencyBadge(bar.transform, "OreDisplay", "광석", "0", ColOre);
-            CreateCurrencyBadge(bar.transform, "GemDisplay", "보석", "0", ColGem);
+            // 광석/보석 아이콘은 Assets/_Game/Sprites/UI/06_gold·01_diamond에서 자동 로드.
+            var oreIcon = LoadUISprite("06_gold");
+            var gemIcon = LoadUISprite("01_diamond");
+            CreateCurrencyBadge(bar.transform, "OreDisplay", "광석", "0", ColOre, oreIcon);
+            CreateCurrencyBadge(bar.transform, "GemDisplay", "보석", "0", ColGem, gemIcon);
             CreateSmallButton(bar.transform, "CheatButton", "치트 +1000", ColOk, 110);
             CreateSmallButton(bar.transform, "ResetButton", "초기화", ColDanger, 90);
             CreateSmallButton(bar.transform, "StartButton", "채굴 시작", ColAccent, 150, 18);
         }
 
         static void CreateCurrencyBadge(Transform parent, string name, string label,
-            string value, Color valueColor)
+            string value, Color valueColor, Sprite icon = null)
         {
             var badge = new GameObject(name);
             badge.transform.SetParent(parent, false);
             var rt = badge.AddComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(140, 40);
+            rt.sizeDelta = new Vector2(160, 40);
             var badgeLE = badge.AddComponent<LayoutElement>();
-            badgeLE.preferredWidth = 140;
-            badgeLE.minWidth = 140;
+            badgeLE.preferredWidth = 160;
+            badgeLE.minWidth = 160;
 
             var hl = badge.AddComponent<HorizontalLayoutGroup>();
             hl.spacing = 6;
@@ -277,6 +278,7 @@ namespace DrillCorp.Editor
             hl.childForceExpandWidth = false;
             hl.childForceExpandHeight = true;
 
+            // v2 원본: 「라벨 → 값 → 아이콘」 순서 (아이콘이 오른쪽 끝)
             var labelText = CreateText(badge.transform, "Label", label, 13, ColTextMid);
             labelText.alignment = TextAlignmentOptions.MidlineRight;
             var labelLE = labelText.gameObject.AddComponent<LayoutElement>();
@@ -287,8 +289,22 @@ namespace DrillCorp.Editor
             val.fontStyle = FontStyles.Bold;
             val.alignment = TextAlignmentOptions.MidlineRight;
             var valLE = val.gameObject.AddComponent<LayoutElement>();
-            valLE.preferredWidth = 90;
-            valLE.minWidth = 70;
+            valLE.preferredWidth = 80;
+            valLE.minWidth = 60;
+
+            if (icon != null)
+            {
+                var iconObj = new GameObject("Icon");
+                iconObj.transform.SetParent(badge.transform, false);
+                iconObj.AddComponent<RectTransform>().sizeDelta = new Vector2(24, 24);
+                var iconLE = iconObj.AddComponent<LayoutElement>();
+                iconLE.preferredWidth = 24;
+                iconLE.minWidth = 24;
+                iconLE.preferredHeight = 24;
+                var iconImg = iconObj.AddComponent<Image>();
+                iconImg.sprite = icon;
+                iconImg.preserveAspect = true;
+            }
         }
 
         // ── 캐릭터 선택 (상단 전체 폭, 내용물 높이에 맞게 자동) ──
@@ -395,7 +411,7 @@ namespace DrillCorp.Editor
             hlCols.childControlWidth = true;
             hlCols.childControlHeight = true;
             hlCols.childForceExpandWidth = false;  // flexibleWidth 비율 적용
-            hlCols.childForceExpandHeight = false;
+            hlCols.childForceExpandHeight = false; // 컬럼 각자 자기 preferredHeight 유지 (아래 CreateColumn에서 CSF 제거로 충돌 해소)
             hlCols.childAlignment = TextAnchor.UpperLeft;
 
             var fitter = content.AddComponent<ContentSizeFitter>();
@@ -430,13 +446,14 @@ namespace DrillCorp.Editor
             var vl = col.AddComponent<VerticalLayoutGroup>();
             vl.spacing = 12;
             vl.childControlWidth = true;
-            vl.childControlHeight = false;   // 서브패널의 sizeDelta(CSF가 갱신) 사용
+            vl.childControlHeight = true;    // 서브패널 preferredHeight를 LayoutElement 경유 즉시 조회 (CSF 딜레이 차단)
             vl.childForceExpandWidth = true;
             vl.childForceExpandHeight = false;
             vl.childAlignment = TextAnchor.UpperCenter;
 
-            var fitter = col.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            // ContentSizeFitter 의도적으로 없음 — 상위 HLG(childControlHeight=true)가 컬럼 높이를
+            // ILayoutElement 경유로 쿼리해 직접 관리. CSF 병행 시 sizeDelta 덮어쓰기 충돌로 컬럼
+            // top 정렬이 깨지는 문제(weapon_00 참조) 방지.
 
             var le = col.AddComponent<LayoutElement>();
             le.flexibleWidth = flexibleWidth;
@@ -460,43 +477,20 @@ namespace DrillCorp.Editor
             var sub = CreateSubPanel(parent, "WeaponShopSubPanel", "무기 & 강화");
             var content = sub.transform.Find("Content").gameObject;
 
-            // HLG(2열) + 각 컬럼 VLG 구조. 카드는 컬럼 너비에 자동으로 맞춰짐.
-            // WeaponShopUI가 _col1/_col2를 자식 "Col1"/"Col2"로 찾아 카드를 교차 분배.
-            var hl = content.AddComponent<HorizontalLayoutGroup>();
-            hl.spacing = 8;
-            hl.childControlWidth = true;
-            hl.childControlHeight = true;
-            hl.childForceExpandWidth = true;
-            hl.childForceExpandHeight = false;
-            hl.childAlignment = TextAnchor.UpperLeft;
+            // 행 단위 VLG. WeaponShopUI가 ceil(N/2) 행을 직접 만들어
+            // 행마다 카드 2장(HLG, force expand width)을 배치 — v2 grid 1fr 1fr 재현.
+            // childControlHeight=true: 자식 Row의 preferredHeight를 LayoutElement 경유로 즉시 조회
+            //   (sizeDelta 캐스케이드 딜레이 차단). childForceExpandHeight=false라 강제 늘림은 없음.
+            var vl = content.AddComponent<VerticalLayoutGroup>();
+            vl.spacing = 6;
+            vl.childControlWidth = true;
+            vl.childControlHeight = true;
+            vl.childForceExpandWidth = true;
+            vl.childForceExpandHeight = false;
+            vl.childAlignment = TextAnchor.UpperLeft;
 
             var fitter = content.AddComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            CreateWeaponCardColumn(content.transform, "Col1");
-            CreateWeaponCardColumn(content.transform, "Col2");
-        }
-
-        static void CreateWeaponCardColumn(Transform parent, string name)
-        {
-            var col = new GameObject(name);
-            col.transform.SetParent(parent, false);
-            col.AddComponent<RectTransform>();
-
-            var vl = col.AddComponent<VerticalLayoutGroup>();
-            vl.spacing = 6;
-            vl.childControlWidth = true;
-            vl.childControlHeight = false;
-            vl.childForceExpandWidth = true;
-            vl.childForceExpandHeight = false;
-
-            var fitter = col.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            var le = col.AddComponent<LayoutElement>();
-            le.flexibleWidth = 1;
-            le.preferredWidth = 0;
-            le.minWidth = 80;
         }
 
         static void CreateAbilityShopSubPanel(Transform parent)
@@ -710,7 +704,7 @@ namespace DrillCorp.Editor
         }
 
         // ═════════════════════════════════════════════════════
-        // WeaponShopUI 부착
+        // WeaponShopUI 부착 + 무기 아이콘 + 비용 아이콘 자동 바인딩
         // ═════════════════════════════════════════════════════
         static void AttachWeaponShopUI(GameObject hub)
         {
@@ -720,7 +714,82 @@ namespace DrillCorp.Editor
                 Debug.LogWarning("[V2HubCanvas] WeaponShopSubPanel을 찾을 수 없습니다.");
                 return;
             }
-            subPanel.gameObject.AddComponent<DrillCorp.OutGame.WeaponShopUI>();
+            var ui = subPanel.gameObject.AddComponent<DrillCorp.OutGame.WeaponShopUI>();
+
+            // _slots[*].Icon에 sprite 주입 — sniper/bomb/gun/laser는 wIcon0~3, saw는 없음(텍스트만).
+            var slotIcons = new System.Collections.Generic.Dictionary<string, string>
+            {
+                { "sniper", "wIcon0" },
+                { "bomb",   "wIcon1" },
+                { "gun",    "wIcon2" },
+                { "laser",  "wIcon3" },
+            };
+
+            var so = new SerializedObject(ui);
+            var slotsProp = so.FindProperty("_slots");
+            for (int i = 0; i < slotsProp.arraySize; i++)
+            {
+                var slot = slotsProp.GetArrayElementAtIndex(i);
+                var idProp = slot.FindPropertyRelative("WeaponId");
+                var iconProp = slot.FindPropertyRelative("Icon");
+                if (idProp != null && iconProp != null
+                    && slotIcons.TryGetValue(idProp.stringValue, out var iconName))
+                {
+                    iconProp.objectReferenceValue = LoadUISprite(iconName);
+                }
+            }
+
+            // 비용 아이콘 (광석/보석)
+            so.FindProperty("_oreIcon").objectReferenceValue = LoadUISprite("06_gold");
+            so.FindProperty("_gemIcon").objectReferenceValue = LoadUISprite("01_diamond");
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // 비용 아이콘만 주입하는 공통 헬퍼 (Excavator/Gem/Ability)
+        static void InjectCostIcons(MonoBehaviour ui, bool ore = true, bool gem = true)
+        {
+            if (ui == null) return;
+            var so = new SerializedObject(ui);
+            if (ore)
+            {
+                var p = so.FindProperty("_oreIcon");
+                if (p != null) p.objectReferenceValue = LoadUISprite("06_gold");
+            }
+            if (gem)
+            {
+                var p = so.FindProperty("_gemIcon");
+                if (p != null) p.objectReferenceValue = LoadUISprite("01_diamond");
+            }
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Assets/_Game/Sprites/UI/{name}.png Sprite 로드.
+        // Texture Type이 Default로 임포트되어 있으면 Sprite로 전환 + 재임포트 후 재로드.
+        static Sprite LoadUISprite(string fileName)
+        {
+            string path = $"Assets/_Game/Sprites/UI/{fileName}.png";
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite != null) return sprite;
+
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer == null)
+            {
+                Debug.LogWarning($"[V2HubCanvas] {path} 파일을 찾을 수 없습니다.");
+                return null;
+            }
+
+            // Default → Sprite 자동 전환
+            importer.textureType = TextureImporterType.Sprite;
+            importer.spriteImportMode = SpriteImportMode.Single;
+            importer.alphaIsTransparency = true;
+            importer.SaveAndReimport();
+            Debug.Log($"[V2HubCanvas] {path} Texture Type을 Sprite로 자동 전환했습니다.");
+
+            sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite == null)
+                Debug.LogWarning($"[V2HubCanvas] {path} 재임포트 후에도 Sprite 로드 실패.");
+            return sprite;
         }
 
         // ═════════════════════════════════════════════════════
@@ -750,6 +819,8 @@ namespace DrillCorp.Editor
             }
             so.ApplyModifiedPropertiesWithoutUndo();
 
+            InjectCostIcons(ui, ore: false, gem: true);
+
             if (guids.Length == 0)
                 Debug.LogWarning("[V2HubCanvas] Abilities 폴더가 비어있습니다. '4. v2 Data Assets 생성'을 먼저 돌리세요.");
         }
@@ -765,7 +836,8 @@ namespace DrillCorp.Editor
                 Debug.LogWarning("[V2HubCanvas] ExcavatorUpgradeSubPanel을 찾을 수 없습니다.");
                 return;
             }
-            subPanel.gameObject.AddComponent<DrillCorp.OutGame.ExcavatorUpgradeUI>();
+            var ui = subPanel.gameObject.AddComponent<DrillCorp.OutGame.ExcavatorUpgradeUI>();
+            InjectCostIcons(ui, ore: true, gem: true);
         }
 
         // ═════════════════════════════════════════════════════
@@ -812,7 +884,8 @@ namespace DrillCorp.Editor
                 Debug.LogWarning("[V2HubCanvas] GemUpgradeSubPanel을 찾을 수 없습니다.");
                 return;
             }
-            subPanel.gameObject.AddComponent<DrillCorp.OutGame.GemUpgradeUI>();
+            var ui = subPanel.gameObject.AddComponent<DrillCorp.OutGame.GemUpgradeUI>();
+            InjectCostIcons(ui, ore: true, gem: true);
         }
 
         // ═════════════════════════════════════════════════════
@@ -886,6 +959,10 @@ namespace DrillCorp.Editor
             vl.childControlWidth = true;
             vl.childControlHeight = false;
             vl.childForceExpandWidth = true;
+            // 명시적으로 false — Unity 기본값 true면 자식(Header/Content) flex를 1로 강제하고
+            // 서브패널 자체가 flexibleHeight>0을 상위 Column VLG에 리포트해 surplus가
+            // flex 분배로 계산됨 → CSF가 sizeDelta를 되돌리며 위치 간격이 벌어지는 현상 발생.
+            vl.childForceExpandHeight = false;
 
             // forcedHeight 없으면 내용물에 맞춰 자동 크기
             if (!forcedHeight.HasValue)

@@ -22,6 +22,10 @@ namespace DrillCorp.OutGame
             // v2 기준 mine_target은 굴착기 강화 섹션 (ExcavatorUpgradeUI)에 있음
         };
 
+        [Tooltip("비용 아이콘 — V2HubCanvasSetupEditor가 자동 주입")]
+        [SerializeField] private Sprite _oreIcon;
+        [SerializeField] private Sprite _gemIcon;
+
         private class RowView
         {
             public UpgradeData Data;
@@ -30,7 +34,7 @@ namespace DrillCorp.OutGame
             public TextMeshProUGUI NameText;
             public TextMeshProUGUI EffectText;
             public TextMeshProUGUI LvText;
-            public TextMeshProUGUI CostText;
+            public CostDisplayView Cost;
         }
 
         private Transform _content;
@@ -124,9 +128,7 @@ namespace DrillCorp.OutGame
             AddPreferredWidth(rv.LvText.gameObject, 36);
             rv.LvText.alignment = TextAlignmentOptions.MidlineRight;
 
-            rv.CostText = MakeText(row.transform, "Cost", "", 10, ColTextLow);
-            AddPreferredWidth(rv.CostText.gameObject, 90);
-            rv.CostText.alignment = TextAlignmentOptions.MidlineRight;
+            rv.Cost = CostDisplay.Build(row.transform, _oreIcon, _gemIcon, 10, 12, 80);
 
             var btn = row.AddComponent<Button>();
             btn.targetGraphic = img;
@@ -156,8 +158,7 @@ namespace DrillCorp.OutGame
 
             if (maxed)
             {
-                v.CostText.text    = "완료";
-                v.CostText.color   = ColOre;
+                CostDisplay.PatchSpecial(v.Cost, "완료", ColOre);
                 v.NameText.color   = ColTextLow;
                 v.EffectText.color = ColTextLow;
                 v.Bg.color         = ColRowBgDim;
@@ -165,11 +166,7 @@ namespace DrillCorp.OutGame
             else
             {
                 var (ore, gem) = v.Data.GetCostsForLevel(lv);
-                var parts = new List<string>();
-                if (ore > 0) parts.Add($"{ore}광석");
-                if (gem > 0) parts.Add($"{gem}보석");
-                v.CostText.text    = parts.Count == 0 ? "무료" : string.Join(" ", parts);
-                v.CostText.color   = canBuy ? ColOk : ColTextLow;
+                CostDisplay.PatchPaid(v.Cost, ore, gem, canBuy ? ColOk : ColTextLow);
                 v.NameText.color   = ColTextHi;
                 v.EffectText.color = ColTextMid;
                 v.Bg.color         = ColRowBg;

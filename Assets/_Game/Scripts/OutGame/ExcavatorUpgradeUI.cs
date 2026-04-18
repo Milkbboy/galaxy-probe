@@ -24,6 +24,10 @@ namespace DrillCorp.OutGame
             UpgradeType.MiningTarget,   // mine_target (v2는 굴착기 섹션에 배치)
         };
 
+        [Tooltip("비용 아이콘 — V2HubCanvasSetupEditor가 자동 주입")]
+        [SerializeField] private Sprite _oreIcon;
+        [SerializeField] private Sprite _gemIcon;
+
         private class RowView
         {
             public UpgradeData Data;
@@ -32,7 +36,7 @@ namespace DrillCorp.OutGame
             public TextMeshProUGUI NameText;
             public TextMeshProUGUI EffectText;
             public TextMeshProUGUI LvText;
-            public TextMeshProUGUI CostText;
+            public CostDisplayView Cost;
         }
 
         private Transform _content;
@@ -123,9 +127,7 @@ namespace DrillCorp.OutGame
             AddPreferredWidth(rv.LvText.gameObject, 36);
             rv.LvText.alignment = TextAlignmentOptions.MidlineRight;
 
-            rv.CostText = MakeText(row.transform, "Cost", "", 10, ColTextLow);
-            AddPreferredWidth(rv.CostText.gameObject, 80);
-            rv.CostText.alignment = TextAlignmentOptions.MidlineRight;
+            rv.Cost = CostDisplay.Build(row.transform, _oreIcon, _gemIcon, 10, 12, 70);
 
             var btn = row.AddComponent<Button>();
             btn.targetGraphic = img;
@@ -156,16 +158,14 @@ namespace DrillCorp.OutGame
 
             if (maxed)
             {
-                v.CostText.text   = "완료";
-                v.CostText.color  = ColOre;
+                CostDisplay.PatchSpecial(v.Cost, "완료", ColOre);
                 v.NameText.color  = ColTextLow;
                 v.EffectText.color = ColTextLow;
                 v.Bg.color        = ColRowBgDim;
             }
             else
             {
-                v.CostText.text   = $"{cost}광석";
-                v.CostText.color  = canBuy ? ColOk : ColTextLow;
+                CostDisplay.PatchPaid(v.Cost, cost, 0, canBuy ? ColOk : ColTextLow);
                 v.NameText.color  = ColTextHi;
                 v.EffectText.color = ColTextMid;
                 v.Bg.color        = ColRowBg;

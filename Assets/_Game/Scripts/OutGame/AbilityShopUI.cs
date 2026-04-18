@@ -19,6 +19,9 @@ namespace DrillCorp.OutGame
         [Tooltip("9개 AbilityData SO — V2HubCanvasSetupEditor가 자동 연결")]
         [SerializeField] private AbilityData[] _allAbilities;
 
+        [Tooltip("비용 아이콘 — V2HubCanvasSetupEditor가 자동 주입")]
+        [SerializeField] private Sprite _gemIcon;
+
         // ── 카드별 뷰 ────────────────────────────────
         private class CardView
         {
@@ -29,7 +32,9 @@ namespace DrillCorp.OutGame
             public TextMeshProUGUI DescText;
             public Button UnlockButton;
             public Image UnlockButtonImage;
-            public TextMeshProUGUI UnlockButtonText;
+            public TextMeshProUGUI UnlockLabelText;
+            public TextMeshProUGUI UnlockGemNumText;
+            public Image UnlockGemIcon;
             public bool BodyIsUnlocked;
         }
 
@@ -144,7 +149,7 @@ namespace DrillCorp.OutGame
             view.DescText.textWrappingMode = TextWrappingModes.Normal;
             view.DescText.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
 
-            // 해금 버튼 (잠김일 때만 활성)
+            // 해금 버튼 — 안에 [라벨][숫자][보석아이콘] HLG
             var btn = new GameObject("UnlockButton");
             btn.transform.SetParent(card.transform, false);
             btn.AddComponent<RectTransform>().sizeDelta = new Vector2(0, 32);
@@ -157,12 +162,36 @@ namespace DrillCorp.OutGame
             button.targetGraphic = img;
             view.UnlockButton = button;
 
-            var btnText = MakeText(btn.transform, "Text", "", 11, Color.white);
-            btnText.alignment = TextAlignmentOptions.Center;
-            var btnTextRt = btnText.GetComponent<RectTransform>();
-            btnTextRt.anchorMin = Vector2.zero; btnTextRt.anchorMax = Vector2.one;
-            btnTextRt.offsetMin = Vector2.zero; btnTextRt.offsetMax = Vector2.zero;
-            view.UnlockButtonText = btnText;
+            var btnHL = btn.AddComponent<HorizontalLayoutGroup>();
+            btnHL.padding = new RectOffset(8, 8, 0, 0);
+            btnHL.spacing = 4;
+            btnHL.childAlignment = TextAnchor.MiddleCenter;
+            btnHL.childControlWidth = true;
+            btnHL.childControlHeight = true;
+            btnHL.childForceExpandWidth = false;
+            btnHL.childForceExpandHeight = true;
+
+            view.UnlockLabelText = MakeText(btn.transform, "Label", "", 11, Color.white);
+            view.UnlockLabelText.alignment = TextAlignmentOptions.Center;
+            view.UnlockLabelText.raycastTarget = false;
+
+            view.UnlockGemNumText = MakeText(btn.transform, "GemNum", "", 11, Color.white);
+            view.UnlockGemNumText.alignment = TextAlignmentOptions.Center;
+            view.UnlockGemNumText.raycastTarget = false;
+            view.UnlockGemNumText.gameObject.SetActive(false);
+
+            var iconObj = new GameObject("GemIcon");
+            iconObj.transform.SetParent(btn.transform, false);
+            iconObj.AddComponent<RectTransform>().sizeDelta = new Vector2(14, 14);
+            var iconLE = iconObj.AddComponent<LayoutElement>();
+            iconLE.preferredWidth = 14;
+            iconLE.minWidth = 14;
+            iconLE.preferredHeight = 14;
+            view.UnlockGemIcon = iconObj.AddComponent<Image>();
+            view.UnlockGemIcon.sprite = _gemIcon;
+            view.UnlockGemIcon.preserveAspect = true;
+            view.UnlockGemIcon.raycastTarget = false;
+            iconObj.SetActive(false);
 
             var captured = a;
             button.onClick.AddListener(() =>
@@ -196,8 +225,10 @@ namespace DrillCorp.OutGame
                 // 해금 완료 — 버튼 비활성, 라벨 변경
                 view.UnlockButton.interactable = false;
                 view.UnlockButtonImage.color = ColDisabled;
-                view.UnlockButtonText.text = "활성화됨";
-                view.UnlockButtonText.color = ColTextLow;
+                view.UnlockLabelText.text = "활성화됨";
+                view.UnlockLabelText.color = ColTextLow;
+                view.UnlockGemNumText.gameObject.SetActive(false);
+                if (view.UnlockGemIcon != null) view.UnlockGemIcon.gameObject.SetActive(false);
             }
             else
             {
@@ -205,11 +236,25 @@ namespace DrillCorp.OutGame
                 view.UnlockButton.interactable = canAfford;
                 view.UnlockButtonImage.color = canAfford ? ColAccent : ColDisabled;
 
-                view.UnlockButtonText.text = reqMet
-                    ? $"해금 — {view.Data.UnlockGemCost} 보석"
-                    : $"{view.Data.RequiredAbility.DisplayName} 먼저 해금";
-                view.UnlockButtonText.color = canAfford ? Color.white
+                Color labelColor = canAfford ? Color.white
                     : (reqMet ? ColGemAccent : ColTextLow);
+
+                if (reqMet)
+                {
+                    view.UnlockLabelText.text = "해금 —";
+                    view.UnlockGemNumText.text = view.Data.UnlockGemCost.ToString();
+                    view.UnlockGemNumText.gameObject.SetActive(true);
+                    if (view.UnlockGemIcon != null)
+                        view.UnlockGemIcon.gameObject.SetActive(view.UnlockGemIcon.sprite != null);
+                }
+                else
+                {
+                    view.UnlockLabelText.text = $"{view.Data.RequiredAbility.DisplayName} 먼저 해금";
+                    view.UnlockGemNumText.gameObject.SetActive(false);
+                    if (view.UnlockGemIcon != null) view.UnlockGemIcon.gameObject.SetActive(false);
+                }
+                view.UnlockLabelText.color = labelColor;
+                view.UnlockGemNumText.color = labelColor;
             }
         }
 

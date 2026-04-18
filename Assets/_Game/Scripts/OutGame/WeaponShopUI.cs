@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,6 +26,7 @@ namespace DrillCorp.OutGame
             public bool UnlockedByDefault;
             public int UnlockGemCost;
             public string RequiredWeaponId;
+            public Sprite Icon; // V2HubCanvasSetupEditor가 자동 바인딩 (없으면 텍스트만)
         }
 
         [SerializeField] private WeaponSlot[] _slots = new WeaponSlot[]
@@ -36,6 +38,10 @@ namespace DrillCorp.OutGame
             new WeaponSlot { WeaponId = "saw",    DisplayName = "회전톱날", UnlockGemCost = 40, RequiredWeaponId = "laser" },
         };
 
+        [Tooltip("비용 아이콘 — V2HubCanvasSetupEditor가 자동 주입")]
+        [SerializeField] private Sprite _oreIcon;
+        [SerializeField] private Sprite _gemIcon;
+
         // ── 카드별 뷰 ────────────────────────────────
         private class UpgradeRowView
         {
@@ -44,7 +50,7 @@ namespace DrillCorp.OutGame
             public Button Button;
             public TextMeshProUGUI NameText;
             public TextMeshProUGUI LvText;
-            public TextMeshProUGUI CostText;
+            public CostDisplayView Cost;
         }
 
         private class CardView
@@ -59,17 +65,18 @@ namespace DrillCorp.OutGame
             // unlocked 본문
             public List<UpgradeRowView> UpgradeRows = new List<UpgradeRowView>();
 
-            // locked 본문
+            // locked 본문 — UnlockButton 안에 [라벨][숫자][보석아이콘] HLG
             public Button UnlockButton;
             public Image UnlockButtonImage;
-            public TextMeshProUGUI UnlockButtonText;
+            public TextMeshProUGUI UnlockLabelText;
+            public TextMeshProUGUI UnlockGemNumText;
+            public Image UnlockGemIcon;
         }
 
         private Transform _content;
-        private Transform _col1;
-        private Transform _col2;
         private readonly List<CardView> _views = new List<CardView>();
         private bool _builtOnce;
+        private const int CardsPerRow = 2;
 
         // v2 팔레트
         private static readonly Color ColBg         = new Color32(0x12, 0x12, 0x2a, 0xFF);
@@ -86,24 +93,30 @@ namespace DrillCorp.OutGame
         {
             _content = transform.Find("Content");
             if (_content == null)
-            {
                 Debug.LogError("[WeaponShopUI] Content 자식이 없습니다. V2HubCanvasSetupEditor로 생성됐는지 확인하세요.");
-                return;
-            }
-            _col1 = _content.Find("Col1");
-            _col2 = _content.Find("Col2");
-            if (_col1 == null || _col2 == null)
-                Debug.LogError("[WeaponShopUI] Col1/Col2 자식이 없습니다. V2HubCanvasSetupEditor 재실행 필요.");
         }
 
         private void OnEnable()
         {
             BuildOnce();
             UpdateAll();
+            StartCoroutine(ForceRebuildNextFrame());
             GameEvents.OnOreChanged       += OnCurrencyAny;
             GameEvents.OnGemsChanged      += OnCurrencyAny;
             GameEvents.OnWeaponUnlocked   += OnWeaponChangedAny;
             GameEvents.OnWeaponUpgraded   += OnWeaponChangedAny;
+        }
+
+        // 다단 ContentSizeFitter 첫-프레임 settle 강제 (CharacterSelectUI 패턴 차용).
+        private IEnumerator ForceRebuildNextFrame()
+        {
+            yield return null;
+            yield return new WaitForEndOfFrame();
+            var rt = transform as RectTransform;
+            if (rt == null) yield break;
+            var rts = rt.GetComponentsInChildren<RectTransform>(true);
+            for (int i = rts.Length - 1; i >= 0; i--) // leaf-first
+                LayoutRebuilder.ForceRebuildLayoutImmediate(rts[i]);
         }
 
         private void OnDisable()
@@ -122,13 +135,58 @@ namespace DrillCorp.OutGame
         // ═══════════════════════════════════════════════════
         private void BuildOnce()
         {
-            if (_builtOnce || _content == null || _col1 == null || _col2 == null) return;
-            for (int i = 0; i < _slots.Length; i++)
+            if (_builtOnce || _content == null) return;
+
+            // ceil(N / 2) 행 생성. 각 행은 HLG로 카드 2장 균등 분배.
+            // 마지막 행 카드 수가 1개면 빈 spacer로 남은 절반 폭 채움 (v2 grid 1fr 1fr 재현).
+            int rowCount = (_slots.Length + CardsPerRow - 1) / CardsPerRow;
+            for (int r = 0; r < rowCount; r++)
             {
-                var parent = (i % 2 == 0) ? _col1 : _col2;
-                _views.Add(BuildCard(_slots[i], parent));
+                var row = MakeCardRow(_content, r);
+                int firstIdx = r * CardsPerRow;
+                int lastIdx  = Mathf.Min(firstIdx + CardsPerRow, _slots.Length);
+                for (int i = firstIdx; i < lastIdx; i++)
+                    _views.Add(BuildCard(_slots[i], row));
+
+                // 카드가 한 장만 있으면 빈 spacer 1개 추가
+                int placed = lastIdx - firstIdx;
+                for (int s = placed; s < CardsPerRow; s++)
+                    AddRowSpacer(row);
             }
             _builtOnce = true;
+        }
+
+        // 카드 2장이 들어가는 행 컨테이너. 두 자식이 폭 균등 분배 + 같은 시작 위치(상단 정렬).
+        private Transform MakeCardRow(Transform parent, int index)
+        {
+            var rowObj = new GameObject($"Row_{index}");
+            rowObj.transform.SetParent(parent, false);
+            rowObj.AddComponent<RectTransform>();
+
+            var hl = rowObj.AddComponent<HorizontalLayoutGroup>();
+            hl.spacing = 8;
+            hl.childControlWidth = true;
+            hl.childControlHeight = true;       // 자식 card의 preferredHeight를 LayoutElement 경유 즉시 조회
+            hl.childForceExpandWidth = false;   // 자식 LE.flexibleWidth 비율로 분배 (force는 minWidth 차이로 spacer 짓눌림)
+            hl.childForceExpandHeight = false;  // 강제 늘림 없음 → 작은 카드는 자기 preferredHeight 유지
+            hl.childAlignment = TextAnchor.UpperLeft;  // 작은 카드는 위 정렬, 큰 카드가 row 높이 결정
+
+            var fitter = rowObj.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            return rowObj.transform;
+        }
+
+        private void AddRowSpacer(Transform row)
+        {
+            var spacer = new GameObject("Spacer");
+            spacer.transform.SetParent(row, false);
+            spacer.AddComponent<RectTransform>();
+            var le = spacer.AddComponent<LayoutElement>();
+            le.flexibleWidth = 1;     // 카드와 동일 비율 → 정확한 50/50
+            le.preferredWidth = 0;
+            le.minWidth = 80;         // 카드 minWidth와 동일 — 균등 분배 보장
+            le.preferredHeight = 0;
         }
 
         private CardView BuildCard(WeaponSlot slot, Transform parent)
@@ -141,6 +199,13 @@ namespace DrillCorp.OutGame
 
             var cardRt = card.AddComponent<RectTransform>();
             cardRt.sizeDelta = new Vector2(0, 0);
+
+            // row HLG의 childForceExpandWidth가 균등 분배를 처리하지만, 명시적 LE로
+            // 자식 누수(다른 컬럼/카드 폭 비대칭)를 차단.
+            var cardLE = card.AddComponent<LayoutElement>();
+            cardLE.flexibleWidth = 1;
+            cardLE.preferredWidth = 0;
+            cardLE.minWidth = 80;
 
             var cardImg = card.AddComponent<Image>();
             cardImg.color = ColBg;
@@ -156,8 +221,21 @@ namespace DrillCorp.OutGame
             var cardFitter = card.AddComponent<ContentSizeFitter>();
             cardFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            // 헤더: 이름 + 상태
-            var header = MakeRow(card.transform, "Header", 20);
+            // 헤더: (아이콘 24×24) + 이름 + 상태 — v2 wc-icon 28×28 기반, 카드 컴팩트화로 24
+            var header = MakeRow(card.transform, "Header", 24);
+            if (slot.Icon != null)
+            {
+                var iconObj = new GameObject("Icon");
+                iconObj.transform.SetParent(header.transform, false);
+                iconObj.AddComponent<RectTransform>().sizeDelta = new Vector2(24, 24);
+                var iconLE = iconObj.AddComponent<LayoutElement>();
+                iconLE.preferredWidth = 24;
+                iconLE.minWidth = 24;
+                iconLE.preferredHeight = 24;
+                var iconImg = iconObj.AddComponent<Image>();
+                iconImg.sprite = slot.Icon;
+                iconImg.preserveAspect = true;
+            }
             view.NameText = MakeText(header.transform, "Name", slot.DisplayName, 13, ColTextHi);
             view.NameText.fontStyle = FontStyles.Bold;
             AddFlexible(view.NameText.gameObject);
@@ -208,12 +286,37 @@ namespace DrillCorp.OutGame
             button.targetGraphic = img;
             view.UnlockButton = button;
 
-            var text = MakeText(btn.transform, "Text", "", 11, Color.white);
-            text.alignment = TextAlignmentOptions.Center;
-            var tRt = text.GetComponent<RectTransform>();
-            tRt.anchorMin = Vector2.zero; tRt.anchorMax = Vector2.one;
-            tRt.offsetMin = Vector2.zero; tRt.offsetMax = Vector2.zero;
-            view.UnlockButtonText = text;
+            // 버튼 안 HLG: [라벨][숫자][보석아이콘] 가운데 정렬
+            var hl = btn.AddComponent<HorizontalLayoutGroup>();
+            hl.padding = new RectOffset(8, 8, 0, 0);
+            hl.spacing = 4;
+            hl.childAlignment = TextAnchor.MiddleCenter;
+            hl.childControlWidth = true;
+            hl.childControlHeight = true;
+            hl.childForceExpandWidth = false;
+            hl.childForceExpandHeight = true;
+
+            view.UnlockLabelText = MakeText(btn.transform, "Label", "", 11, Color.white);
+            view.UnlockLabelText.alignment = TextAlignmentOptions.Center;
+            view.UnlockLabelText.raycastTarget = false;
+
+            view.UnlockGemNumText = MakeText(btn.transform, "GemNum", "", 11, Color.white);
+            view.UnlockGemNumText.alignment = TextAlignmentOptions.Center;
+            view.UnlockGemNumText.raycastTarget = false;
+            view.UnlockGemNumText.gameObject.SetActive(false);
+
+            var iconObj = new GameObject("GemIcon");
+            iconObj.transform.SetParent(btn.transform, false);
+            iconObj.AddComponent<RectTransform>().sizeDelta = new Vector2(14, 14);
+            var iconLE = iconObj.AddComponent<LayoutElement>();
+            iconLE.preferredWidth = 14;
+            iconLE.minWidth = 14;
+            iconLE.preferredHeight = 14;
+            view.UnlockGemIcon = iconObj.AddComponent<Image>();
+            view.UnlockGemIcon.sprite = _gemIcon;
+            view.UnlockGemIcon.preserveAspect = true;
+            view.UnlockGemIcon.raycastTarget = false;
+            iconObj.SetActive(false);
 
             var captured = view.Slot;
             button.onClick.AddListener(() =>
@@ -261,14 +364,12 @@ namespace DrillCorp.OutGame
             hl.childForceExpandWidth = false;
 
             rv.NameText = MakeText(row.transform, "Name", u.DisplayName, 10, ColTextHi);
-            AddPreferredWidth(rv.NameText.gameObject, 85);
+            AddFlexible(rv.NameText.gameObject);
 
             rv.LvText = MakeText(row.transform, "Lv", "", 10, ColTextMid);
             AddPreferredWidth(rv.LvText.gameObject, 30);
 
-            rv.CostText = MakeText(row.transform, "Cost", "", 10, ColTextLow);
-            AddFlexible(rv.CostText.gameObject);
-            rv.CostText.alignment = TextAlignmentOptions.MidlineRight;
+            rv.Cost = CostDisplay.Build(row.transform, _oreIcon, _gemIcon, 10, 12, 70);
 
             var btn = row.AddComponent<Button>();
             btn.targetGraphic = img;
@@ -281,12 +382,20 @@ namespace DrillCorp.OutGame
 
         private void ClearBody(CardView view)
         {
+            // SetActive(false) 먼저 — Destroy는 프레임 끝에 처리되어 한 프레임 동안 옛/새 자식이
+            // 동시 존재하며 Body preferredHeight 스파이크 발생. 비활성으로 즉시 layout 제외.
             for (int i = view.Body.childCount - 1; i >= 0; i--)
-                Destroy(view.Body.GetChild(i).gameObject);
+            {
+                var child = view.Body.GetChild(i).gameObject;
+                child.SetActive(false);
+                Destroy(child);
+            }
             view.UpgradeRows.Clear();
             view.UnlockButton = null;
             view.UnlockButtonImage = null;
-            view.UnlockButtonText = null;
+            view.UnlockLabelText = null;
+            view.UnlockGemNumText = null;
+            view.UnlockGemIcon = null;
         }
 
         // ═══════════════════════════════════════════════════
@@ -335,11 +444,25 @@ namespace DrillCorp.OutGame
             cb.disabledColor = ColDisabled;
             view.UnlockButton.colors = cb;
 
-            view.UnlockButtonText.text = reqMet
-                ? $"{view.Slot.DisplayName} 해금 — {view.Slot.UnlockGemCost} 보석"
-                : $"{FindSlotName(view.Slot.RequiredWeaponId)} 먼저 해금";
-            view.UnlockButtonText.color = canAfford ? Color.white
+            Color labelColor = canAfford ? Color.white
                 : (reqMet ? ColGemAccent : ColTextLow);
+
+            if (reqMet)
+            {
+                view.UnlockLabelText.text = $"{view.Slot.DisplayName} 해금 —";
+                view.UnlockGemNumText.text = view.Slot.UnlockGemCost.ToString();
+                view.UnlockGemNumText.gameObject.SetActive(true);
+                if (view.UnlockGemIcon != null)
+                    view.UnlockGemIcon.gameObject.SetActive(view.UnlockGemIcon.sprite != null);
+            }
+            else
+            {
+                view.UnlockLabelText.text = $"{FindSlotName(view.Slot.RequiredWeaponId)} 먼저 해금";
+                view.UnlockGemNumText.gameObject.SetActive(false);
+                if (view.UnlockGemIcon != null) view.UnlockGemIcon.gameObject.SetActive(false);
+            }
+            view.UnlockLabelText.color = labelColor;
+            view.UnlockGemNumText.color = labelColor;
         }
 
         private void PatchUnlockedBody(CardView view)
@@ -358,18 +481,10 @@ namespace DrillCorp.OutGame
                 rv.LvText.text    = $"{lv}/{rv.Data.MaxLevel}";
 
                 if (maxed)
-                {
-                    rv.CostText.text  = "완료";
-                    rv.CostText.color = ColOre;
-                }
+                    CostDisplay.PatchSpecial(rv.Cost, "완료", ColOre);
                 else
-                {
-                    var parts = new List<string>();
-                    if (ore > 0) parts.Add($"{ore}광석");
-                    if (gem > 0) parts.Add($"{gem}보석");
-                    rv.CostText.text  = parts.Count == 0 ? "무료" : string.Join(" ", parts);
-                    rv.CostText.color = canBuy ? ColOk : ColTextLow;
-                }
+                    CostDisplay.PatchPaid(rv.Cost, ore, gem, canBuy ? ColOk : ColTextLow);
+
                 rv.Button.interactable = canBuy;
             }
         }

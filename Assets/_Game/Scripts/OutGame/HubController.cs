@@ -194,6 +194,7 @@ namespace DrillCorp.OutGame
 
             DataManager.Instance?.ResetData();
             UpgradeManager.Instance?.ResetAllUpgrades();
+            WeaponUpgradeManager.Instance?.ResetAll();
             RefreshCurrency();
             RefreshTargetLabel();
 
