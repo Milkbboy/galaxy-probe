@@ -531,7 +531,7 @@ WeaponCard (5개)
 
 ---
 
-## 7. 회전톱날 무기 (신규)
+## 7. 회전톱날 무기 (구현 완료 2026-04-19)
 
 ### 7.1 컨셉
 
@@ -541,13 +541,15 @@ WeaponCard (5개)
 
 | 속성 | 값 | Unity 변환 |
 |---|---|---|
-| 톱날 궤도 반경 | 72 유닛 | `OrbitRadius` |
-| 톱날 블레이드 반경 | 18 유닛 | `BladeRadius` |
-| 데미지 | 0.15 / tick | `DamagePerTick` |
-| 슬로우 강도 | 30% (기본) | `SlowFactor` |
+| 톱날 궤도 반경 | 72 유닛 | `OrbitRadius = 7.2f` |
+| 톱날 블레이드 반경 | 18 유닛 | `BladeRadius = 1.8f` |
+| 데미지 | 0.15 / tick | `WeaponData.Damage = 0.15f` (tick당) |
+| 슬로우 강도 | 30% (기본) | `SlowFactor = 0.3f` |
 | 슬로우 지속 | 2초 (120 frames) | `SlowDuration = 2f` |
-| 회전 속도 | 0.08 rad/frame | `SpinSpeed = 0.08 * 60 = 4.8 rad/sec` |
+| 회전 속도 | 0.08 rad/frame × `*5` 배율 | `SpinSpeed = 24 rad/sec` ⚠ |
 | 데미지 주기 | 0.1초 (6 frames) | `DamageTickInterval = 0.1f` |
+
+> ⚠ **SpinSpeed 주의**: v2.html 1109줄 `sawAngle += ws.saw.spinSpeed * dt * 5` — 기본값 0.08에 추가 **×5 배율**이 곱해져 있음. 60fps 기준 실제 = `0.08 × 5 × 60 = 24 rad/sec`. 문서 초안의 `4.8 rad/sec`은 이 배율을 놓친 계산이므로 **SpinSpeed = 24**로 설정해야 v2 체감과 일치.
 
 ### 7.3 SawWeaponData.cs
 
@@ -657,6 +659,42 @@ public class BugController : MonoBehaviour
 ```
 
 > 충격파 어빌리티도 이 `ApplySlow`를 재사용 (50% / 3초).
+
+### 7.7 실제 구현 (2026-04-19)
+
+초안 §7.3~7.6 대부분이 그대로 반영됐으며, 아래 항목만 결정 변경:
+
+| 항목 | 초안 | 실제 | 이유 |
+|---|---|---|---|
+| 데미지 필드 | `DamagePerTick = 0.15f` 별도 필드 | `WeaponData.Damage` 재활용 | 레이저가 이미 `Damage`를 tick당 값으로 쓰는 패턴과 통일 |
+| 발사 구동 | 초안 미정 | **self-driven** (자체 `Update`에서 `TryFire`) | v2 동시 발동 아키텍처 전환(`AimController.EquipWeapon` 경로 제거) |
+| 블레이드 시각 | 외부 프리펩 바인딩 | **자동 빌더 에디터** (`SawBladePrefabBuilder`) | 10톱니+허브+볼트 절차적 메시 — 외부 에셋 불필요 |
+| SpinSpeed 기본값 | `4.8` | `24` | v2 `*5` 배율 반영 (§7.2 경고 참조) |
+
+**파일 매핑**
+
+| 역할 | 경로 |
+|---|---|
+| SO 정의 | `Assets/_Game/Scripts/Weapon/Saw/SawWeaponData.cs` |
+| 런타임 | `Assets/_Game/Scripts/Weapon/Saw/SawWeapon.cs` |
+| SO 에셋 | `Assets/_Game/Data/Weapons/Weapon_Saw.asset` |
+| 블레이드 프리펩 빌더 | `Assets/_Game/Scripts/Editor/SawBladePrefabBuilder.cs` |
+| 씬 셋업 에디터 | `Assets/_Game/Scripts/Editor/WeaponPanelSawSetup.cs` |
+| SO 생성 메뉴 | `V2DataSetupEditor.CreateSawWeaponDataMenu` |
+| 블레이드 프리펩 | `Assets/_Game/Prefabs/Weapons/SawBlade.prefab` |
+
+**에디터 메뉴 체인** (풀셋업 1-click):
+```
+Tools > Drill-Corp > Weapons > ★ Saw 풀셋업 (에셋 + 프리펩 + 씬)
+  └─ 1. Weapon_Saw.asset 생성 (V2DataSetupEditor)
+  └─ 2. SawBlade.prefab + 메시·머티리얼 3종 (SawBladePrefabBuilder)
+  └─ 3. 씬에 SawWeapon + WeaponSlot_Saw 추가 (WeaponPanelSawSetup)
+```
+
+**v2와 남은 격차** (의도적 스킵):
+- 팔/파이프 시각 (머신→블레이드 회색 막대) — 탑다운 3D에서 시각적 이득 낮음
+- 외곽 슬로우 링 (`br+5` 파란 링) — 프리펩 확장으로 추후 가능
+- 보스 2배 데미지 — 보스 시스템 미구현, 도입 시 추가
 
 ---
 

@@ -6,6 +6,41 @@
 
 ---
 
+## [Unreleased] - 2026-04-19 (2)
+
+### Added — 회전톱날 무기 (v2 §saw 포팅)
+
+- **`SawWeaponData` / `SawWeapon`** (`Scripts/Weapon/Saw/`) — 머신 중심에서 마우스 방향 궤도(`OrbitRadius=7.2`) 위에 떠있으며 블레이드 반경(`BladeRadius=1.8`) 내 Bug에 **0.1초 tick 데미지(0.15) + 슬로우(30%/2s)**. v2.html `tickSaw`/`drawSawPipe` 파라미터 그대로 이식
+- **`SpinSpeed=24 rad/sec`** — v2.html 1109줄 `sawAngle += spinSpeed * dt * 5` 의 `×5` 배율 반영. 문서 초안 `4.8 rad/sec`은 배율을 놓친 값이므로 정정 ([WeaponUnlockUpgradeSystem.md §7.2](WeaponUnlockUpgradeSystem.md) 경고 참조)
+- **`BugController.ApplySlow(strength, duration)`** — `_slowStrength`·`_slowTimer` + `MoveSpeed` getter에 `(1 - _slowStrength)` 곱. 더 강한 슬로우만 덮어쓰고 지속시간은 max. 충격파 어빌리티도 재사용 예정
+- **`SawBladePrefabBuilder.cs`** — 10톱니+허브+볼트 **절차적 메시 자동 생성** (`#77ee77` teeth / `#666` hub / `#bbb` bolt, v2 색상). URP Lit 머티리얼 3종 + Mesh 에셋 3종 + 프리펩 1종 생성 → `Weapon_Saw.asset._bladeVisualPrefab` 자동 바인딩
+- **`WeaponPanelSawSetup.cs`** — Game 씬에 `SawWeapon` GameObject 생성 + `WeaponSlot_Sniper.prefab` 복제→`WeaponSlot_Saw` 리네임 + `WeaponPanelUI._slots/._weapons` 배열 확장
+- **★ Saw 풀셋업 원클릭 메뉴** — 에셋 생성 → 프리펩 빌드 → 씬 바인딩 3단계 자동화 (`Tools > Drill-Corp > Weapons > ★ Saw 풀셋업`)
+- **`V2DataSetupEditor.CreateSawWeaponDataMenu`** — `Weapon_Saw.asset` 생성 (req=Laser, 40💎, 보라 `#e03ff8`)
+- **`Sprites/UI/09_saw.png`** — 슬롯 아이콘
+
+### Changed — v2 동시 발동 아키텍처 전환
+
+v2.html은 해금된 모든 무기가 매 프레임 병렬 발동 (`tickSniper/tickBomb/tickGun/tickLaser/tickSaw`). Unity 단일-장착 모델을 이 패턴에 정렬:
+
+- **`AimController` 단순화** — `_currentWeapon`·`_initialWeapon`·`EquipWeapon(WeaponBase)`·`CurrentWeapon`·`CooldownProgress`·`IsReady` 제거. 에임 위치·범위·머신 참조·`BugsInRange` 제공만 담당. `SuppressAimBugDetection` 분기 제거 (항상 범위 내 벌레 수집)
+- **`SniperWeapon` self-driven 전환** — Bomb·Laser·Gun이 이미 쓰던 `Update() → TryFire(_aimController)` 패턴 동일 적용. `_startDelay=0.3s`로 씬 로딩 직후 즉발 방지
+- **`SawWeapon` self-driven** — 동일 패턴. `OnEquip/OnUnequip` 오버라이드 제거, 블레이드 시각은 `Start`에서 스폰 / `OnDestroy`에서 정리
+
+### Removed
+
+- **`WeaponSwitcher.cs`** — 단일 무기 슬롯 교체(디버그용 1~4키) 폐기. 모든 무기 동시 발동이라 슬롯 개념 불필요
+- **`AimChargeUI.cs`** — 단일 무기 쿨 표시 UI. 각 무기의 `AimWeaponRing`·게이지로 대체됨
+
+### Docs
+
+- `V2_IntegrationPlan.md §8` — 회전톱날 ✅, 동시 발동 전환 기록
+- `WeaponUnlockUpgradeSystem.md §7` — 구현 완료, SpinSpeed 정정, 파일 매핑 추가
+- `WeaponSystem.md` — Phase 3 아카이브 배너 (현행은 WeaponUnlockUpgradeSystem.md)
+- `Architecture.md` — 무기 시스템 5종 + self-driven 패턴 반영
+
+---
+
 ## [Unreleased] - 2026-04-19
 
 ### Changed — 무기 SFX 라운드로빈 + 3D 프로젝타일 방향 수정

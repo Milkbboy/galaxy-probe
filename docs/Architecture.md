@@ -12,12 +12,14 @@ InGame ── MachineController / WaveManager / AimController
        │           BugManager / BugPool / OffscreenVisibilityTracker
        │           Formation/ (FormationSpawner, FormationGroup, FormationMember)
        │           Simple/   (SimpleBug, SimpleBugSpawner, TunnelEventManager)
-       ├─ Weapon  : WeaponBase + WeaponSwitcher + WeaponGauge
-       │           Shotgun / BurstGun / Laser / LockOn / Proto(Sniper)
+       ├─ Weapon  : WeaponBase (self-driven) + WeaponGauge
+       │           Sniper / Bomb / MachineGun / Laser / Saw  (v2 5종)
+       │           (legacy: Shotgun / BurstGun / LockOn — 비활성)
        ├─ Camera  : DynamicCamera + CameraSettingsData
        └─ UI      : Minimap (MinimapCamera/UI/Icon), HPBar, FuelBar ...
 Data (SO)  BugData / BugBehaviorData / WaveData / FormationData
-           WeaponData (+ Shotgun/Burst/Laser/LockOn/Sniper Data)
+           WeaponData (+ Sniper/Bomb/MachineGun/Laser/Saw Data) + WeaponUpgradeData
+           CharacterData / AbilityData (v2 어빌리티 SO)
            MachineData / UpgradeData / CameraSettings / BugPoolConfig
 ```
 
@@ -59,9 +61,8 @@ public static class GameEvents {
 상세: `BugBehaviorSystem.md`, `FormationSystem.md`
 
 ## 6. Weapon 시스템
-`WeaponBase`(abstract) ← Shotgun/BurstGun/Laser/LockOn/Sniper 각 구현 + 각 `*Data` SO.
-`WeaponSwitcher`가 입력·슬롯 관리, `WeaponGauge`가 UI. 에임 링은 `AimController` + `AimWeaponRing`(+ `SniperAimRingBinder`로 저격 쿨다운 시각화).
-상세: `WeaponSystem.md`
+`WeaponBase`(abstract) ← Sniper/Bomb/MachineGun/Laser/Saw 5종 + 각 `*Data` SO. v2 포팅 후 **self-driven** 패턴 — 각 무기가 자체 `Update()`에서 `TryFire(_aimController)` 호출, 해금 무기 전부 병렬 동작 (`WeaponSwitcher`·`AimController.EquipWeapon` 제거됨). `AimController`는 에임 위치·범위·머신 참조만 공급. UI는 `WeaponPanelUI` + `WeaponSlotUI` + 무기별 `*AimRingBinder`.
+상세: `WeaponUnlockUpgradeSystem.md` (v2 현행), `WeaponSystem.md` (Phase 3 아카이브)
 
 ## 7. Camera 시스템
 `DynamicCamera`가 Nuclear Throne 방식(머신-커서 중간점 Lerp)으로 추적. `CameraSettingsData` SO로 파라미터 튜닝, `DebugCameraUI`로 런타임 조정.

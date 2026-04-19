@@ -1,6 +1,6 @@
 # Drill-Corp 문서 인덱스
 
-> 최종 갱신: 2026-04-17
+> 최종 갱신: 2026-04-19
 
 ## 🎯 시작점
 
@@ -11,11 +11,11 @@
 | 데이터 계층(Wave→Bug→Behavior) | [DataStructure.md](DataStructure.md) |
 | 변경 이력 | [CHANGELOG.md](CHANGELOG.md) |
 
-## 🚀 v2 아웃게임 통합 (Hub UI 완료, 인게임 연결 대기)
+## 🚀 v2 아웃게임 통합 (Hub UI 완료, 인게임 연결 진행 중)
 
 `docs/v2.html` 프로토타입의 아웃게임 고도화를 Unity에 이식하기 위한 계획·설계 문서.
 
-**현재 상태**: Title 씬 HubPanel 5개 서브패널 + 데이터 v2 정렬 100% 완료. 인게임 어빌리티/보석 드랍/회전톱날은 미착수. → 상세는 [V2_IntegrationPlan.md §8](V2_IntegrationPlan.md)
+**현재 상태**: Title 씬 HubPanel 5개 서브패널 + 데이터 v2 정렬 100% 완료. **회전톱날 + 동시 발동 아키텍처** 완료 (2026-04-19). 어빌리티 9종·보석 드랍·mineTarget 승리 조건 남음. → 상세는 [V2_IntegrationPlan.md §8](V2_IntegrationPlan.md)
 
 | 목적 | 문서 |
 |---|---|

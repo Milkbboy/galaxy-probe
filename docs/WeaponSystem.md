@@ -3,6 +3,20 @@
 > 최종 갱신: 2026-04-14
 > Phase 3 구현 결과
 
+> ## ⚠ 아카이브 알림 (2026-04-19)
+>
+> 이 문서는 **Phase 3 (v1) 무기 시스템** — Shotgun/BurstGun/LaserBeam/LockOn 4종을 다룹니다.
+> **v2 전환 후** 무기 5종 (sniper/bomb/gun/laser/saw)로 재편되었고, 아키텍처도 변경되었습니다:
+>
+> - `WeaponSwitcher` / `AimController.EquipWeapon` / `_currentWeapon` — **제거됨**
+> - 모든 무기 **self-driven** (각자 `Update()`에서 `TryFire` 호출, v2.html 동시 발동 패턴)
+> - `AimController`는 에임 데이터만 공급 — 장착 개념 없음
+>
+> **현행 문서**: [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md)
+> — §7 회전톱날 (2026-04-19 완료) / §4 무기 강화 / §5 Title→Game 데이터 흐름 / §8 기관총 탄창
+>
+> 본 문서는 패턴 참조(WeaponBase·BulletPool·Fire 템플릿)용으로 유지됩니다.
+
 ## 1. 개요
 
 플레이어(오퍼레이터)가 마우스로 조준하여 자동 발사하는 무기 시스템입니다.
