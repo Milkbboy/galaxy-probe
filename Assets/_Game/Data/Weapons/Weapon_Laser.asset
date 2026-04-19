@@ -14,9 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Weapon.Laser.LaserBeamData
   _displayName: "\uB808\uC774\uC800"
   _description: 
+  _icon: {fileID: 0}
+  _themeColor: {r: 1, g: 1, b: 1, a: 1}
+  _weaponId: 
+  _unlockedByDefault: 0
+  _unlockGemCost: 0
+  _requiredWeapon: {fileID: 0}
   _fireDelay: 0.05
   _damage: 3
-  _hitVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
+  _hitVfxPrefab: {fileID: 9161560932475161442, guid: 08e672977982dab4e904e82e2a9a3727, type: 3}
   _hitVfxLifetime: 1.5
   _damageTickInterval: 0.05
   _alwaysOn: 1

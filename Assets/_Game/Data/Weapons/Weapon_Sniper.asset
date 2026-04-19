@@ -15,10 +15,15 @@ MonoBehaviour:
   _displayName: "\uC800\uACA9\uCD1D"
   _description: "\uC5D0\uC784 \uBC94\uC704 \uB0B4 \uBAA8\uB4E0 \uC801\uC5D0\uAC8C
     \uB3D9\uC2DC \uD53C\uACA9"
+  _icon: {fileID: 0}
+  _themeColor: {r: 0.88, g: 0.25, b: 0.98, a: 1}
+  _weaponId: 
+  _unlockedByDefault: 0
+  _unlockGemCost: 0
+  _requiredWeapon: {fileID: 0}
   _fireDelay: 0.5
   _damage: 1
-  _hitVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
+  _hitVfxPrefab: {fileID: 9161560932475161442, guid: 08e672977982dab4e904e82e2a9a3727, type: 3}
   _hitVfxLifetime: 1.5
   _useAimRadius: 1
   _customRange: 0.4
-  _themeColor: {r: 0.88, g: 0.25, b: 0.98, a: 1}
