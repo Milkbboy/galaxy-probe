@@ -5025,11 +5025,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12cc8dce10c55ac42ac27e0910c42fc9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Audio.AudioManager
-  _sfxMachineGunFire: {fileID: 8300000, guid: 099c5c27d4cd3f447a71ccd8d72e9917, type: 3}
-  _sfxSniperFire: {fileID: 8300000, guid: 4bd768201db2a244abd2c1ae0c97bf65, type: 3}
-  _sfxBombLaunch: {fileID: 8300000, guid: ce5239716920cc341bdacf6b5f8c2db8, type: 3}
-  _sfxBombExplosion: {fileID: 8300000, guid: 6455d8f52ac97ed44b2584ad8cfe43ec, type: 3}
-  _sfxLaserBeam: {fileID: 8300000, guid: c07c728278f44c546863524bde23c379, type: 3}
+  _sfxMachineGunFire:
+  - {fileID: 8300000, guid: 493f742552fa1d04b978e72fa0ba7db0, type: 3}
+  - {fileID: 8300000, guid: 2a16d805389d64f46baead80db13d091, type: 3}
+  - {fileID: 8300000, guid: 1803e7eb14ee22e4e8dcfc4d5f39352a, type: 3}
+  - {fileID: 8300000, guid: c7dd2c5f8f3536e488598fdb7890d9cf, type: 3}
+  - {fileID: 8300000, guid: bc2c03fa5d9fe174f87270eaea795d9b, type: 3}
+  _sfxSniperFire:
+  - {fileID: 8300000, guid: 562f7c87ecb6d2b45932aacb5a652204, type: 3}
+  - {fileID: 8300000, guid: fb4d5c92ffc2c2d4aa305c9f11050c15, type: 3}
+  - {fileID: 8300000, guid: 57c58dd9c859b8a4c97cbae2c1cd68e0, type: 3}
+  - {fileID: 8300000, guid: 9819d82d1e6df58408bef302024a5eac, type: 3}
+  - {fileID: 8300000, guid: 812ed64dae27dfc4785092695ae9a657, type: 3}
+  _sfxBombLaunch:
+  - {fileID: 8300000, guid: b18e6f99fa5411d429ae99490262c755, type: 3}
+  - {fileID: 8300000, guid: 6531678dd49f57e4d90fab4b04857ffe, type: 3}
+  - {fileID: 8300000, guid: cbf767eff3155ae4e99e43e04f377b02, type: 3}
+  - {fileID: 8300000, guid: d861606a50b472b44b453df2a329cb89, type: 3}
+  - {fileID: 8300000, guid: d048269e10b390d45ad013a1ba78cf56, type: 3}
+  _sfxBombExplosion:
+  - {fileID: 8300000, guid: 88236b16693b0bd4aa128a9281513eab, type: 3}
+  - {fileID: 8300000, guid: ac7ecee592d1f34489753e0c63085d5c, type: 3}
+  - {fileID: 8300000, guid: f2992bd1aa02ae14eb77a35207086f3d, type: 3}
+  - {fileID: 8300000, guid: 7401197e849eb7f48a0e15ed034c7d47, type: 3}
+  - {fileID: 8300000, guid: 004dde78ee2992f48814bc9662976764, type: 3}
+  _sfxLaserBeam: {fileID: 8300000, guid: d04c174650be6eb46ba83cc6b37e0c83, type: 3}
   _sfxBugDeath: {fileID: 8300000, guid: 6f2c1ebf094d32f42bec86eac23faaf6, type: 3}
   _sfxBugHit: {fileID: 0}
   _sfxMachineDamaged: {fileID: 8300000, guid: 251aef6191f1a4340ae45e6dc89b1b87, type: 3}

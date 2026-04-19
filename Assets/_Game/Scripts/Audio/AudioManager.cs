@@ -11,12 +11,12 @@ namespace DrillCorp.Audio
     {
         public static AudioManager Instance { get; private set; }
 
-        [Header("Weapon SFX")]
-        [SerializeField] private AudioClip _sfxMachineGunFire;
-        [SerializeField] private AudioClip _sfxSniperFire;
-        [SerializeField] private AudioClip _sfxBombLaunch;
-        [SerializeField] private AudioClip _sfxBombExplosion;
-        [SerializeField] private AudioClip _sfxLaserBeam;
+        [Header("Weapon SFX (배열은 라운드로빈 변주 — 매 발 다른 인덱스 재생)")]
+        [SerializeField] private AudioClip[] _sfxMachineGunFire;
+        [SerializeField] private AudioClip[] _sfxSniperFire;
+        [SerializeField] private AudioClip[] _sfxBombLaunch;
+        [SerializeField] private AudioClip[] _sfxBombExplosion;
+        [SerializeField] private AudioClip _sfxLaserBeam;   // loop 재생이라 단일 유지
 
         [Header("Bug SFX")]
         [SerializeField] private AudioClip _sfxBugDeath;
@@ -71,6 +71,20 @@ namespace DrillCorp.Audio
         private const float MachineDamagedMinInterval = 0.15f;
         private float _lastMachineDamagedTime = -1f;
 
+        // 라운드로빈 인덱스 — 무기별로 매 재생마다 다음 변주 선택
+        private int _mgVariantIdx;
+        private int _sniperVariantIdx;
+        private int _bombLaunchVariantIdx;
+        private int _bombExplosionVariantIdx;
+
+        private static AudioClip PickVariant(AudioClip[] clips, ref int idx)
+        {
+            if (clips == null || clips.Length == 0) return null;
+            var clip = clips[idx % clips.Length];
+            idx = (idx + 1) % clips.Length;
+            return clip;
+        }
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -120,20 +134,22 @@ namespace DrillCorp.Audio
             GameEvents.OnBugKilled -= HandleBugKilled;
         }
 
-        // 기관총: 전용 Source + 매 발 Stop→Play로 "1발 1소리" 보장.
+        // 기관총: 전용 Source + 매 발 Stop→Play로 "1발 1소리" 보장. 5종 변주 라운드로빈.
         public void PlayMachineGunFire()
         {
-            if (!_enableMachineGunFire || _machineGunSource == null || _sfxMachineGunFire == null) return;
+            if (!_enableMachineGunFire || _machineGunSource == null) return;
+            var clip = PickVariant(_sfxMachineGunFire, ref _mgVariantIdx);
+            if (clip == null) return;
 
             _machineGunSource.Stop();
-            _machineGunSource.clip = _sfxMachineGunFire;
+            _machineGunSource.clip = clip;
             _machineGunSource.pitch = 1f + Random.Range(-0.08f, 0.08f);   // 단조로움 완화
             _machineGunSource.volume = _masterVolume * _sfxVolume * _volMachineGunFire;
             _machineGunSource.Play();
         }
-        public void PlaySniperFire() { if (_enableSniperFire) PlayOneShot(_sfxSniperFire, _volSniperFire); }
-        public void PlayBombLaunch() { if (_enableBombLaunch) PlayOneShot(_sfxBombLaunch, _volBombLaunch); }
-        public void PlayBombExplosion() { if (_enableBombExplosion) PlayOneShot(_sfxBombExplosion, _volBombExplosion); }
+        public void PlaySniperFire() { if (_enableSniperFire) PlayOneShot(PickVariant(_sfxSniperFire, ref _sniperVariantIdx), _volSniperFire); }
+        public void PlayBombLaunch() { if (_enableBombLaunch) PlayOneShot(PickVariant(_sfxBombLaunch, ref _bombLaunchVariantIdx), _volBombLaunch); }
+        public void PlayBombExplosion() { if (_enableBombExplosion) PlayOneShot(PickVariant(_sfxBombExplosion, ref _bombExplosionVariantIdx), _volBombExplosion); }
         /// <summary>
         /// 레이저 빔 발사 시작 — 빔 생존 동안 loop 재생. 반드시 StopLaserBeam과 쌍으로 호출.
         /// </summary>
