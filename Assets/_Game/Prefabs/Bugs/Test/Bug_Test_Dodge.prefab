@@ -250,6 +250,7 @@ MonoBehaviour:
   _bugData: {fileID: 11400000, guid: d7582122394863d4ea56af1678fdba7f, type: 2}
   _behaviorData: {fileID: 11400000, guid: b2db3433e4ae2894b87d51e8a3400939, type: 2}
   _fxSocket: {fileID: 8733154684371262166}
+  _hitVfxPrefab: {fileID: 1469201857544070, guid: e5292a181d7214e468d5d2de426b511c, type: 3}
   _deathVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
   _hitFlashDuration: 0.1
 --- !u!135 &1216834766101629353

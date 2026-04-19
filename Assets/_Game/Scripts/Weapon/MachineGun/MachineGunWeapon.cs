@@ -144,8 +144,8 @@ namespace DrillCorp.Weapon.MachineGun
             float spread = Random.Range(-_data.SpreadAngle, _data.SpreadAngle);
             Vector3 dir = Quaternion.AngleAxis(spread * Mathf.Rad2Deg, Vector3.up) * toAim;
 
-            // 프리펩 회전 보존 (탑뷰 스프라이트는 90,0,0 — identity 쓰면 카메라 쪽으로 서버림)
-            var obj = Instantiate(_data.BulletPrefab, spawnPos, _data.BulletPrefab.transform.rotation);
+            // 3D 탄환 — 비행 방향을 바라보게 회전. (+Z forward 모델 기준)
+            var obj = Instantiate(_data.BulletPrefab, spawnPos, Quaternion.LookRotation(dir, Vector3.up));
             var bullet = obj.GetComponent<MachineGunBullet>();
             if (bullet != null)
             {

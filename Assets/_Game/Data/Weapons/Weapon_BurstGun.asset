@@ -16,5 +16,5 @@ MonoBehaviour:
   _description: 
   _fireDelay: 0.08
   _damage: 8
-  _hitVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
+  _hitVfxPrefab: {fileID: 0}
   _hitVfxLifetime: 1.5

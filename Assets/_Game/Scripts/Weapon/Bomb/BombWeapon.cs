@@ -97,9 +97,13 @@ namespace DrillCorp.Weapon.Bomb
                 ? aim.MachineTransform.position
                 : aim.AimPosition;
 
-            // 프리펩에 저장된 회전(탑뷰용 90,0,0)을 유지해야 스프라이트가 XZ 평면에 누움
-            // Quaternion.identity를 넘기면 프리펩 회전을 덮어써서 스프라이트가 카메라 쪽으로 서버림
-            var obj = Instantiate(_data.ProjectilePrefab, spawnPos, _data.ProjectilePrefab.transform.rotation);
+            // 3D 투사체 — 타겟 방향을 바라보게 회전 (+Z forward 모델 기준)
+            Vector3 launchDir = targetPos - spawnPos;
+            launchDir.y = 0f;
+            Quaternion spawnRot = launchDir.sqrMagnitude > 0.0001f
+                ? Quaternion.LookRotation(launchDir.normalized, Vector3.up)
+                : _data.ProjectilePrefab.transform.rotation;
+            var obj = Instantiate(_data.ProjectilePrefab, spawnPos, spawnRot);
             var proj = obj.GetComponent<BombProjectile>();
             if (proj != null)
             {

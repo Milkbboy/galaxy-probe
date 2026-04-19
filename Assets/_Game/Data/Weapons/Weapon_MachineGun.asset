@@ -23,7 +23,7 @@ MonoBehaviour:
   _requiredWeapon: {fileID: 0}
   _fireDelay: 0.14
   _damage: 0.5
-  _hitVfxPrefab: {fileID: 9161560932475161442, guid: 08e672977982dab4e904e82e2a9a3727, type: 3}
+  _hitVfxPrefab: {fileID: 0}
   _hitVfxLifetime: 1.5
   _maxAmmo: 40
   _reloadDuration: 5

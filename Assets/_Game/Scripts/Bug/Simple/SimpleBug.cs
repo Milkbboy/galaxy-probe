@@ -25,6 +25,14 @@ namespace DrillCorp.Bug.Simple
         [SerializeField] private float _minimapIconSize = 0.8f;
         [SerializeField] private MinimapIcon.IconShape _minimapShape = MinimapIcon.IconShape.Circle;
 
+        [Header("VFX")]
+        [Tooltip("VFX 스폰 위치 (빈 GameObject 자식으로 두고 여기서 위치 조정). null이면 벌레 중심")]
+        [SerializeField] private Transform _fxSocket;
+        [SerializeField] private GameObject _hitVfxPrefab;
+        [SerializeField] private GameObject _deathVfxPrefab;
+        [Tooltip("VFX 크기 = 프리펩 authored × 벌레 스케일 × 이 값. 1=벌레와 동일, 2=두 배")]
+        [SerializeField] private float _vfxScaleMultiplier = 2f;
+
         private SimpleBugData _data;
         private Transform _target;
         private float _hp;
@@ -96,13 +104,42 @@ namespace DrillCorp.Bug.Simple
             if (_isDead) return;
             _hp -= damage;
             AudioManager.Instance?.PlayBugHit();
+
             if (_hp <= 0f)
             {
                 _hp = 0f;
                 _isDead = true;
+                PlayDeathVfx();   // 치명타 — 사망 VFX만
                 GameEvents.OnBugKilled?.Invoke(_data != null ? (int)_data.Kind : 0);
                 Destroy(gameObject);
             }
+            else
+            {
+                PlayHitVfx();     // 생존 — 피격 VFX만
+            }
+        }
+
+        private void PlayHitVfx()
+        {
+            if (_hitVfxPrefab != null) SpawnScaledVfx(_hitVfxPrefab);
+        }
+
+        private void PlayDeathVfx()
+        {
+            if (_deathVfxPrefab != null) SpawnScaledVfx(_deathVfxPrefab);
+        }
+
+        // VFX 스폰 — 프리펩 authored 회전·스케일 보존 + 벌레 크기에 비례 스케일링
+        private void SpawnScaledVfx(GameObject prefab)
+        {
+            GameObject vfx = Instantiate(prefab);
+            vfx.transform.position = _fxSocket != null ? _fxSocket.position : transform.position;
+            vfx.transform.localScale = Vector3.Scale(
+                vfx.transform.localScale,
+                transform.localScale * _vfxScaleMultiplier);
+
+            var ps = vfx.GetComponent<ParticleSystem>();
+            Destroy(vfx, ps != null ? ps.main.duration + ps.main.startLifetime.constantMax : 2f);
         }
 
         public void Heal(float amount)

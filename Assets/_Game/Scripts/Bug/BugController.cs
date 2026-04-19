@@ -31,8 +31,11 @@ namespace DrillCorp.Bug
 
         [Header("VFX")]
         [SerializeField] private Transform _fxSocket;
+        [SerializeField] private GameObject _hitVfxPrefab;     // 비어있으면 SimpleVFX.PlayBugHit 폴백
         [SerializeField] private GameObject _deathVfxPrefab;
         [SerializeField] private float _hitFlashDuration = 0.1f;
+        [Tooltip("VFX 크기 = 프리펩 authored × 벌레 스케일 × 이 값. 1=벌레와 동일, 2=두 배")]
+        [SerializeField] private float _vfxScaleMultiplier = 2f;
 
         // === Stats ===
         private int _bugId;
@@ -705,12 +708,15 @@ namespace DrillCorp.Bug
 
             UpdateHpBar();
             PlayHitFlash();
-            PlayHitVfx();
             AudioManager.Instance?.PlayBugHit();
 
             if (_currentHealth <= 0f)
             {
-                Die();
+                Die();            // 치명타 — Die() 내부에서 PlayDeathVfx만 실행
+            }
+            else
+            {
+                PlayHitVfx();     // 생존 — 피격 VFX만
             }
         }
 
@@ -999,27 +1005,35 @@ namespace DrillCorp.Bug
         private void PlayDeathVfx()
         {
             if (_deathVfxPrefab == null) return;
-
             Vector3 spawnPos = _fxSocket != null ? _fxSocket.position : transform.position;
-            Quaternion spawnRot = _fxSocket != null ? _fxSocket.rotation : Quaternion.identity;
-
-            GameObject vfx = Instantiate(_deathVfxPrefab, spawnPos, spawnRot);
-
-            var ps = vfx.GetComponent<ParticleSystem>();
-            if (ps != null)
-            {
-                Destroy(vfx, ps.main.duration + ps.main.startLifetime.constantMax);
-            }
-            else
-            {
-                Destroy(vfx, 2f);
-            }
+            SpawnScaledVfx(_deathVfxPrefab, spawnPos);
         }
 
         private void PlayHitVfx()
         {
             Vector3 hitPos = _fxSocket != null ? _fxSocket.position : transform.position;
+
+            if (_hitVfxPrefab != null)
+            {
+                SpawnScaledVfx(_hitVfxPrefab, hitPos);
+                return;
+            }
+
             SimpleVFX.PlayBugHit(hitPos);
+        }
+
+        // VFX 스폰 — 프리펩 authored 회전·스케일을 유지하고, 벌레 크기에 비례 스케일링
+        private void SpawnScaledVfx(GameObject prefab, Vector3 worldPos)
+        {
+            GameObject vfx = Instantiate(prefab);
+            vfx.transform.position = worldPos;
+            // 프리펩 authored localScale × 벌레 월드 스케일 × multiplier — 벌레 크기에 비례해 임팩트 크기 조정
+            vfx.transform.localScale = Vector3.Scale(
+                vfx.transform.localScale,
+                transform.localScale * _vfxScaleMultiplier);
+
+            var ps = vfx.GetComponent<ParticleSystem>();
+            Destroy(vfx, ps != null ? ps.main.duration + ps.main.startLifetime.constantMax : 2f);
         }
 
         #endregion
