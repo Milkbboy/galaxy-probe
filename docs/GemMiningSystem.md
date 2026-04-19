@@ -1,8 +1,10 @@
 # 보석 & 채굴 시스템
 
-> 최종 갱신: 2026-04-17
+> 최종 갱신: 2026-04-19 (보석 드랍/채집 구현 완료 — §10 참조)
 > 근거 프로토타입: `docs/v2.html`
 > 상위 문서: [V2_IntegrationPlan.md](V2_IntegrationPlan.md)
+
+> ⚠️ §2~§7의 예시 코드는 **초안 설계**. 실제 구현 파일·차이점은 **§10 구현 현황**을 먼저 확인.
 
 ## 1. 개요
 
@@ -480,3 +482,49 @@ public class UpgradeData : ScriptableObject
 - `docs/v2.html` 926~944줄 — `killBug()` 드랍 로직
 - `docs/v2.html` 1341~1371줄 — gem 호버 채집 로직
 - `CLAUDE.md` 좌표계 섹션 — XZ 평면 거리 계산
+
+---
+
+## 10. 구현 현황 (2026-04-19)
+
+### 드랍 & 채집 — ✅
+
+| 파일 | 역할 |
+|---|---|
+| `Scripts/Pickup/Gem.cs` | 월드 보석 오브젝트. `Create(pos, sprite)` 팩토리로 프로그램 스폰 (프리펩 불필요). SpriteRenderer(`01_diamond.png`) + 자식 LineRenderer 진행 링. Update에서 `AimController.AimPosition`과 XZ 거리 체크 → 호버 2초(`gem_speed` 보정) → `Collect()`에서 `DataManager.AddGems(1)` + `OnGemCollected` 발사 + 팝업 + 자파괴 |
+| `Scripts/Pickup/GemDropSpawner.cs` | 씬 싱글턴. `GameEvents.OnBugDied` 구독. 일반 5%+`gem_drop`, 엘리트 100%. 인스펙터 `_gemSprite` 필드(HUD 에디터가 `01_diamond` 자동 할당) |
+| `Scripts/UI/GemCounterUI.cs` | HUD 보석 카운터. `OnGemCollected` 구독, 세션 누적. MiningUI의 펀치 애니 동일 |
+| `Scripts/UI/SessionResultUI.cs` | 세션 종료 UI에 `"보석: N"` 병기 (성공/실패 모두) |
+| `Scripts/Editor/InGameCurrencyHudSetupEditor.cs` | `Tools > Drill-Corp > 3. 게임 초기 설정 > 3. 광석·보석 HUD 추가` 메뉴. 우상단에 **[05_iron]**광석(MiningUI) + **[01_diamond]**보석(GemCounterUI) 2행 + `GemDropSpawner` GameObject 자동 생성/스프라이트 바인딩 |
+
+### 이벤트 스키마
+
+```csharp
+// Scripts/Core/GameEvents.cs
+public static Action<Vector3, bool> OnBugDied;   // (위치, 엘리트?) — 드랍 스포너 전용
+public static Action<int> OnGemCollected;        // HUD 누적용, invoke당 1회 +amount
+```
+
+`BugController.Die()` (line 971)에서 `OnBugKilled`와 함께 `OnBugDied(transform.position, _bugData.IsElite)` 발사.
+
+### BugData 확장
+
+`_isElite` bool 필드 추가(기본 false). 필요한 SO만 `IsElite=true` 체크 (현재 자동 세팅 없음 — 향후 Beetle·Sword 등 특정 종을 엘리트로 지정 예정).
+
+### 초안 설계와의 차이
+
+| 항목 | §2~§7 설계 | 실제 구현 | 이유 |
+|---|---|---|---|
+| 보석 적립 | `SessionState.AddGems` → 세션 종료 시 승·패 배율 정산 | **즉시 `DataManager.AddGems(1)`** (실패해도 유지) | 2초 호버 채집의 노력이 날아가는 UX 회피. `SessionResult.GemGained`는 표시용만 |
+| 가치 | 일반 1 / 엘리트 5 | **모두 1** | `IsElite=true` SO가 아직 없음. 값 차등은 후속 작업 |
+| 프리펩 | `Assets/_Game/Prefabs/GemDrop.prefab` | **프로그램 생성** (프리펩 없음) | 간단·빠른 반복. 필요시 프리펩화 가능 |
+| 수명 | 10초 후 사라짐 | 무제한 (세션 종료 시 자동 파괴) | 단순화. 압박감 필요하면 `_lifetime` 추가 |
+| 채집기 경합 | `gem.collectedBy` 드론 점유 필드 | 미적용 | 채굴드론 어빌리티 구현 시 재검토 |
+
+### 남은 작업
+
+- `mineTarget` 승리 조건 (§4) — `MachineController.MiningTarget`/`IsMiningTargetReached` 프로퍼티는 노출됨. `CheckSessionEnd`를 "연료 소진" → "채굴량 도달"로 전환만 남음
+- 엘리트 벌레 SO 지정 (현재 모든 BugData `_isElite=false`)
+- 보석 종류별 가치 차등 (일반/엘리트)
+- `ResultOverlay` Title 복귀 표시 — `LastSessionResult` 저장은 되나 Title 진입 시 소비 UI가 `ResultOverlay`로 분리되어 있지 않음
+

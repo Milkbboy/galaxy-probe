@@ -24,6 +24,9 @@ namespace DrillCorp.UI
 
         private bool _buttonsSetup = false;
 
+        // v2 — 세션 중 채집한 보석 수 (OnGemCollected 이벤트로 누적)
+        private int _sessionGems;
+
         private void Awake()
         {
             _machine = FindAnyObjectByType<MachineController>();
@@ -38,15 +41,20 @@ namespace DrillCorp.UI
         private void OnEnable()
         {
             SetupButtons();
+            _sessionGems = 0;  // 세션 시작 시 리셋
             GameEvents.OnSessionSuccess += ShowSuccess;
             GameEvents.OnSessionFailed += ShowFailed;
+            GameEvents.OnGemCollected += OnGemCollected;
         }
 
         private void OnDisable()
         {
             GameEvents.OnSessionSuccess -= ShowSuccess;
             GameEvents.OnSessionFailed -= ShowFailed;
+            GameEvents.OnGemCollected -= OnGemCollected;
         }
+
+        private void OnGemCollected(int amount) => _sessionGems += amount;
 
         private void SetupButtons()
         {
@@ -105,12 +113,16 @@ namespace DrillCorp.UI
 
             if (_successMiningText != null)
             {
-                _successMiningText.text = $"채굴량: {mined}";
+                // v2 — 세션 중 채집한 보석도 함께 표시
+                _successMiningText.text = _sessionGems > 0
+                    ? $"채굴량: {mined} / 보석: {_sessionGems}"
+                    : $"채굴량: {mined}";
             }
 
             if (_successCurrencyText != null && DataManager.Instance != null)
             {
-                _successCurrencyText.text = $"보유 재화: {DataManager.Instance.Ore}";
+                var dm = DataManager.Instance;
+                _successCurrencyText.text = $"보유 재화: {dm.Ore} 광석 / {dm.Gems} 보석";
             }
         }
 
@@ -120,7 +132,10 @@ namespace DrillCorp.UI
 
             if (_failedMiningText != null)
             {
-                _failedMiningText.text = $"채굴량: {mined} (획득 불가)";
+                // 광석은 획득 불가, 이미 채집한 보석은 유지됨 (v2 — 즉시 적립)
+                _failedMiningText.text = _sessionGems > 0
+                    ? $"채굴량: {mined} (광석 획득 불가) / 보석: {_sessionGems} 획득"
+                    : $"채굴량: {mined} (획득 불가)";
             }
         }
 

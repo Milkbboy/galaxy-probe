@@ -6,6 +6,61 @@
 
 ---
 
+## [Unreleased] - 2026-04-19 (4) — 보석 드랍/채집 + 인게임 재화 HUD
+
+### Added
+
+- **`Scripts/Pickup/Gem.cs`** — 월드 보석 오브젝트. `Create(pos, sprite)` 팩토리로 프로그램 스폰 (프리펩 불필요). SpriteRenderer(`01_diamond.png`, X=90° 회전해 지면에 누움) + 자식 LineRenderer 진행 링. XZ 거리 체크로 마우스 호버 2초(gem_speed 보정) → 채집 시 `DataManager.AddGems(1)` + 팝업 + 자파괴
+- **`Scripts/Pickup/GemDropSpawner.cs`** — 씬 싱글턴. `GameEvents.OnBugDied` 구독, 일반 5%+`gem_drop` 강화 / 엘리트 100% 드랍. `_gemSprite` 인스펙터 필드 (HUD 에디터가 `01_diamond` 자동 바인딩)
+- **`Scripts/UI/GemCounterUI.cs`** — 세션 보석 HUD 카운터. `OnGemCollected` 구독, MiningUI의 펀치 애니 동일
+- **`Scripts/Editor/InGameCurrencyHudSetupEditor.cs`** — `Tools > Drill-Corp > 3. 게임 초기 설정 > 3. 광석·보석 HUD 추가` 메뉴. 우상단에 `[05_iron]광석` + `[01_diamond]보석` 2행 + `GemDropSpawner` GameObject 자동 생성/스프라이트 바인딩. 재실행 시 기존 중복 컴포넌트 제거 (idempotent)
+- **`GameEvents.OnBugDied(Vector3, bool)`** — 벌레 사망 위치 + 엘리트 여부. 드랍 스포너 전용 (기존 `OnBugKilled(int)`는 WaveManager/AudioManager가 쓰므로 유지)
+- **`GameEvents.OnGemCollected(int)`** — 채집 1회당 invoke, HUD 누적용
+- **`BugData._isElite`** bool 필드 — 기본 false, 엘리트 지정 SO 예정
+
+### Changed
+
+- **`BugController.Die()`** — `OnBugKilled` 직후 `OnBugDied(transform.position, _bugData.IsElite)` 동반 발사
+- **`SessionResultUI`** — 세션 중 `_sessionGems` 누적 → Success/Failed 패널에 `"채굴량: N / 보석: N"` 병기. 실패 패널엔 `"광석 획득 불가 / 보석: N 획득"`으로 즉시 적립 정책 명시
+- **인게임 HUD 배치** — 좌상단(미니맵과 겹침) → **우상단 (-20, -20)**
+- **광석 HUD 아이콘** — `06_gold.png` → `05_iron.png` (v2 팩 "철광석", 범용 광석 느낌). `05_iron.png.meta`의 `spriteMode: 2(Multiple)` → `1(Single)` 수정해 `LoadAssetAtPath<Sprite>` 정상화
+
+### Policy
+
+- 보석 적립은 **즉시** (`DataManager.AddGems(1)`) — 세션 실패해도 유지. 2초 호버 채집 노력의 UX 보전. `SessionResult.GemGained`는 표시 집계용으로만 사용
+
+### Docs
+
+- `V2_IntegrationPlan.md §8` — 보석 드랍/채집 ✅, Hub→Game 연결 서브테이블 추가
+- `GemMiningSystem.md §10` — 구현 현황 섹션 신규, 초안 설계와의 차이 표
+
+---
+
+## [Unreleased] - 2026-04-19 (3) — Hub 강화·해금·캐릭터를 Game에 반영
+
+> 커밋 `7c5e37e`.
+
+### Added
+
+- **`Scripts/OutGame/CharacterRegistry.cs`** (신규 싱글턴) — 3 캐릭터 SO 중앙 등록소. `Find(characterId)`로 Game 씬에서 `DefaultMachine` 조회. `V2HubCanvasSetupEditor.EnsureCharacterRegistry()`가 자동 생성/할당
+- **`WeaponBase.TryDisableIfLocked()`** — 미해금 무기 GameObject를 `SetActive(false)`. 5종 무기 `Start()` 첫 줄에서 가드
+- **`WeaponBase.EffectiveFireDelay` virtual** — Cooldown 강화가 `_baseData.FireDelay`에 자동 반영. `TryFire()`/`CooldownProgress`가 이 값을 사용
+- **`MachineController.MiningTarget` / `IsMiningTargetReached`** 게터 — mineTarget 승리 조건 작업을 위한 사전 노출
+
+### Changed
+
+- **`MachineController.Awake`** — `ApplySelectedCharacter()` (CharacterRegistry → DefaultMachine 주입) + `ApplyUpgradeBonuses()` (MaxHealth/MiningRate/MiningTarget/Armor 누적) 추가. v2 armor(받는 피해 감소율 0~1)는 기존 머신 armor와 **별도 누적** (legacy `armor/(armor+100)` 커브 유지)
+- **`SniperWeapon` / `BombWeapon` / `MachineGunWeapon` / `LaserWeapon`** — Saw 패턴 복사. `RefreshEffectiveStats()` + `GameEvents.OnWeaponUpgraded` 구독. 투사체(`BombProjectile`/`MachineGunBullet`/`LaserBeam`) `Initialize`에 `effectiveDamage`/`effectiveRadius` 오버로드 추가해 강화 값 전달
+- **AimRingBinder 4종** (Sniper/Bomb/Gun/Laser) — Update 첫 프레임에 `_weapon == null || !activeInHierarchy`면 바인더 GameObject 자체 비활성 → 호 영구 숨김
+- **무기 SO `_weaponId` 채움** — `Weapon_Sniper(sniper)` / `Weapon_Bomb(bomb)` / `Weapon_MachineGun(gun)` / `Weapon_LaserBeam(laser)`. Sniper는 `_unlockedByDefault=1`
+
+### Removed
+
+- 레거시 무기 SO 정리 — `Weapon_BurstGun` / `Weapon_Laser`(오래된 LaserBeamData) / `Weapon_LockOn` / `Weapon_Shotgun` + meta
+- `Assets/Polygon Arsenal/Upgrades/...meta` 잔존물 제거
+
+---
+
 ## [Unreleased] - 2026-04-19 (2)
 
 ### Added — 회전톱날 무기 (v2 §saw 포팅)

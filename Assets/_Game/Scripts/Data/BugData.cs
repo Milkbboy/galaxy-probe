@@ -31,6 +31,9 @@ namespace DrillCorp.Data
         [SerializeField] private int _currencyReward = 1;
         [SerializeField] private float _dropChance = 1f;
 
+        [Tooltip("v2 — 엘리트 벌레 플래그. true면 보석 100% 드랍 (일반은 gem_drop 강화 기반 확률).")]
+        [SerializeField] private bool _isElite = false;
+
         // Properties
         public int BugId => _bugId;
         public string BugName => _bugName;
@@ -46,5 +49,6 @@ namespace DrillCorp.Data
         public Vector3 HpBarOffset => _hpBarOffset;
         public int CurrencyReward => _currencyReward;
         public float DropChance => _dropChance;
+        public bool IsElite => _isElite;
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace DrillCorp.Core
 {
@@ -14,6 +15,7 @@ namespace DrillCorp.Core
 
         // 벌레 관련
         public static Action<int> OnBugKilled;              // 처치한 벌레 ID
+        public static Action<Vector3, bool> OnBugDied;      // v2 — 사망 위치 + 엘리트 여부 (GemDropSpawner용)
 
         // 웨이브 관련
         public static Action<int> OnWaveStarted;            // 웨이브 번호
@@ -28,6 +30,7 @@ namespace DrillCorp.Core
         public static Action<int> OnOreChanged;             // v2 — 광석 변동
         public static Action<int> OnGemsChanged;            // v2 — 보석 변동
         public static Action<int> OnMiningGained;           // 획득한 채굴량
+        public static Action<int> OnGemCollected;           // v2 — 세션 중 채집한 보석 수 (1회당 invoke, HUD 누적용)
 
         // 강화 시스템
         public static Action<string, int> OnUpgradePurchased;  // 업그레이드 ID, 새 레벨

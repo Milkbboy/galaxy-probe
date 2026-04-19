@@ -969,6 +969,7 @@ namespace DrillCorp.Bug
 
             // 이벤트 발생
             GameEvents.OnBugKilled?.Invoke(_bugId);
+            GameEvents.OnBugDied?.Invoke(transform.position, _bugData != null && _bugData.IsElite);
 
             // 행동 정리
             CleanupBehaviors();
