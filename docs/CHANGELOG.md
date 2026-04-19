@@ -6,6 +6,31 @@
 
 ---
 
+## [Unreleased] - 2026-04-19
+
+### Changed — 무기 SFX 라운드로빈 + 3D 프로젝타일 방향 수정
+
+- **AudioManager**: 무기 4종(`_sfxMachineGunFire` / `_sfxSniperFire` / `_sfxBombLaunch` / `_sfxBombExplosion`) 필드를 `AudioClip` → `AudioClip[]` 배열로 변경. `PickVariant(clips, ref idx)`로 매 발사마다 다음 변주 재생 (라운드로빈, 무기별 독립 인덱스). 레이저 빔은 loop 재생이라 단일 유지
+- **Game.unity**: 각 배열에 Sci-Fi 팩 5변주씩 바인딩 — `Rifle_Shoot_1~5` / `Pistol_Shoot_Big_Size_1~5` / `Cannon_Shoot1_Electrified_1~5` / `ARCADE_Retro_Explosion_Big_1~5` / `Electric_Weapon_Fire_Loop_1` (레이저)
+- **3D 프로젝타일 회전**: `MachineGunWeapon.cs:148` / `BombWeapon.cs:102` — `Instantiate(..., prefab.transform.rotation)` → `Quaternion.LookRotation(dir, Vector3.up)`. 2D 스프라이트 시절 "프리펩 회전 보존" 주석이 3D 전환 후에도 그대로 남아 탄이 발사 방향을 안 보던 문제 수정
+
+### Added — 벌레 피격/사망 VFX 분리
+
+- **`BugController._hitVfxPrefab` 필드** — 벌레별 커스텀 피격 VFX. 비어있으면 기존 `SimpleVFX.PlayBugHit` 폴백
+- **`SimpleBug._hitVfxPrefab` / `_deathVfxPrefab` 필드** — 레거시 SimpleBug는 VFX 훅 자체가 없었음. `TakeDamage` / 사망 시점에 각각 재생
+- **벌레 프리펩 27개 바인딩** — Bug_Beetle/Centipede/Fly + Bug_Test_* 21개 + SimpleBug 3개에 `FX_Bullet_Impact`(피격)·`FX_Death_01`(사망) 설정
+- **VFX 크기 벌레 스케일 연동** — `_vfxScaleMultiplier` 필드(default 2). `SpawnScaledVfx`에서 `vfx.localScale = prefab authored × bug.transform.localScale × multiplier`. `Instantiate(prefab)` 후 position만 설정해 authored 회전 보존 (기존 `Quaternion.identity`가 -90 X 회전을 덮어쓰던 문제 해결)
+- **SimpleBug 프리펩에 FX_Socket 자식 추가** — SimpleBug_Normal/Swift/Elite에 빈 Transform 자식 `FX_Socket`을 YAML로 삽입 + `_fxSocket` 필드 자동 바인딩. 디자이너가 Inspector에서 VFX 스폰 위치를 조정 가능
+
+### Removed — 무기측 히트 VFX 해제
+
+- `Weapon_Bomb` / `BurstGun` / `Laser` / `LaserBeam` / `LockOn` / `MachineGun` / `Shotgun` / `Sniper`.asset의 `_hitVfxPrefab` → `{fileID: 0}`. 기존에 무기→벌레 충돌 시 `FX_Death_01 Variant`가 터져 벌레 사망 VFX와 시각적으로 혼동되던 문제 제거. 이제 피격 VFX는 벌레측 단일 훅에서만 재생
+
+### Fixed
+- 치명타 시 피격 VFX + 사망 VFX가 같은 프레임에 이중 출력되던 버그 — `BugController.TakeDamage` / `SimpleBug.TakeDamage`에서 HP 확인 후 **둘 중 하나만** 재생하도록 분기
+
+---
+
 ## [Unreleased] - 2026-04-18
 
 ### Added — v2 Hub UI 통합 완료

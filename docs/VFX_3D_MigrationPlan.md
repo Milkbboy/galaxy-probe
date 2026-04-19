@@ -1,8 +1,61 @@
 # VFX 3D 전환 계획
 
-> 작성일: 2026-04-19 / 구현 적용: 2026-04-19
+> 작성일: 2026-04-19 / 구현 적용: 2026-04-19 / 후속 패치: 2026-04-19 (프로젝타일 회전·벌레 VFX 분리)
 > 상태: **✅ 1차 구현 완료** — MachineGun / Bomb / Shotgun / Laser(스코치) 적용. LockOn / LandingMarker / LaserBeam 본체는 미착수
 > 관련 문서: [WeaponSystem.md](WeaponSystem.md)
+
+---
+
+## 🩹 후속 패치 (2026-04-19)
+
+3D 전환 직후 발견된 디자이너 피드백 2건 반영:
+
+### 1. 프로젝타일이 발사 방향을 바라보지 않음
+3D 모델은 자기 정면(+Z forward)이 있는데, 탄환 스폰 시 프리펩 authored 회전(2D 스프라이트 시절의 `-90 X`) 그대로 두던 로직이 남아 있었음. 결과: 모든 탄이 같은 방향을 보며 날아감.
+
+**수정 지점**
+| 파일 | 이전 | 이후 |
+|---|---|---|
+| `MachineGunWeapon.cs:148` | `Instantiate(..., _data.BulletPrefab.transform.rotation)` | `Quaternion.LookRotation(dir, Vector3.up)` |
+| `BombWeapon.cs:102` | 동일 패턴 | `(targetPos - spawnPos).normalized`로 `LookRotation` (영벡터 폴백) |
+
+반례: 벌레 투사체(`ProjectileAttack.cs` / `SpreadAttack.cs`)는 이미 `Quaternion.LookRotation(direction)` 사용 중이었음. 플레이어 투사체만 누락.
+
+### 2. 벌레 피격/사망 VFX가 구분되지 않음
+원인 3가지가 동시에 걸려 있었음:
+
+| # | 원인 | 조치 |
+|---|---|---|
+| A | 무기 8종의 `_hitVfxPrefab`이 `FX_Death_01 Variant`로 통일돼 있어 사망 VFX와 시각적으로 거의 동일 | 8개 `Weapon_*.asset`의 `_hitVfxPrefab` → `{fileID: 0}` |
+| B | `BugController`는 피격 VFX가 `SimpleVFX.PlayBugHit` 하드코딩 (녹색 스플래시). `SimpleBug`는 VFX 훅 자체가 없었음 | `BugController._hitVfxPrefab` 필드 추가 + `SimpleBug._hitVfxPrefab` / `_deathVfxPrefab` 필드 신설 |
+| C | 치명타 시 `PlayHitVfx` → `PlayDeathVfx` 연속 호출로 이중 출력 | HP 확인 후 분기, 둘 중 하나만 재생 |
+
+**바인딩** — 벌레 27개 프리펩 YAML 일괄 수정 (`_hitVfxPrefab` 삽입):
+- Bug_Beetle / Bug_Centipede / Bug_Fly + Bug_Test_* 21종 → `FX_Bullet_Impact.prefab`
+- SimpleBug_Normal / Swift / Elite → `FX_Bullet_Impact`(히트) + `FX_Death_01`(사망)
+
+### 3. VFX 크기가 벌레 스케일과 무관
+Elite 벌레(scale 0.8)처럼 큰 벌레에서 authored scale 1.0짜리 VFX가 몸에 묻혀 안 보이는 문제. `BugController`·`SimpleBug`에 `_vfxScaleMultiplier`(default **2**) 필드 추가.
+
+```csharp
+// SpawnScaledVfx 공통 로직
+GameObject vfx = Instantiate(prefab);              // authored 회전·스케일 보존
+vfx.transform.position = spawnPos;                 // position만 덮어씀
+vfx.transform.localScale = Vector3.Scale(
+    vfx.transform.localScale,
+    transform.localScale * _vfxScaleMultiplier);   // 벌레 크기 × 2 비례
+```
+
+기존 `Instantiate(prefab, pos, Quaternion.identity)` 방식이 프리펩의 `-90 X` 회전을 덮어쓰던 문제도 같이 해결됨.
+
+### 4. SimpleBug 프리펩에 FX_Socket 자식 추가
+BugController는 이미 `FX_Socket` Transform을 자식으로 두고 디자이너가 VFX 스폰 위치를 조정할 수 있지만, SimpleBug 프리펩(Normal/Swift/Elite)에는 없었음. YAML 직접 편집으로 빈 `FX_Socket` 자식 GameObject 3개 생성 + `_fxSocket` 필드 자동 바인딩.
+
+```
+SimpleBug_Normal
+├── FX_Socket   ← 디자이너가 Inspector에서 위치 조정 (기본 0, 0.3, 0)
+└── Model
+```
 
 ## 🚀 빠른 시작 (자동화 스크립트)
 

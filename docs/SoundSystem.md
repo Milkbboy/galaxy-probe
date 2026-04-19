@@ -21,11 +21,15 @@
 ```
  ┌──────────────── AudioManager (Singleton) ─────────────────┐
  │                                                            │
- │  [AudioClip 필드 × 8]                                      │
- │    _sfxMachineGunFire  _sfxSniperFire                      │
- │    _sfxBombLaunch      _sfxBombExplosion                   │
- │    _sfxLaserBeam       _sfxBugHit                          │
- │    _sfxBugDeath        _sfxMachineDamaged                  │
+ │  [AudioClip[] 배열 × 4 — 라운드로빈 변주]                  │
+ │    _sfxMachineGunFire[5]  (Sci-Fi: Rifle_Shoot 1~5)        │
+ │    _sfxSniperFire[5]      (Sci-Fi: Pistol_Big 1~5)         │
+ │    _sfxBombLaunch[5]      (Sci-Fi: Cannon_Shoot1 1~5)      │
+ │    _sfxBombExplosion[5]   (Sci-Fi: ARCADE_Retro 1~5)       │
+ │                                                            │
+ │  [AudioClip 단일 필드 × 4]                                 │
+ │    _sfxLaserBeam   (loop 재생, 변주 없음)                  │
+ │    _sfxBugHit  _sfxBugDeath  _sfxMachineDamaged            │
  │                                                            │
  │  [AudioSource]                                             │
  │    • _sfxPool[8]         (PlayOneShot 라운드로빈)          │
@@ -52,17 +56,20 @@
 
 | # | ID (필드) | 트리거 | 호출 경로 | Vol 기본 | 비고 |
 |---|-----------|--------|----------|---------|------|
-| 1 | `_sfxMachineGunFire` | 기관총 발사 | `MachineGunWeapon.Fire:145` → `PlayMachineGunFire` | 0.4 | 전용 Source, 피치 ±8% 변주 |
-| 2 | `_sfxSniperFire` | 저격 명중 | `SniperWeapon.Fire` (hit>0) → `PlaySniperFire` | 1.0 | PlayOneShot |
-| 3 | `_sfxBombLaunch` | 폭탄 발사 | `BombWeapon.Fire` → `PlayBombLaunch` | 1.0 | PlayOneShot |
-| 4 | `_sfxBombExplosion` | 폭탄 폭발 | `BombProjectile.Detonate` → `PlayBombExplosion` | 1.2 | PlayOneShot |
+| 1 | `_sfxMachineGunFire[]` | 기관총 발사 | `MachineGunWeapon.Fire` → `PlayMachineGunFire` | 0.4 | 전용 Source, 피치 ±8% 변주, **5변주 라운드로빈** |
+| 2 | `_sfxSniperFire[]` | 저격 명중 | `SniperWeapon.Fire` (hit>0) → `PlaySniperFire` | 1.0 | PlayOneShot, **5변주 라운드로빈** |
+| 3 | `_sfxBombLaunch[]` | 폭탄 발사 | `BombWeapon.Fire` → `PlayBombLaunch` | 1.0 | PlayOneShot, **5변주 라운드로빈** |
+| 4 | `_sfxBombExplosion[]` | 폭탄 폭발 | `BombProjectile.Detonate` → `PlayBombExplosion` | 1.2 | PlayOneShot, **5변주 라운드로빈** |
 | 5 | `_sfxLaserBeam` | 레이저 빔 생존 | `LaserWeapon.Fire:103` → `StartLaserBeamLoop` / `LaserBeam.OnDestroy` → `StopLaserBeam` | 1.0 | 전용 Source, loop=true |
 | 6 | `_sfxBugHit` | 벌레 피격 | `BugBase.TakeDamage:251` / `BugController.TakeDamage:709` / `SimpleBug.TakeDamage:95` → `PlayBugHit` | 0.6 | 피치 ±10% 변주 |
 | 7 | `_sfxBugDeath` | 벌레 사망 | `GameEvents.OnBugKilled` → `HandleBugKilled` | 1.0 | 자동 구독 |
 | 8 | `_sfxMachineDamaged` | 머신 피격 | `GameEvents.OnMachineDamaged` → `HandleMachineDamaged` | 1.0 | 150ms 쓰로틀 (연속 피격 시) |
 
+### 라운드로빈 변주 (2026-04-19 추가)
+무기 4종은 `AudioClip[]` 배열 기반. `PickVariant(clips, ref idx)` 헬퍼가 무기별 독립 인덱스로 매 재생마다 다음 클립 선택 → 연사·반복 재생에서 단조로움 제거. 배열이 비어있으면 재생 스킵. 소스: Sci-Fi Weapons Pack (`Assets/Sci-Fi Weapons-Bullet Hell Sound Effects Pack/AUDIO/`) 각 카테고리에서 5변주씩 추출.
+
 ### 같은 클립 중첩 방지
-`PlayOneShot` 경로에는 **`SameClipMinInterval = 30ms`** 가드 — 같은 AudioClip이 연속 프레임에 여러 번 재생되면 한 번만 남김. 벌레 여러 마리가 한 프레임에 죽을 때 소리가 뭉치는 현상 완화.
+`PlayOneShot` 경로에는 **`SameClipMinInterval = 30ms`** 가드 — 같은 AudioClip이 연속 프레임에 여러 번 재생되면 한 번만 남김. 라운드로빈으로 변주 중이라 실질적으로 이 가드는 거의 트리거되지 않음 (무기 계열), 벌레 사망음 등 단일 클립 쪽에서만 작동.
 
 ### 머신 피격 쓰로틀
 프로토 `sndHitThrottled`와 동일하게 150ms 간격 보장 (`MachineDamagedMinInterval`). 벌레 떼가 붙어 매 프레임 이벤트가 터지는 상황에서 귀 아픈 소음 방지.
