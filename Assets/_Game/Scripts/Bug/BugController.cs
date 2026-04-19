@@ -64,6 +64,10 @@ namespace DrillCorp.Bug
         private float _buffedDamageMultiplier = 1f;
         private float _buffedSpeedMultiplier = 1f;
 
+        // === Slow (회전톱날, 충격파 등 타이머 기반 감속) ===
+        private float _slowStrength;   // 0~0.9 (1 = 완전 정지)
+        private float _slowTimer;      // 남은 지속 시간(초)
+
         // === Behaviors ===
         private IMovementBehavior _currentMovement;
         private IMovementBehavior _defaultMovement;
@@ -91,7 +95,7 @@ namespace DrillCorp.Bug
         public float MaxHp => _maxHealth; // HealAllySkill 용 alias
         public float HealthPercent => _maxHealth > 0 ? (_currentHealth / _maxHealth) * 100f : 0f;
         public bool IsDead => _isDead;
-        public float MoveSpeed => _moveSpeed * _buffedSpeedMultiplier;
+        public float MoveSpeed => _moveSpeed * _buffedSpeedMultiplier * (1f - _slowStrength);
         public float AttackDamage => _attackDamage * _buffedDamageMultiplier;
         public float AttackCooldown => _attackCooldown;
         /// <summary>
@@ -193,6 +197,17 @@ namespace DrillCorp.Bug
                 _justAttackedTimer -= deltaTime;
                 if (_justAttackedTimer <= 0f)
                     _justAttacked = false;
+            }
+
+            // 슬로우 타이머
+            if (_slowTimer > 0f)
+            {
+                _slowTimer -= deltaTime;
+                if (_slowTimer <= 0f)
+                {
+                    _slowTimer = 0f;
+                    _slowStrength = 0f;
+                }
             }
 
             // 패시브 업데이트 (Burrow 상태 체크를 위해 먼저 실행)
@@ -899,6 +914,29 @@ namespace DrillCorp.Bug
 
         #endregion
 
+        #region Slow
+
+        /// <summary>
+        /// 타이머 기반 감속 적용. 더 강한 슬로우만 덮어쓰고, 지속시간은 max(기존, 신규).
+        /// 회전톱날 접촉·충격파 어빌리티 등이 호출.
+        /// </summary>
+        /// <param name="strength">감속 강도 0~0.9 (0.3 = 30% 감속)</param>
+        /// <param name="durationSec">지속 시간(초)</param>
+        public void ApplySlow(float strength, float durationSec)
+        {
+            if (_isDead) return;
+            strength = Mathf.Clamp(strength, 0f, 0.9f);
+            if (strength <= 0f || durationSec <= 0f) return;
+
+            if (strength > _slowStrength) _slowStrength = strength;
+            if (durationSec > _slowTimer) _slowTimer = durationSec;
+        }
+
+        public float SlowStrength => _slowStrength;
+        public bool IsSlowed => _slowTimer > 0f;
+
+        #endregion
+
         #region Death
 
         private void Die()
@@ -965,6 +1003,8 @@ namespace DrillCorp.Bug
             _activeBuffs.Clear();
             _buffedDamageMultiplier = 1f;
             _buffedSpeedMultiplier = 1f;
+            _slowStrength = 0f;
+            _slowTimer = 0f;
 
             _currentMovement = null;
             _defaultMovement = null;

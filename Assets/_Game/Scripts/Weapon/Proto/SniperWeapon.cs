@@ -5,15 +5,27 @@ using DrillCorp.Audio;
 namespace DrillCorp.Weapon.Proto
 {
     /// <summary>
-    /// 저격총 (_.html 프로토타입 포팅)
+    /// 저격총 (_.html / v2.html 프로토타입 포팅)
     /// - 에임 범위 내 모든 Bug 동시 피격
     /// - 쿨다운은 실제 발사 시에만 소비 (타겟 없으면 쿨 안 돌아감)
     /// - 자동 발사 (타겟 있으면 쿨 끝나고 발사)
+    ///
+    /// v2 포팅 후 자체 구동 — AimController.EquipWeapon 경로 없이 매 프레임 TryFire 호출.
+    /// (폭탄·기관총·레이저·톱날과 동일 패턴)
     /// </summary>
     public class SniperWeapon : WeaponBase
     {
         [Header("Data")]
         [SerializeField] private SniperWeaponData _data;
+
+        [Header("Self-Driven")]
+        [Tooltip("AimController 참조 (비우면 Start에서 자동 탐색)")]
+        [SerializeField] private AimController _aimController;
+
+        [Tooltip("게임 시작 직후 발사 지연 (초) — 씬 로딩 직후 즉시 발사 방지")]
+        [SerializeField] private float _startDelay = 0.3f;
+
+        private float _fireEnableTime;
 
         public SniperWeaponData Data => _data;
         // ThemeColor는 WeaponBase가 _baseData(= _data)에서 자동 제공 — 중복 정의 제거됨
@@ -21,6 +33,21 @@ namespace DrillCorp.Weapon.Proto
         private void Awake()
         {
             _baseData = _data;
+        }
+
+        private void Start()
+        {
+            if (_aimController == null)
+                _aimController = FindAnyObjectByType<AimController>();
+
+            if (_aimController != null) _aim = _aimController;
+            _fireEnableTime = Time.time + _startDelay;
+        }
+
+        private void Update()
+        {
+            if (Time.time < _fireEnableTime) return;
+            if (_aimController != null) TryFire(_aimController);
         }
 
         protected override void Fire(AimController aim)

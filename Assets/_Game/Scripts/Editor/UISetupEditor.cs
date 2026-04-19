@@ -29,8 +29,7 @@ namespace DrillCorp.Editor
             // InGame Panel
             GameObject inGamePanel = CreateInGamePanel(canvasObj.transform);
 
-            // Aim Charge UI
-            CreateAimChargeUI(canvasObj.transform);
+            // v2 포팅 이후 AimChargeUI는 제거 (단일 무기 쿨다운 표시는 각 무기의 AimRing·게이지로 대체)
 
             // Result Panels
             GameObject successPanel = CreateSuccessPanel(canvasObj.transform);
@@ -139,43 +138,6 @@ namespace DrillCorp.Editor
             miningso.ApplyModifiedProperties();
 
             return panel;
-        }
-
-        private static void CreateAimChargeUI(Transform parent)
-        {
-            GameObject aimUI = new GameObject("AimChargeUI");
-            aimUI.transform.SetParent(parent, false);
-            RectTransform aimRect = aimUI.AddComponent<RectTransform>();
-            aimRect.anchorMin = new Vector2(0.5f, 0.5f);
-            aimRect.anchorMax = new Vector2(0.5f, 0.5f);
-            aimRect.sizeDelta = new Vector2(60, 8);
-
-            CanvasGroup canvasGroup = aimUI.AddComponent<CanvasGroup>();
-            canvasGroup.alpha = 0f;
-
-            // Charge Bar Background
-            GameObject bgBar = new GameObject("Background");
-            bgBar.transform.SetParent(aimUI.transform, false);
-            Image bgImage = bgBar.AddComponent<Image>();
-            bgImage.color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
-            RectTransform bgRect = bgBar.GetComponent<RectTransform>();
-            bgRect.anchorMin = Vector2.zero;
-            bgRect.anchorMax = Vector2.one;
-            bgRect.sizeDelta = Vector2.zero;
-
-            // Charge Bar Fill
-            GameObject chargeBar = CreateFilledBar("ChargeBar", aimUI.transform,
-                Vector2.zero, new Vector2(56, 4), Color.yellow);
-            RectTransform chargeRect = chargeBar.GetComponent<RectTransform>();
-            chargeRect.anchorMin = new Vector2(0.5f, 0.5f);
-            chargeRect.anchorMax = new Vector2(0.5f, 0.5f);
-
-            // AimChargeUI 컴포넌트 추가
-            AimChargeUI aimChargeUI = aimUI.AddComponent<AimChargeUI>();
-            SerializedObject so = new SerializedObject(aimChargeUI);
-            so.FindProperty("_chargeFillImage").objectReferenceValue = chargeBar.GetComponent<Image>();
-            so.FindProperty("_canvasGroup").objectReferenceValue = canvasGroup;
-            so.ApplyModifiedProperties();
         }
 
         private static GameObject CreateSuccessPanel(Transform parent)

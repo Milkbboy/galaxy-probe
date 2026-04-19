@@ -16,6 +16,8 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using DrillCorp.Data;
+using DrillCorp.Weapon;
+using DrillCorp.Weapon.Saw;
 
 namespace DrillCorp.Editor
 {
@@ -26,6 +28,7 @@ namespace DrillCorp.Editor
         const string ABIL_DIR  = DATA_ROOT + "/Abilities";
         const string WUPG_DIR  = DATA_ROOT + "/WeaponUpgrades";
         const string UPG_DIR   = DATA_ROOT + "/Upgrades";
+        const string WPN_DIR   = DATA_ROOT + "/Weapons";
 
         [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/Title/4. v2 Data Assets 생성")]
         public static void CreateAllV2Assets()
@@ -37,11 +40,21 @@ namespace DrillCorp.Editor
             CreateCharacters();       // 3) 캐릭터 + Abilities[] 배열 링크
             CreateWeaponUpgrades();   // 4) 무기 강화 15종
             CreateV2Upgrades();       // 5) 굴착기 강화 신규 3종
+            CreateSawWeaponData();    // 6) 회전톱날 무기 SO (v2 신규)
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log("[V2DataSetup] 완료. Characters/Abilities/WeaponUpgrades/Upgrades 폴더를 확인하세요.");
+            Debug.Log("[V2DataSetup] 완료. Characters/Abilities/WeaponUpgrades/Upgrades/Weapons 폴더를 확인하세요.");
+        }
+
+        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/Title/4b. Weapon_Saw 에셋만 생성")]
+        public static void CreateSawWeaponDataMenu()
+        {
+            EnsureFolders();
+            CreateSawWeaponData();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
 
         // ═════════════════════════════════════════════════════
@@ -57,6 +70,8 @@ namespace DrillCorp.Editor
                 AssetDatabase.CreateFolder(DATA_ROOT, "WeaponUpgrades");
             if (!AssetDatabase.IsValidFolder(UPG_DIR))
                 AssetDatabase.CreateFolder(DATA_ROOT, "Upgrades");
+            if (!AssetDatabase.IsValidFolder(WPN_DIR))
+                AssetDatabase.CreateFolder(DATA_ROOT, "Weapons");
         }
 
         // ═════════════════════════════════════════════════════
@@ -340,6 +355,46 @@ namespace DrillCorp.Editor
             so.ApplyModifiedPropertiesWithoutUndo();
 
             AssetDatabase.CreateAsset(u, path);
+        }
+
+        // ═════════════════════════════════════════════════════
+        // 6) SawWeaponData (회전톱날) — v2 신규 무기
+        // ═════════════════════════════════════════════════════
+        static void CreateSawWeaponData()
+        {
+            const string fileName = "Weapon_Saw";
+            string path = $"{WPN_DIR}/{fileName}.asset";
+            if (File.Exists(path)) { Debug.Log($"[V2DataSetup] {fileName} 이미 존재 — 스킵"); return; }
+
+            // req 체인: saw → laser. 기존 Weapon_Laser.asset (LaserBeamData) 찾기.
+            var laser = AssetDatabase.LoadAssetAtPath<WeaponData>($"{WPN_DIR}/Weapon_Laser.asset");
+
+            var s = ScriptableObject.CreateInstance<SawWeaponData>();
+            var so = new SerializedObject(s);
+
+            // WeaponData 공통
+            so.FindProperty("_displayName").stringValue = "회전톱날";
+            so.FindProperty("_themeColor").colorValue = new Color(0.88f, 0.25f, 0.98f, 1f); // v2 보라
+            so.FindProperty("_weaponId").stringValue = "saw";
+            so.FindProperty("_unlockedByDefault").boolValue = false;
+            so.FindProperty("_unlockGemCost").intValue = 40;
+            if (laser != null)
+                so.FindProperty("_requiredWeapon").objectReferenceValue = laser;
+            so.FindProperty("_fireDelay").floatValue = 0f;
+            so.FindProperty("_damage").floatValue = 0.15f;   // tick당 데미지
+
+            // SawWeaponData 고유
+            so.FindProperty("_orbitRadius").floatValue = 7.2f;
+            so.FindProperty("_bladeRadius").floatValue = 1.8f;
+            so.FindProperty("_spinSpeed").floatValue = 4.8f;
+            so.FindProperty("_damageTickInterval").floatValue = 0.1f;
+            so.FindProperty("_slowFactor").floatValue = 0.3f;
+            so.FindProperty("_slowDuration").floatValue = 2f;
+            // _bladeVisualPrefab — 수동 바인딩
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            AssetDatabase.CreateAsset(s, path);
+            Debug.Log($"[V2DataSetup] {fileName} 생성 완료. _bladeVisualPrefab은 Inspector에서 수동 바인딩.");
         }
     }
 }

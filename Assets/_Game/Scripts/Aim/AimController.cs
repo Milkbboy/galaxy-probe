@@ -3,13 +3,13 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
 using DrillCorp.Machine;
-using DrillCorp.Weapon;
 
 namespace DrillCorp.Aim
 {
     /// <summary>
-    /// 마우스 조준 + 크로스헤어 UI + 장착 무기에 발사 위임
-    /// 무기들은 AimController를 통해 에임 위치, 범위, 머신 참조를 얻음
+    /// 마우스 조준 + 크로스헤어 UI + 에임 데이터 제공.
+    /// v2 포팅: 무기는 각자 자체 Update에서 발동 — AimController는 장착 개념 없이
+    /// 에임 위치·범위·머신 참조만 제공 (AimPosition, AimRadius, BugsInRange, MachineTransform).
     /// </summary>
     public class AimController : MonoBehaviour
     {
@@ -26,10 +26,6 @@ namespace DrillCorp.Aim
         [Header("References")]
         [Tooltip("머신 Transform (비우면 'Machine' 태그 자동 탐색)")]
         [SerializeField] private Transform _machineTransform;
-
-        [Header("Weapon")]
-        [Tooltip("시작 시 장착할 기본 무기")]
-        [SerializeField] private WeaponBase _initialWeapon;
 
         [Header("Visual")]
         [SerializeField] private SpriteRenderer _crosshairRenderer;
@@ -70,7 +66,6 @@ namespace DrillCorp.Aim
         private Camera _mainCamera;
         private Vector3 _aimPosition;
         private bool _hasBugInRange;
-        private WeaponBase _currentWeapon;
 
         private readonly List<Collider> _cachedBugs = new List<Collider>();
         private readonly Collider[] _overlapBuffer = new Collider[128];
@@ -80,7 +75,6 @@ namespace DrillCorp.Aim
         public float AimRadius => _aimRadius;
         public LayerMask BugLayer => _bugLayer;
         public Transform MachineTransform => _machineTransform;
-        public WeaponBase CurrentWeapon => _currentWeapon;
         public TextMeshPro InfoLabel => _infoLabel;
 
         public void SetInfoText(string text)
@@ -98,8 +92,6 @@ namespace DrillCorp.Aim
 
             _infoLabel.text = text;
         }
-        public float CooldownProgress => _currentWeapon != null ? _currentWeapon.CooldownProgress : 1f;
-        public bool IsReady => _currentWeapon == null || _currentWeapon.CanFire;
 
         /// <summary>
         /// 현재 에임 범위 내의 Bug Collider 리스트 (매 프레임 갱신됨)
@@ -176,9 +168,6 @@ namespace DrillCorp.Aim
         {
             // Awake가 아닌 Start에서 — TMPFontHolder.Initialize가 먼저 호출되도록 보장
             EnsureInfoLabel();
-
-            if (_initialWeapon != null)
-                EquipWeapon(_initialWeapon);
         }
 
         private void EnsureBugLayer()
@@ -212,21 +201,11 @@ namespace DrillCorp.Aim
 
         private void Update()
         {
+            // v2 포팅: 모든 무기가 자체 Update에서 발동 (AimController는 에임 데이터만 제공).
+            // SuppressAimBugDetection은 더 이상 의미 없음 — 항상 범위 내 벌레를 수집한다.
             UpdateAimPosition();
             UpdateCrosshairPosition();
-
-            bool suppress = _currentWeapon != null && _currentWeapon.SuppressAimBugDetection;
-            if (suppress)
-            {
-                _cachedBugs.Clear();
-                _hasBugInRange = false;
-            }
-            else
-            {
-                CollectBugsInRange();
-            }
-
-            TryFireWeapon();
+            CollectBugsInRange();
             UpdateCrosshairColor();
         }
 
@@ -259,18 +238,10 @@ namespace DrillCorp.Aim
             _hasBugInRange = _cachedBugs.Count > 0;
         }
 
-        private void TryFireWeapon()
-        {
-            _currentWeapon?.TryFire(this);
-        }
-
         private void UpdateCrosshairColor()
         {
             if (_crosshairRenderer == null) return;
-            bool hitting = _currentWeapon != null
-                ? _currentWeapon.IsHittingTarget(this)
-                : _hasBugInRange;
-            _crosshairRenderer.color = hitting ? _readyColor : _normalColor;
+            _crosshairRenderer.color = _hasBugInRange ? _readyColor : _normalColor;
         }
 
         /// <summary>
@@ -291,27 +262,6 @@ namespace DrillCorp.Aim
                 }
             }
             return best;
-        }
-
-        public void EquipWeapon(WeaponBase weapon)
-        {
-            if (_currentWeapon == weapon)
-                return;
-
-            if (_currentWeapon != null)
-            {
-                _currentWeapon.OnUnequip();
-                _currentWeapon.gameObject.SetActive(false);
-            }
-
-            _currentWeapon = weapon;
-            SetInfoText(null);
-
-            if (_currentWeapon != null)
-            {
-                _currentWeapon.gameObject.SetActive(true);
-                _currentWeapon.OnEquip(this);
-            }
         }
 
         private void OnDrawGizmosSelected()
