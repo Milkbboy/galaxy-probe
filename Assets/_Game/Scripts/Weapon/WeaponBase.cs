@@ -102,13 +102,20 @@ namespace DrillCorp.Weapon
 
         /// <summary>게이지 상태 (색상/깜빡임 결정)</summary>
         public virtual WeaponGaugeState GaugeState => WeaponGaugeState.Normal;
+        /// <summary>
+        /// 무기 강화(Cooldown)가 반영된 발사 딜레이. 파생이 오버라이드.
+        /// </summary>
+        protected virtual float EffectiveFireDelay
+            => _baseData != null ? _baseData.FireDelay : 0f;
+
         public float CooldownProgress
         {
             get
             {
-                if (_baseData == null || _baseData.FireDelay <= 0f) return 1f;
-                float elapsed = _baseData.FireDelay - (_nextFireTime - Time.time);
-                return Mathf.Clamp01(elapsed / _baseData.FireDelay);
+                float delay = EffectiveFireDelay;
+                if (delay <= 0f) return 1f;
+                float elapsed = delay - (_nextFireTime - Time.time);
+                return Mathf.Clamp01(elapsed / delay);
             }
         }
 
@@ -125,8 +132,9 @@ namespace DrillCorp.Weapon
 
             Fire(aim);
 
-            if (_baseData != null && _baseData.FireDelay > 0f)
-                _nextFireTime = Time.time + _baseData.FireDelay;
+            float delay = EffectiveFireDelay;
+            if (delay > 0f)
+                _nextFireTime = Time.time + delay;
         }
 
         /// <summary>
@@ -148,6 +156,25 @@ namespace DrillCorp.Weapon
         }
 
         public virtual void OnUnequip() { }
+
+        /// <summary>
+        /// v2 — 미해금 무기면 GameObject 비활성화 후 true 반환. 각 무기 Start 첫 줄에서 호출.
+        /// WeaponId가 비어있거나(레거시) DataManager 없으면(단독 실행) pass-through.
+        /// </summary>
+        protected bool TryDisableIfLocked()
+        {
+            if (_baseData == null || string.IsNullOrEmpty(_baseData.WeaponId)) return false;
+
+            var dm = DrillCorp.Core.DataManager.Instance;
+            if (dm?.Data == null) return false;
+
+            if (!dm.Data.HasWeapon(_baseData.WeaponId))
+            {
+                gameObject.SetActive(false);
+                return true;
+            }
+            return false;
+        }
 
         /// <summary>
         /// Bug Transform에 데미지 적용 + Hit VFX 스폰

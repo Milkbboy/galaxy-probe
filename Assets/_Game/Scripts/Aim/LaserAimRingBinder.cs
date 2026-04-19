@@ -34,9 +34,10 @@ namespace DrillCorp.Aim
         {
             if (_ring == null) return;
 
-            if (_weapon == null)
+            // v2 — 미해금 무기는 SetActive(false)되어 호도 영구 숨김
+            if (_weapon == null || !_weapon.gameObject.activeInHierarchy)
             {
-                _ring.FillAmount = 0f;
+                gameObject.SetActive(false);
                 return;
             }
 

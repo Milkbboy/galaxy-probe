@@ -1,6 +1,9 @@
 using UnityEngine;
 using DrillCorp.Aim;
 using DrillCorp.Audio;
+using DrillCorp.Core;
+using DrillCorp.Data;
+using DrillCorp.OutGame;
 
 namespace DrillCorp.Weapon.Laser
 {
@@ -45,6 +48,10 @@ namespace DrillCorp.Weapon.Laser
         private float _laserCD;    // 0 = 준비 완료
         private float _fireEnableTime;   // Time.time 기준 이 시각 이후부터 발사 허용
 
+        // === Effective stats (WeaponUpgrade 반영) ===
+        private float _effectiveDamage;
+        private float _effectiveCooldown;
+
         /// <summary>빔 활성 중 여부. _activeBeam이 파괴되면 Unity가 null로 처리하므로 자동 false.</summary>
         private bool IsActive => _activeBeam != null;
 
@@ -56,15 +63,55 @@ namespace DrillCorp.Weapon.Laser
             _baseData = _data;
         }
 
+        private void OnEnable()
+        {
+            GameEvents.OnWeaponUpgraded += OnWeaponUpgradedAny;
+            RefreshEffectiveStats();
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.OnWeaponUpgraded -= OnWeaponUpgradedAny;
+        }
+
         private void Start()
         {
+            if (TryDisableIfLocked()) return;
+
             if (_aimController == null)
                 _aimController = FindAnyObjectByType<AimController>();
 
             // _aim 캐싱 — UI 프로퍼티(HasTarget 등)가 _aim을 참조
             if (_aimController != null) _aim = _aimController;
 
+            RefreshEffectiveStats();
             _fireEnableTime = Time.time + _startDelay;
+        }
+
+        // === Upgrade 반영 ===
+        private void OnWeaponUpgradedAny(string upgradeId)
+        {
+            if (_data == null || string.IsNullOrEmpty(_data.WeaponId)) return;
+            if (string.IsNullOrEmpty(upgradeId)) { RefreshEffectiveStats(); return; }
+
+            var mgr = WeaponUpgradeManager.Instance;
+            var u = mgr != null ? mgr.FindUpgrade(upgradeId) : null;
+            if (u != null && u.WeaponId == _data.WeaponId) RefreshEffectiveStats();
+        }
+
+        private void RefreshEffectiveStats()
+        {
+            if (_data == null) return;
+
+            float dmgMul = 1f, cdMul = 1f;
+            var mgr = WeaponUpgradeManager.Instance;
+            if (mgr != null && !string.IsNullOrEmpty(_data.WeaponId))
+            {
+                (_, dmgMul) = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Damage);
+                (_, cdMul)  = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Cooldown);
+            }
+            _effectiveDamage = _data.Damage * dmgMul;
+            _effectiveCooldown = Mathf.Max(0.1f, _data.Cooldown * cdMul);
         }
 
         private void Update()
@@ -107,7 +154,7 @@ namespace DrillCorp.Weapon.Laser
 
             if (_activeBeam != null)
             {
-                _activeBeam.Initialize(aim, _data, aim.BugLayer);
+                _activeBeam.Initialize(aim, _data, aim.BugLayer, _effectiveDamage);
                 AudioManager.Instance?.StartLaserBeamLoop();
             }
             else
@@ -120,7 +167,7 @@ namespace DrillCorp.Weapon.Laser
             SpawnScorch(spawnPos, obj.transform);
 
             // 스폰 순간 즉시 풀 쿨다운 세팅 (프로토 L269) — 빔 수명 동안 멈춰있다가 소멸 후 감소 시작
-            _laserCD = _data.Cooldown;
+            _laserCD = _effectiveCooldown;
         }
 
         private void SpawnScorch(Vector3 spawnPos, Transform followTarget)
@@ -144,9 +191,10 @@ namespace DrillCorp.Weapon.Laser
             get
             {
                 if (_data == null) return 0f;
-                if (IsActive) return BeamLifeRatio;                         // Active: 수명% 감소
-                if (_laserCD > 0f) return 1f - _laserCD / _data.Cooldown;   // Cooling: 쿨% 차오름
-                return 1f;                                                  // Ready: 100%
+                if (IsActive) return BeamLifeRatio;                              // Active: 수명% 감소
+                if (_laserCD > 0f && _effectiveCooldown > 0f)
+                    return 1f - _laserCD / _effectiveCooldown;                   // Cooling: 쿨% 차오름
+                return 1f;                                                       // Ready: 100%
             }
         }
 
@@ -207,8 +255,8 @@ namespace DrillCorp.Weapon.Laser
             get
             {
                 if (IsActive) return 0f;
-                if (_data == null) return 1f;
-                return Mathf.Clamp01(1f - _laserCD / _data.Cooldown);
+                if (_data == null || _effectiveCooldown <= 0f) return 1f;
+                return Mathf.Clamp01(1f - _laserCD / _effectiveCooldown);
             }
         }
     }

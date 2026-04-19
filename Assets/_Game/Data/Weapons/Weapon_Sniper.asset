@@ -17,8 +17,8 @@ MonoBehaviour:
     \uB3D9\uC2DC \uD53C\uACA9"
   _icon: {fileID: 0}
   _themeColor: {r: 0.88, g: 0.25, b: 0.98, a: 1}
-  _weaponId: 
-  _unlockedByDefault: 0
+  _weaponId: sniper
+  _unlockedByDefault: 1
   _unlockGemCost: 0
   _requiredWeapon: {fileID: 0}
   _fireDelay: 0.5

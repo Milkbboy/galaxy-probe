@@ -76,6 +76,8 @@ namespace DrillCorp.Weapon.Saw
 
         private void Start()
         {
+            if (TryDisableIfLocked()) return;
+
             if (_aimController == null)
                 _aimController = FindAnyObjectByType<AimController>();
 

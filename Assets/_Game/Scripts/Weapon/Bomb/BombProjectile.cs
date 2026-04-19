@@ -17,6 +17,10 @@ namespace DrillCorp.Weapon.Bomb
         private float _spawnTime;
         private bool _exploded;
 
+        // v2 — WeaponUpgrade 반영 effective stats. <=0 이면 _data 기본값 사용.
+        private float _effectiveDamage;
+        private float _effectiveRadius;
+
         private GameObject _marker;
 
         // 폭발 시 OverlapSphere 결과를 담는 공용 버퍼 (한 프레임에 여러 폭탄이 터져도 안전)
@@ -26,10 +30,19 @@ namespace DrillCorp.Weapon.Bomb
         /// BombWeapon.Fire에서 스폰 직후 호출. 타겟·데이터·레이어 캡처 + 착탄 마커 스폰.
         /// </summary>
         public void Initialize(Vector3 targetPos, BombData data, LayerMask bugLayer)
+            => Initialize(targetPos, data, bugLayer,
+                          data != null ? data.Damage : 0f,
+                          data != null ? data.ExplosionRadius : 0f);
+
+        /// <summary>WeaponUpgrade로 보정된 damage·radius를 직접 받는 오버로드.</summary>
+        public void Initialize(Vector3 targetPos, BombData data, LayerMask bugLayer,
+                               float effectiveDamage, float effectiveRadius)
         {
             _data = data;
             _bugLayer = bugLayer;
             _spawnTime = Time.time;
+            _effectiveDamage = effectiveDamage;
+            _effectiveRadius = effectiveRadius;
 
             // 지면 평면(Y=0)에서 비행 — 타겟의 Y 성분 무시
             targetPos.y = 0f;
@@ -53,7 +66,7 @@ namespace DrillCorp.Weapon.Bomb
 
             // 폭발 반경에 정확히 맞춰 스케일 (지름 = radius × 2)
             // 업그레이드로 반경 늘어나도 마커가 자동으로 정확한 크기로 표시됨
-            float diameter = _data.ExplosionRadius * 2f;
+            float diameter = _effectiveRadius * 2f;
             _marker.transform.localScale = new Vector3(diameter, diameter, 1f);
         }
 
@@ -91,7 +104,7 @@ namespace DrillCorp.Weapon.Bomb
             if (_exploded) return;
             _exploded = true;
 
-            Detonate(transform.position, _data, _bugLayer);
+            Detonate(transform.position, _data, _bugLayer, _effectiveDamage, _effectiveRadius);
 
             DestroyMarker();
             Destroy(gameObject);
@@ -100,15 +113,24 @@ namespace DrillCorp.Weapon.Bomb
         /// <summary>
         /// 위치 + 데이터 + 레이어를 받아 폭발 처리 (AoE 데미지 + VFX).
         /// 투사체 도달 폭발과 BombWeapon의 즉시(instant) 폭발 모드 양쪽에서 호출됨.
+        /// 데이터 기본값 사용 — 강화 미반영 호출자용.
         /// </summary>
         public static void Detonate(Vector3 pos, BombData data, LayerMask bugLayer)
+        {
+            if (data == null) return;
+            Detonate(pos, data, bugLayer, data.Damage, data.ExplosionRadius);
+        }
+
+        /// <summary>WeaponUpgrade 보정된 damage·radius를 받는 오버로드.</summary>
+        public static void Detonate(Vector3 pos, BombData data, LayerMask bugLayer,
+                                    float effectiveDamage, float effectiveRadius)
         {
             if (data == null) return;
 
             AudioManager.Instance?.PlayBombExplosion();
 
             int count = Physics.OverlapSphereNonAlloc(
-                pos, data.ExplosionRadius, _overlapBuffer, bugLayer);
+                pos, effectiveRadius, _overlapBuffer, bugLayer);
 
             for (int i = 0; i < count; i++)
             {
@@ -117,7 +139,7 @@ namespace DrillCorp.Weapon.Bomb
 
                 var damageable = col.GetComponent<IDamageable>()
                                  ?? col.GetComponentInParent<IDamageable>();
-                damageable?.TakeDamage(data.Damage);
+                damageable?.TakeDamage(effectiveDamage);
 
                 if (data.HitVfxPrefab != null)
                 {

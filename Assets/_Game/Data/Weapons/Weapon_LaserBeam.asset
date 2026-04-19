@@ -17,7 +17,7 @@ MonoBehaviour:
     \uCD94\uC801 6\uCD08 + 5\uCD08 \uCFE8."
   _icon: {fileID: 21300000, guid: e384f0331a1c67d4ebfc6d76ecf850af, type: 3}
   _themeColor: {r: 1, g: 0.09, b: 0.267, a: 1}
-  _weaponId: 
+  _weaponId: laser
   _unlockedByDefault: 0
   _unlockGemCost: 0
   _requiredWeapon: {fileID: 0}

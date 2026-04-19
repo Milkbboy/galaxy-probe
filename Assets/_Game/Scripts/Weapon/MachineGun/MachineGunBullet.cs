@@ -15,6 +15,7 @@ namespace DrillCorp.Weapon.MachineGun
         private LayerMask _bugLayer;
         private float _spawnTime;
         private bool _consumed;           // 명중/수명만료 후 중복 처리 방지
+        private float _effectiveDamage;   // v2 — WeaponUpgrade 반영
 
         // 충돌 검사용 공용 버퍼 (한 프레임에 다발이 동시 처리돼도 안전)
         private static readonly Collider[] _overlapBuffer = new Collider[16];
@@ -24,10 +25,15 @@ namespace DrillCorp.Weapon.MachineGun
         /// direction은 XZ 평면 정규화 벡터 (산포가 적용된 최종 방향).
         /// </summary>
         public void Initialize(Vector3 direction, MachineGunData data, LayerMask bugLayer)
+            => Initialize(direction, data, bugLayer, data != null ? data.Damage : 0f);
+
+        /// <summary>WeaponUpgrade 보정된 damage를 받는 오버로드.</summary>
+        public void Initialize(Vector3 direction, MachineGunData data, LayerMask bugLayer, float effectiveDamage)
         {
             _data = data;
             _bugLayer = bugLayer;
             _spawnTime = Time.time;
+            _effectiveDamage = effectiveDamage;
 
             direction.y = 0f;
             if (direction.sqrMagnitude < 0.0001f) direction = Vector3.forward;
@@ -83,7 +89,7 @@ namespace DrillCorp.Weapon.MachineGun
         {
             var damageable = target.GetComponent<IDamageable>()
                              ?? target.GetComponentInParent<IDamageable>();
-            damageable?.TakeDamage(_data.Damage);
+            damageable?.TakeDamage(_effectiveDamage);
 
             if (_data.HitVfxPrefab != null)
             {

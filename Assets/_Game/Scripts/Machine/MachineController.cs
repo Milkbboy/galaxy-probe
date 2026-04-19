@@ -1,6 +1,7 @@
 using UnityEngine;
 using DrillCorp.Core;
 using DrillCorp.Data;
+using DrillCorp.OutGame;
 using DrillCorp.UI;
 using DrillCorp.UI.Minimap;
 
@@ -25,11 +26,16 @@ namespace DrillCorp.Machine
         [SerializeField] private float _miningRate = 10f;
         private int _totalMined;
         private float _miningAccumulator;
+        private float _miningTarget = 100f;  // v2: BaseMiningTarget + lv*50
 
         [Header("Weapon")]
         [SerializeField] private float _attackDamage = 20f;
         [SerializeField] private float _attackCooldown = 0.5f;
         [SerializeField] private float _attackRange = 3f;
+
+        // v2 Upgrade — 받는 피해 감소율 (0~1, UpgradeManager.Armor 합산).
+        // legacy _armor(MachineData)와 별도 누적.
+        private float _damageReductionPct;
 
         public float CurrentHealth => _currentHealth;
         public float MaxHealth => _maxHealth;
@@ -40,6 +46,8 @@ namespace DrillCorp.Machine
         public bool IsFuelEmpty => _currentFuel <= 0f;
 
         public int TotalMined => _totalMined;
+        public float MiningTarget => _miningTarget;
+        public bool IsMiningTargetReached => _totalMined >= _miningTarget;
 
         // Weapon properties for AimController
         public float AttackDamage => _attackDamage;
@@ -59,8 +67,24 @@ namespace DrillCorp.Machine
 
         private void Awake()
         {
+            ApplySelectedCharacter();
             ApplyMachineData();
+            ApplyUpgradeBonuses();
             _isInvincible = _startInvincible;
+        }
+
+        // v2 — 선택한 캐릭터의 DefaultMachine으로 _machineData 교체.
+        // CharacterRegistry 또는 DataManager가 없으면(Game 단독 실행) 프리펩 기본값 유지.
+        private void ApplySelectedCharacter()
+        {
+            var dm = DataManager.Instance;
+            var reg = CharacterRegistry.Instance;
+            if (dm?.Data == null || reg == null) return;
+
+            var character = reg.Find(dm.Data.SelectedCharacterId);
+            if (character == null || character.DefaultMachine == null) return;
+
+            _machineData = character.DefaultMachine;
         }
 
         private void Start()
@@ -81,7 +105,20 @@ namespace DrillCorp.Machine
                 _attackDamage = _machineData.AttackDamage;
                 _attackCooldown = _machineData.AttackCooldown;
                 _attackRange = _machineData.AttackRange;
+                _miningTarget = _machineData.BaseMiningTarget;
             }
+        }
+
+        // v2: UpgradeManager 누적 보너스를 적용. Title에서 사 모은 강화가 Game에서 살아남.
+        private void ApplyUpgradeBonuses()
+        {
+            var um = UpgradeManager.Instance;
+            if (um == null) return;
+
+            _maxHealth          += um.GetTotalBonus(UpgradeType.MaxHealth);     // +30/lv
+            _miningRate         += um.GetTotalBonus(UpgradeType.MiningRate);    // +2/lv
+            _miningTarget       += um.GetTotalBonus(UpgradeType.MiningTarget);  // +50/lv
+            _damageReductionPct  = Mathf.Clamp01(um.GetTotalBonus(UpgradeType.Armor)); // 0.15/lv → max 0.45
         }
 
         private void Update()
@@ -169,9 +206,22 @@ namespace DrillCorp.Machine
 
         private float CalculateDamageReceived(float rawDamage)
         {
-            if (_armor <= 0f) return rawDamage;
-            float reduction = _armor / (_armor + 100f);
-            return rawDamage * (1f - reduction);
+            float dmg = rawDamage;
+
+            // legacy armor (MachineData.Armor): armor/(armor+100) 곡선
+            if (_armor > 0f)
+            {
+                float reduction = _armor / (_armor + 100f);
+                dmg *= 1f - reduction;
+            }
+
+            // v2 — 받는 피해 감소율 직접 차감 (excavator_armor 강화)
+            if (_damageReductionPct > 0f)
+            {
+                dmg *= 1f - _damageReductionPct;
+            }
+
+            return dmg;
         }
 
         public void Heal(float amount)

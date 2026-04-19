@@ -17,7 +17,7 @@ MonoBehaviour:
     \uD3ED\uBC1C AoE."
   _icon: {fileID: 21300000, guid: 52e696e01c842084ba1e22b31b6dbe64, type: 3}
   _themeColor: {r: 0.957, g: 0.643, b: 0.137, a: 1}
-  _weaponId: 
+  _weaponId: bomb
   _unlockedByDefault: 0
   _unlockGemCost: 0
   _requiredWeapon: {fileID: 0}

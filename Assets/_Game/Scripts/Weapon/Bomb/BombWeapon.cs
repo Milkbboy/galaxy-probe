@@ -3,6 +3,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using DrillCorp.Aim;
 using DrillCorp.Audio;
+using DrillCorp.Core;
+using DrillCorp.Data;
+using DrillCorp.OutGame;
 
 namespace DrillCorp.Weapon.Bomb
 {
@@ -33,18 +36,68 @@ namespace DrillCorp.Weapon.Bomb
         // 프로토타입 #f4a423 (cool-bar.bomb 색)
         private static readonly Color BombOrangeBar = new Color(0.957f, 0.643f, 0.137f, 1f);
 
+        // === Effective stats (WeaponUpgrade 반영) ===
+        private float _effectiveDamage;
+        private float _effectiveRadius;
+        private float _effectiveFireDelayMul = 1f;
+
+        protected override float EffectiveFireDelay
+            => _data != null ? _data.FireDelay * _effectiveFireDelayMul : 0f;
+
         private void Awake()
         {
             _baseData = _data;
         }
 
+        private void OnEnable()
+        {
+            GameEvents.OnWeaponUpgraded += OnWeaponUpgradedAny;
+            RefreshEffectiveStats();
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.OnWeaponUpgraded -= OnWeaponUpgradedAny;
+        }
+
         private void Start()
         {
+            if (TryDisableIfLocked()) return;
+
             if (_aimController == null)
                 _aimController = FindAnyObjectByType<AimController>();
 
             // _aim 캐싱 — IsHittingTarget 등 UI 프로퍼티가 _aim을 참조할 수 있음
             if (_aimController != null) _aim = _aimController;
+            RefreshEffectiveStats();
+        }
+
+        // === Upgrade 반영 ===
+        private void OnWeaponUpgradedAny(string upgradeId)
+        {
+            if (_data == null || string.IsNullOrEmpty(_data.WeaponId)) return;
+            if (string.IsNullOrEmpty(upgradeId)) { RefreshEffectiveStats(); return; }
+
+            var mgr = WeaponUpgradeManager.Instance;
+            var u = mgr != null ? mgr.FindUpgrade(upgradeId) : null;
+            if (u != null && u.WeaponId == _data.WeaponId) RefreshEffectiveStats();
+        }
+
+        private void RefreshEffectiveStats()
+        {
+            if (_data == null) return;
+
+            float dmgMul = 1f, radMul = 1f, cdMul = 1f;
+            var mgr = WeaponUpgradeManager.Instance;
+            if (mgr != null && !string.IsNullOrEmpty(_data.WeaponId))
+            {
+                (_, dmgMul) = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Damage);
+                (_, radMul) = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Radius);
+                (_, cdMul)  = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Cooldown);
+            }
+            _effectiveDamage = _data.Damage * dmgMul;
+            _effectiveRadius = _data.ExplosionRadius * radMul;
+            _effectiveFireDelayMul = Mathf.Max(0.1f, cdMul);
         }
 
         private void Update()
@@ -82,7 +135,7 @@ namespace DrillCorp.Weapon.Bomb
             // 즉시 폭발 모드 — 투사체 비행 없이 바로 펑
             if (_data.Instant)
             {
-                BombProjectile.Detonate(targetPos, _data, aim.BugLayer);
+                BombProjectile.Detonate(targetPos, _data, aim.BugLayer, _effectiveDamage, _effectiveRadius);
                 return;
             }
 
@@ -107,7 +160,7 @@ namespace DrillCorp.Weapon.Bomb
             var proj = obj.GetComponent<BombProjectile>();
             if (proj != null)
             {
-                proj.Initialize(targetPos, _data, aim.BugLayer);
+                proj.Initialize(targetPos, _data, aim.BugLayer, _effectiveDamage, _effectiveRadius);
                 AudioManager.Instance?.PlayBombLaunch();
             }
             else

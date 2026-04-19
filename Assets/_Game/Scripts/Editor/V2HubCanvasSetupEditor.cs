@@ -81,6 +81,9 @@ namespace DrillCorp.Editor
             // WeaponUpgradeManager GameObject (씬에 아직 없으면 생성)
             EnsureWeaponUpgradeManager();
 
+            // CharacterRegistry GameObject (Game 씬에서 SelectedCharacterId → DefaultMachine 조회용)
+            EnsureCharacterRegistry();
+
             // WeaponShopUI 부착
             AttachWeaponShopUI(hub);
 
@@ -662,6 +665,27 @@ namespace DrillCorp.Editor
             if (asset == null)
                 Debug.LogWarning($"[V2HubCanvas] {fileName}.asset을 찾을 수 없습니다. '4. v2 Data Assets 생성'을 먼저 돌리세요.");
             return asset;
+        }
+
+        // ═════════════════════════════════════════════════════
+        // CharacterRegistry GameObject + 3 캐릭터 SO 자동 연결
+        // ═════════════════════════════════════════════════════
+        static void EnsureCharacterRegistry()
+        {
+            var existing = Object.FindAnyObjectByType<DrillCorp.OutGame.CharacterRegistry>();
+            if (existing == null)
+            {
+                var obj = new GameObject("CharacterRegistry");
+                existing = obj.AddComponent<DrillCorp.OutGame.CharacterRegistry>();
+            }
+
+            var so = new SerializedObject(existing);
+            var listProp = so.FindProperty("_characters");
+            listProp.arraySize = 3;
+            listProp.GetArrayElementAtIndex(0).objectReferenceValue = LoadCharacter("Character_Victor");
+            listProp.GetArrayElementAtIndex(1).objectReferenceValue = LoadCharacter("Character_Sara");
+            listProp.GetArrayElementAtIndex(2).objectReferenceValue = LoadCharacter("Character_Jinus");
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // ═════════════════════════════════════════════════════

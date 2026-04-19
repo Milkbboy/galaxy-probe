@@ -1,6 +1,9 @@
 using UnityEngine;
 using DrillCorp.Aim;
 using DrillCorp.Audio;
+using DrillCorp.Core;
+using DrillCorp.Data;
+using DrillCorp.OutGame;
 
 namespace DrillCorp.Weapon.Proto
 {
@@ -27,20 +30,41 @@ namespace DrillCorp.Weapon.Proto
 
         private float _fireEnableTime;
 
+        // === Effective stats (WeaponUpgrade 반영) ===
+        private float _effectiveDamage;
+        private float _effectiveFireDelayMul = 1f;
+
         public SniperWeaponData Data => _data;
         // ThemeColor는 WeaponBase가 _baseData(= _data)에서 자동 제공 — 중복 정의 제거됨
+
+        protected override float EffectiveFireDelay
+            => _data != null ? _data.FireDelay * _effectiveFireDelayMul : 0f;
 
         private void Awake()
         {
             _baseData = _data;
         }
 
+        private void OnEnable()
+        {
+            GameEvents.OnWeaponUpgraded += OnWeaponUpgradedAny;
+            RefreshEffectiveStats();
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.OnWeaponUpgraded -= OnWeaponUpgradedAny;
+        }
+
         private void Start()
         {
+            if (TryDisableIfLocked()) return;
+
             if (_aimController == null)
                 _aimController = FindAnyObjectByType<AimController>();
 
             if (_aimController != null) _aim = _aimController;
+            RefreshEffectiveStats();
             _fireEnableTime = Time.time + _startDelay;
         }
 
@@ -50,11 +74,37 @@ namespace DrillCorp.Weapon.Proto
             if (_aimController != null) TryFire(_aimController);
         }
 
+        // === Upgrade 반영 ===
+        private void OnWeaponUpgradedAny(string upgradeId)
+        {
+            if (_data == null || string.IsNullOrEmpty(_data.WeaponId)) return;
+            if (string.IsNullOrEmpty(upgradeId)) { RefreshEffectiveStats(); return; }
+
+            var mgr = WeaponUpgradeManager.Instance;
+            var u = mgr != null ? mgr.FindUpgrade(upgradeId) : null;
+            if (u != null && u.WeaponId == _data.WeaponId) RefreshEffectiveStats();
+        }
+
+        private void RefreshEffectiveStats()
+        {
+            if (_data == null) return;
+
+            float dmgMul = 1f, cdMul = 1f;
+            var mgr = WeaponUpgradeManager.Instance;
+            if (mgr != null && !string.IsNullOrEmpty(_data.WeaponId))
+            {
+                (_, dmgMul) = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Damage);
+                (_, cdMul)  = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Cooldown);
+            }
+            _effectiveDamage = _data.Damage * dmgMul;
+            _effectiveFireDelayMul = Mathf.Max(0.1f, cdMul);  // 너무 짧아지지 않게 클램프
+        }
+
         protected override void Fire(AimController aim)
         {
             if (_data == null) return;
 
-            float damage = _data.Damage;
+            float damage = _effectiveDamage;
             var bugs = aim.BugsInRange;
             int hit = 0;
 

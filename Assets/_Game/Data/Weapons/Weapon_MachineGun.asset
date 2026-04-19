@@ -17,7 +17,7 @@ MonoBehaviour:
     / 5\uCD08 \uB9AC\uB85C\uB529."
   _icon: {fileID: 21300000, guid: 0a48519ca82c51243ac5898252aed0f6, type: 3}
   _themeColor: {r: 0.298, g: 0.765, b: 0.969, a: 1}
-  _weaponId: 
+  _weaponId: gun
   _unlockedByDefault: 0
   _unlockGemCost: 0
   _requiredWeapon: {fileID: 0}

@@ -1,6 +1,9 @@
 using UnityEngine;
 using DrillCorp.Aim;
 using DrillCorp.Audio;
+using DrillCorp.Core;
+using DrillCorp.Data;
+using DrillCorp.OutGame;
 
 namespace DrillCorp.Weapon.MachineGun
 {
@@ -52,6 +55,11 @@ namespace DrillCorp.Weapon.MachineGun
         private bool _isReloading;
         private float _fireEnableTime;    // Time.time 기준 이 시각 이후부터 발사 허용
 
+        // === Effective stats (WeaponUpgrade 반영) ===
+        private float _effectiveDamage;
+        private int _effectiveMaxAmmo;          // _data.MaxAmmo + AmmoBonus add
+        private float _effectiveReloadDuration; // _data.ReloadDuration * mul
+
         public int CurrentAmmo => _currentAmmo;
         public bool IsReloading => _isReloading;
         public float ReloadRemaining => Mathf.Max(0f, _reloadEndTime - Time.time);
@@ -59,11 +67,25 @@ namespace DrillCorp.Weapon.MachineGun
         private void Awake()
         {
             _baseData = _data;
-            if (_data != null) _currentAmmo = _data.MaxAmmo;
+            RefreshEffectiveStats();
+            _currentAmmo = _effectiveMaxAmmo;
+        }
+
+        private void OnEnable()
+        {
+            GameEvents.OnWeaponUpgraded += OnWeaponUpgradedAny;
+            RefreshEffectiveStats();
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.OnWeaponUpgraded -= OnWeaponUpgradedAny;
         }
 
         private void Start()
         {
+            if (TryDisableIfLocked()) return;
+
             if (_aimController == null)
                 _aimController = FindAnyObjectByType<AimController>();
 
@@ -71,6 +93,34 @@ namespace DrillCorp.Weapon.MachineGun
             if (_aimController != null) _aim = _aimController;
 
             _fireEnableTime = Time.time + _startDelay;
+        }
+
+        // === Upgrade 반영 ===
+        private void OnWeaponUpgradedAny(string upgradeId)
+        {
+            if (_data == null || string.IsNullOrEmpty(_data.WeaponId)) return;
+            if (string.IsNullOrEmpty(upgradeId)) { RefreshEffectiveStats(); return; }
+
+            var mgr = WeaponUpgradeManager.Instance;
+            var u = mgr != null ? mgr.FindUpgrade(upgradeId) : null;
+            if (u != null && u.WeaponId == _data.WeaponId) RefreshEffectiveStats();
+        }
+
+        private void RefreshEffectiveStats()
+        {
+            if (_data == null) return;
+
+            float dmgMul = 1f, reloadMul = 1f, ammoAdd = 0f;
+            var mgr = WeaponUpgradeManager.Instance;
+            if (mgr != null && !string.IsNullOrEmpty(_data.WeaponId))
+            {
+                (_, dmgMul)   = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Damage);
+                (_, reloadMul)= mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.ReloadTime);
+                (ammoAdd, _)  = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.AmmoBonus);
+            }
+            _effectiveDamage = _data.Damage * dmgMul;
+            _effectiveMaxAmmo = Mathf.Max(1, _data.MaxAmmo + Mathf.RoundToInt(ammoAdd));
+            _effectiveReloadDuration = Mathf.Max(0.1f, _data.ReloadDuration * reloadMul);
         }
 
         private void Update()
@@ -88,7 +138,7 @@ namespace DrillCorp.Weapon.MachineGun
             // 장착 시점에 탄창이 0이거나 이상하면 풀 충전 (안전망)
             // (메인 무기로 쓸 경우에 대비 — 자체 구동 모드에선 이 경로 안 거침)
             if (_data != null && _currentAmmo <= 0 && !_isReloading)
-                _currentAmmo = _data.MaxAmmo;
+                _currentAmmo = _effectiveMaxAmmo;
         }
 
         // ────── 발사 흐름 ──────
@@ -102,7 +152,7 @@ namespace DrillCorp.Weapon.MachineGun
                 if (Time.time >= _reloadEndTime)
                 {
                     _isReloading = false;
-                    if (_data != null) _currentAmmo = _data.MaxAmmo;
+                    if (_data != null) _currentAmmo = _effectiveMaxAmmo;
                 }
                 return false;
             }
@@ -149,7 +199,7 @@ namespace DrillCorp.Weapon.MachineGun
             var bullet = obj.GetComponent<MachineGunBullet>();
             if (bullet != null)
             {
-                bullet.Initialize(dir, _data, aim.BugLayer);
+                bullet.Initialize(dir, _data, aim.BugLayer, _effectiveDamage);
                 AudioManager.Instance?.PlayMachineGunFire();
             }
             else
@@ -162,7 +212,7 @@ namespace DrillCorp.Weapon.MachineGun
             if (_currentAmmo <= 0)
             {
                 _isReloading = true;
-                _reloadEndTime = Time.time + _data.ReloadDuration;
+                _reloadEndTime = Time.time + _effectiveReloadDuration;
             }
         }
 
@@ -176,12 +226,12 @@ namespace DrillCorp.Weapon.MachineGun
                 if (_isReloading)
                 {
                     // 리로딩 진행: 0 → 1 (차오름)
-                    return _data.ReloadDuration > 0f
-                        ? 1f - (ReloadRemaining / _data.ReloadDuration)
+                    return _effectiveReloadDuration > 0f
+                        ? 1f - (ReloadRemaining / _effectiveReloadDuration)
                         : 1f;
                 }
                 // 평상시: 탄 잔량 비율 (감소형)
-                return _data.MaxAmmo > 0 ? (float)_currentAmmo / _data.MaxAmmo : 0f;
+                return _effectiveMaxAmmo > 0 ? (float)_currentAmmo / _effectiveMaxAmmo : 0f;
             }
         }
 
@@ -230,6 +280,6 @@ namespace DrillCorp.Weapon.MachineGun
         // 탄창 pip 행 — Phase 3.5에서 WeaponBase 가상 프로퍼티 추가됨
         public override bool ShowAmmoRow => true;
         public override int AmmoCurrent => _currentAmmo;
-        public override int AmmoMax => _data != null ? _data.MaxAmmo : 0;
+        public override int AmmoMax => _data != null ? _effectiveMaxAmmo : 0;
     }
 }
