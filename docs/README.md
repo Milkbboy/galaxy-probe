@@ -1,6 +1,6 @@
 # Drill-Corp 문서 인덱스
 
-> 최종 갱신: 2026-04-19
+> 최종 갱신: 2026-04-20
 
 ## 🎯 시작점
 
@@ -11,11 +11,11 @@
 | 데이터 계층(Wave→Bug→Behavior) | [DataStructure.md](DataStructure.md) |
 | 변경 이력 | [CHANGELOG.md](CHANGELOG.md) |
 
-## 🚀 v2 아웃게임 통합 (Hub UI 완료, 인게임 연결 진행 중)
+## 🚀 v2 아웃게임 통합 (Hub→Game 연결 + 보석 드랍/채집 완료, 어빌리티·승리조건 남음)
 
 `docs/v2.html` 프로토타입의 아웃게임 고도화를 Unity에 이식하기 위한 계획·설계 문서.
 
-**현재 상태**: Title 씬 HubPanel 5개 서브패널 + 데이터 v2 정렬 100% 완료. **회전톱날 + 동시 발동 아키텍처** 완료 (2026-04-19). 어빌리티 9종·보석 드랍·mineTarget 승리 조건 남음. → 상세는 [V2_IntegrationPlan.md §8](V2_IntegrationPlan.md)
+**현재 상태**: Hub UI 5개 서브패널 + 데이터 v2 정렬 + **회전톱날·동시 발동 아키텍처** + **Hub→Game 강화/해금/캐릭터 반영** + **보석 드랍/채집 + 인게임 광석·보석 HUD** 완료 (2026-04-20). 어빌리티 9종 런타임·`mineTarget` 승리 조건만 남음. → 상세는 [V2_IntegrationPlan.md §8](V2_IntegrationPlan.md)
 
 | 목적 | 문서 |
 |---|---|
@@ -33,7 +33,9 @@
 |---|---|
 | Bug 행동 (BugController + Behaviors) | [BugBehaviorSystem.md](BugBehaviorSystem.md) |
 | Bug 행동 — 기획자 가이드/예시 | [BugBehaviorPatterns.md](BugBehaviorPatterns.md) |
-| 무기 시스템 (Shotgun/BurstGun/Laser/LockOn) | [WeaponSystem.md](WeaponSystem.md) |
+| 무기 시스템 (v2 5종: Sniper/Bomb/Gun/Laser/Saw, self-driven 동시 발동) | [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md) |
+| 무기 시스템 (Phase 3 아카이브 — Shotgun/BurstGun/LockOn) | [WeaponSystem.md](WeaponSystem.md) |
+| 보석 드랍/채집 + 이중 재화 + mineTarget 승리 조건 | [GemMiningSystem.md](GemMiningSystem.md) |
 | **VFX 3D 전환 계획 (Polygon Arsenal 기반)** | [VFX_3D_MigrationPlan.md](VFX_3D_MigrationPlan.md) |
 | 군집(Formation) 스폰 | [FormationSystem.md](FormationSystem.md) |
 | 카메라 (Nuclear Throne 방식) | [CameraSystem.md](CameraSystem.md) |

@@ -2,7 +2,7 @@
 
 기획자가 Google Sheets에서 설정 가능한 게임 데이터 정의서입니다.
 
-> 최종 갱신: 2026-04-06
+> 최종 갱신: 2026-04-20
 
 ---
 
@@ -13,10 +13,13 @@
 | 계층 | ScriptableObject | 역할 |
 |------|------------------|------|
 | **Wave** | WaveData | 하나의 게임 세션 정의 |
-| **Bug 스탯** | BugData | 체력, 공격력, 이속 등 수치 |
+| **Bug 스탯** | BugData | 체력, 공격력, 이속 + 엘리트 플래그 |
 | **Bug 행동** | BugBehaviorData | 어떻게 움직이고 공격할지 |
-| **Machine** | MachineData | 플레이어 머신 스탯 |
-| **Upgrade** | UpgradeData | 영구 강화 시스템 |
+| **Machine** | MachineData | 플레이어 머신 스탯 + BaseMiningTarget |
+| **Character** (v2) | CharacterData | 3 캐릭터, DefaultMachine + 어빌리티 3종 묶음 |
+| **Upgrade** | UpgradeData | 굴착기 6종 영구 강화 (이중 재화 비용) |
+| **WeaponUpgrade** (v2) | WeaponUpgradeData | 무기별 강화 항목 (Damage/Range/Cooldown/Ammo/Reload/Radius/Slow) |
+| **Ability** (v2) | AbilityData | 캐릭터 어빌리티 9종 (런타임 실행기 미구현) |
 
 ---
 
@@ -80,6 +83,7 @@ Assets/_Game/Data/
 | **Scale** | float | 1 | 크기 배율 | 0.5=절반, 2=2배 |
 | **CurrencyReward** | int | 1 | 처치 보상 | 강한 적=높은 보상 |
 | **BehaviorData** | SO 참조 | - | 행동 데이터 | BugBehaviorData 연결 |
+| **IsElite** (v2) | bool | false | 엘리트 플래그 | true면 보석 100% 드랍 (일반은 5%+gem_drop 강화) |
 
 ### 밸런스 예시
 
@@ -234,9 +238,10 @@ Wave 5: 보스 (60초)
 | 컬럼 | 타입 | 기본값 | 설명 |
 |------|------|--------|------|
 | **MaxHealth** | float | 100 | 최대 체력 |
-| **Armor** | float | 0 | 방어력 |
-| **MaxFuel** | float | 60 | 최대 연료 (=세션 시간) |
+| **Armor** | float | 0 | 방어력 (legacy `armor/(armor+100)` 곡선) |
+| **MaxFuel** | float | 60 | 최대 연료 (v2에선 세션 타임아웃 용도) |
 | **MiningRate** | float | 10 | 초당 채굴량 |
+| **BaseMiningTarget** (v2) | float | 100 | 세션 승리 목표 채굴량 (mineTarget 강화로 +50/lv) |
 | **AttackDamage** | float | 20 | 플레이어 공격력 |
 | **AttackCooldown** | float | 0.5 | 공격 쿨다운 |
 | **AttackRange** | float | 3 | 공격 사거리 |
@@ -259,24 +264,29 @@ Wave 5: 보스 (60초)
 
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
-| **UpgradeId** | string | 고유 ID |
+| **UpgradeId** | string | 고유 ID (예: `mine_speed`, `excavator_hp`) |
 | **DisplayName** | string | 표시 이름 |
 | **MaxLevel** | int | 최대 레벨 |
 | **ValuePerLevel** | float | 레벨당 증가 |
 | **IsPercentage** | bool | % 적용 여부 |
-| **BaseCost** | int | 1레벨 비용 |
+| **BaseCost** | int | 1레벨 광석 비용 (레거시 `BaseCostOre` 별칭) |
+| **BaseCostGem** (v2) | int | 1레벨 보석 비용 (gem_drop/gem_speed에 사용) |
 | **CostMultiplier** | float | 비용 증가율 |
+| **OreCostSchedule** (v2) | int[] | 레벨별 광석 비용 명시 배열 (비어있으면 multiplier 사용) |
+| **GemCostSchedule** (v2) | int[] | 레벨별 보석 비용 명시 배열 |
 
-### UpgradeType 목록
+### UpgradeType 목록 (v2 현행, 6종 활성)
 
-| Type | 권장 ValuePerLevel | IsPercentage |
-|------|-------------------|--------------|
-| MaxHealth | +10 | false |
-| Armor | +5 | false |
-| MiningRate | +2 | false |
-| AttackDamage | +5 | false |
-| AttackSpeed | +10 | true (%) |
-| CritChance | +3 | true (%) |
+| Type | UpgradeId | MaxLv | ValuePerLevel | IsPercentage | 비용 schedule |
+|------|-----------|-------|----|----|----|
+| MaxHealth | excavator_hp | 5 | +30 | false | 광석 [60,130,230,370,540] |
+| Armor | excavator_armor | 3 | +0.15 (받는 피해 감소율) | true | 광석 [150,300,500] |
+| MiningRate | mine_speed | 5 | +2 (초당 채굴) | false | 광석 [80,160,280,440,640] |
+| MiningTarget (v2) | mine_target | 5 | +50 (목표량) | false | 광석 [100,200,350,550,800] |
+| GemDropRate (v2) | gem_drop | 5 | +0.02 (확률 %p) | false | **보석** [15,30,50,75,105] |
+| GemCollectSpeed (v2) | gem_speed | 5 | +0.20 (배율) | true | **보석** [10,22,38,58,82] |
+
+> 무기별 강화는 `WeaponUpgradeData` SO로 분리(15항목). Sniper/Bomb/Gun/Laser/Saw 각 3종. 상세: `WeaponUnlockUpgradeSystem.md`.
 
 ---
 

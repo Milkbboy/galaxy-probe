@@ -1,6 +1,6 @@
 # 캐릭터 & 어빌리티 시스템
 
-> 최종 갱신: 2026-04-17
+> 최종 갱신: 2026-04-20 (CharacterRegistry + DefaultMachine 적용 완료, §2.5 참조)
 > 근거 프로토타입: `docs/v2.html`
 > 상위 문서: [V2_IntegrationPlan.md](V2_IntegrationPlan.md)
 
@@ -106,6 +106,51 @@ public class PlayerData
 - **해금 여부**만 영속: `UnlockedAbilities` List에 `AbilityId` 문자열 보관.
 - **런타임 쿨다운·배치 상태**는 `AbilitySlotController` 내부 변수로만 관리 (세션 종료 시 폐기).
 - Game 씬 진입 시 `AbilitySlotController.Start()`가 `PlayerData.UnlockedAbilities`를 읽어 3개 슬롯의 `IAbilityRunner`를 인스턴스화.
+
+---
+
+## 2.5 CharacterRegistry — Game 씬에서 SelectedCharacterId 조회 (2026-04-19)
+
+`Scripts/OutGame/CharacterRegistry.cs` — 신규 싱글턴(`UpgradeManager` / `WeaponUpgradeManager`와 동일 패턴, `DontDestroyOnLoad`).
+
+```csharp
+public class CharacterRegistry : MonoBehaviour
+{
+    public static CharacterRegistry Instance { get; private set; }
+
+    [SerializeField] private CharacterData[] _characters;  // 3개 SO
+
+    public CharacterData Find(string characterId) { /* O(N), N=3 */ }
+}
+```
+
+**자동 셋업**: `V2HubCanvasSetupEditor.EnsureCharacterRegistry()`가 Title 씬에 GameObject 생성 + 3 캐릭터 SO 자동 바인딩 (Hub Canvas Setup 메뉴 실행 시 동반).
+
+**MachineController 주입 흐름** (`Scripts/Machine/MachineController.cs:Awake`):
+
+```csharp
+private void Awake()
+{
+    ApplySelectedCharacter();   // ← 추가
+    ApplyMachineData();
+    ApplyUpgradeBonuses();
+}
+
+private void ApplySelectedCharacter()
+{
+    var dm = DataManager.Instance;
+    var reg = CharacterRegistry.Instance;
+    if (dm?.Data == null || reg == null) return;  // 단독 실행 호환
+
+    var character = reg.Find(dm.Data.SelectedCharacterId);
+    if (character?.DefaultMachine != null)
+        _machineData = character.DefaultMachine;
+}
+```
+
+선택된 캐릭터의 `DefaultMachine` SO가 `_machineData`를 덮어쓴 후 `ApplyMachineData()`가 그 값을 읽어 스탯 초기화. Game 씬을 단독으로 실행해도 (DataManager/Registry 없음) 프리펩에 미리 박힌 `_machineData`로 fallback.
+
+> **ApplyUpgradeBonuses와 순서 주의**: ApplySelectedCharacter → ApplyMachineData → ApplyUpgradeBonuses. 캐릭터 머신의 base 값에 강화 보너스가 합산됨.
 
 ---
 

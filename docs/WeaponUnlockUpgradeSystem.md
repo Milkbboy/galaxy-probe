@@ -1,9 +1,11 @@
 # 무기 해금 & 강화 시스템
 
-> 최종 갱신: 2026-04-17
+> 최종 갱신: 2026-04-20 (해금 필터 + 4종 강화 적용 완료, §11 참조)
 > 근거 프로토타입: `docs/v2.html`
 > 상위 문서: [V2_IntegrationPlan.md](V2_IntegrationPlan.md)
 > 관련 문서: [WeaponSystem.md](WeaponSystem.md) (기존 무기 아키텍처)
+
+> ⚠️ §3~§8의 코드 예시는 **초안 설계**. 실제 구현 매핑·차이점은 **§11 인게임 적용 현황**부터 확인.
 
 ## 1. 개요
 
@@ -745,4 +747,134 @@ void OnReloadUpgraded()
 - [WeaponSystem.md](WeaponSystem.md) — 기존 무기 아키텍처 (WeaponBase, AimController)
 - [CharacterAbilitySystem.md](CharacterAbilitySystem.md) — 폭탄 강화가 지뢰 어빌리티에 파급
 - [GoogleSheetsGuide_v2Addendum.md](GoogleSheetsGuide_v2Addendum.md) — WeaponData/WeaponUpgrade 시트 스키마
+
+---
+
+## 11. 인게임 적용 현황 (2026-04-20)
+
+### 11.1 무기 해금 필터 — ✅
+
+`WeaponBase.TryDisableIfLocked()` (`Scripts/Weapon/WeaponBase.cs`):
+
+```csharp
+protected bool TryDisableIfLocked()
+{
+    if (_baseData == null || string.IsNullOrEmpty(_baseData.WeaponId)) return false;
+    var dm = DrillCorp.Core.DataManager.Instance;
+    if (dm?.Data == null) return false;
+    if (!dm.Data.HasWeapon(_baseData.WeaponId))
+    {
+        gameObject.SetActive(false);
+        return true;
+    }
+    return false;
+}
+```
+
+5종 무기(Sniper/Bomb/MachineGun/Laser/Saw) 모두 `Start()` 첫 줄에서 호출 → 미해금이면 GO 자체 비활성. 레거시 무기(Shotgun/BurstGun/LockOn)는 `WeaponId`가 비어있어 pass-through.
+
+**4 무기 SO에 WeaponId 채움** (Hub WeaponShopUI ID와 일치):
+| SO | WeaponId | UnlockedByDefault |
+|---|---|---|
+| `Weapon_Sniper.asset` | `sniper` | ✅ |
+| `Weapon_Bomb.asset` | `bomb` | ❌ (30💎) |
+| `Weapon_MachineGun.asset` | `gun` | ❌ (20💎) |
+| `Weapon_LaserBeam.asset` (← `LaserWeaponData`) | `laser` | ❌ (40💎) |
+| `Weapon_Saw.asset` | `saw` | ❌ (40💎) |
+
+> ⚠️ `Weapon_Laser.asset`(LaserBeamData, 레거시)과 `Weapon_LaserBeam.asset`(LaserWeaponData, 실제 사용)이 **이름이 반대**. v2 플레이용은 `Weapon_LaserBeam`.
+
+### 11.2 AimRingBinder 자동 숨김 — ✅
+
+4종 바인더(`SniperAimRingBinder`/`BombAimRingBinder`/`MachineGunAimRingBinder`/`LaserAimRingBinder`)가 첫 Update에서:
+
+```csharp
+if (_weapon == null || !_weapon.gameObject.activeInHierarchy)
+{
+    gameObject.SetActive(false);  // 바인더 GO 자체 끄면 호 영구 숨김
+    return;
+}
+```
+
+미해금 무기는 호도 안 그려짐 — 인스펙터 직렬화된 참조가 살아있어도 (Unity SetActive(false)는 C# 참조 살림) `activeInHierarchy` 체크로 정확히 감지.
+
+### 11.3 4종 무기 강화 적용 — ✅ (Saw 패턴 복사)
+
+5종 모두 동일한 `RefreshEffectiveStats()` + `OnWeaponUpgraded` 구독:
+
+```csharp
+private void OnEnable() {
+    GameEvents.OnWeaponUpgraded += OnWeaponUpgradedAny;
+    RefreshEffectiveStats();
+}
+
+private void OnWeaponUpgradedAny(string upgradeId) {
+    if (string.IsNullOrEmpty(upgradeId)) { RefreshEffectiveStats(); return; }
+    var u = WeaponUpgradeManager.Instance?.FindUpgrade(upgradeId);
+    if (u != null && u.WeaponId == _data.WeaponId) RefreshEffectiveStats();
+}
+
+private void RefreshEffectiveStats() {
+    var (_, dmgMul) = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Damage);
+    _effectiveDamage = _data.Damage * dmgMul;
+    // ... 기타 스탯
+}
+```
+
+**무기별 적용 스탯**:
+| 무기 | Damage | Cooldown | Range | Radius | Slow | Ammo | Reload |
+|---|---|---|---|---|---|---|---|
+| Sniper | ✅ | ✅ | ⏸️ (AimController 통합 필요) | — | — | — | — |
+| Bomb | ✅ | ✅ | — | ✅ | — | — | — |
+| MachineGun | ✅ | — | — | — | — | ✅ | ✅ |
+| Laser | ✅ | ✅ (`_laserCD` 직접) | ⏸️ | — | — | — | — |
+| Saw | ✅ | (쿨 없음) | — | ✅ | ✅ | — | — |
+
+> Range 강화는 AimController의 검색 반경 통합이 필요해 보류. 다른 스탯은 모두 활성.
+
+### 11.4 EffectiveFireDelay virtual
+
+`WeaponBase`에 추가:
+
+```csharp
+protected virtual float EffectiveFireDelay
+    => _baseData != null ? _baseData.FireDelay : 0f;
+
+public virtual void TryFire(AimController aim) {
+    // ... existing
+    float delay = EffectiveFireDelay;
+    if (delay > 0f) _nextFireTime = Time.time + delay;
+}
+```
+
+Sniper/Bomb는 `_data.FireDelay * _effectiveFireDelayMul` 오버라이드로 Cooldown 강화 자동 반영. Laser는 `_laserCD = _effectiveCooldown` 직접 사용 (별도 쿨 변수).
+
+### 11.5 투사체 effective 오버로드
+
+투사체가 `_data.Damage`/`_data.ExplosionRadius`를 직접 읽지 않도록 Initialize에 추가 인자:
+
+```csharp
+// BombProjectile
+public void Initialize(Vector3 targetPos, BombData data, LayerMask bugLayer)
+    => Initialize(targetPos, data, bugLayer, data.Damage, data.ExplosionRadius);
+public void Initialize(Vector3 targetPos, BombData data, LayerMask bugLayer,
+                       float effectiveDamage, float effectiveRadius) { ... }
+```
+
+`MachineGunBullet.Initialize(... float effectiveDamage)`, `LaserBeam.Initialize(... float effectiveDamage)` 동일 패턴. 기본 오버로드는 _data 값으로 호출 → 호환성 유지.
+
+### 11.6 파일 매핑 (전체 무기 v2 적용)
+
+| 무기 | Weapon 클래스 | Data SO | Projectile | Binder |
+|---|---|---|---|---|
+| Sniper | `Weapon/Proto/SniperWeapon.cs` | `Weapon_Sniper.asset` | (없음, 즉발) | `Aim/SniperAimRingBinder.cs` |
+| Bomb | `Weapon/Bomb/BombWeapon.cs` | `Weapon_Bomb.asset` | `BombProjectile.cs` | `Aim/BombAimRingBinder.cs` |
+| Gun | `Weapon/MachineGun/MachineGunWeapon.cs` | `Weapon_MachineGun.asset` | `MachineGunBullet.cs` | `Aim/MachineGunAimRingBinder.cs` |
+| Laser | `Weapon/Laser/LaserWeapon.cs` | `Weapon_LaserBeam.asset` | `LaserBeam.cs` | `Aim/LaserAimRingBinder.cs` |
+| Saw | `Weapon/Saw/SawWeapon.cs` | `Weapon_Saw.asset` | (블레이드 visual prefab) | (없음) |
+
+### 11.7 남은 작업
+
+- **Sniper/Laser Range 강화** — AimController 검색 반경에 weapon-specific 보정 통합 필요
+- **레거시 무기 SO 정리** — `Weapon_Laser.asset`(LaserBeamData)는 사용처 없음. `Weapon_BurstGun/LockOn/Shotgun.asset`은 이미 삭제됨
 - `docs/v2.html` 675~1000줄 — `BASE` 스탯 / `ws` 적용 / 무기 발사 구현 원본

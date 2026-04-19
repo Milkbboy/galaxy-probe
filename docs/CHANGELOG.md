@@ -6,6 +6,20 @@
 
 ---
 
+## [Unreleased] - 2026-04-20 — 문서 일괄 갱신
+
+최근 v2 작업(Hub→Game 연결, 보석 드랍/채집)을 모든 핵심 문서에 반영.
+
+### Docs
+
+- `README.md` — 헤더 v2 진행 상황 갱신, WeaponSystem 참조를 v2(`WeaponUnlockUpgradeSystem.md`)와 레거시 두 줄로 분리
+- `Architecture.md` — Core 계층에 `UpgradeManager`/`WeaponUpgradeManager`/`CharacterRegistry` 명시, InGame에 `Pickup`(Gem/GemDropSpawner)·`CurrencyHud`(MiningUI/GemCounterUI)·`AimRingBinder` 추가, GameEvents 시그니처 v2 반영, §6.1 Pickup 시스템 신규
+- `DataStructure.md` — BugData `_isElite`, MachineData `BaseMiningTarget` 필드 추가. UpgradeData v2 6종 (`mine_speed`/`mine_target`/`excavator_hp`/`excavator_armor`/`gem_drop`/`gem_speed`) 비용 schedule 명시. CharacterData/WeaponUpgradeData/AbilityData 계층 추가
+- `WeaponUnlockUpgradeSystem.md §11` — 인게임 적용 현황 신규: 해금 필터(`TryDisableIfLocked`), AimRingBinder 자동 숨김, 4종 강화(Saw 패턴), `EffectiveFireDelay` virtual, 투사체 effective 오버로드, 파일 매핑 표
+- `CharacterAbilitySystem.md §2.5` — `CharacterRegistry` 싱글턴 + `MachineController.ApplySelectedCharacter()` 흐름
+
+---
+
 ## [Unreleased] - 2026-04-19 (4) — 보석 드랍/채집 + 인게임 재화 HUD
 
 ### Added
