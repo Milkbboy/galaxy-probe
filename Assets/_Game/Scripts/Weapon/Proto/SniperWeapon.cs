@@ -89,15 +89,21 @@ namespace DrillCorp.Weapon.Proto
         {
             if (_data == null) return;
 
-            float dmgMul = 1f, cdMul = 1f;
+            float dmgMul = 1f, cdMul = 1f, rangeMul = 1f;
             var mgr = WeaponUpgradeManager.Instance;
             if (mgr != null && !string.IsNullOrEmpty(_data.WeaponId))
             {
-                (_, dmgMul) = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Damage);
-                (_, cdMul)  = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Cooldown);
+                (_, dmgMul)   = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Damage);
+                (_, cdMul)    = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Cooldown);
+                (_, rangeMul) = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Range);
             }
             _effectiveDamage = _data.Damage * dmgMul;
             _effectiveFireDelayMul = Mathf.Max(0.1f, cdMul);  // 너무 짧아지지 않게 클램프
+
+            // v2 — 저격총 range 업그레이드는 에임 반경 자체를 확장 (에임 원·호·판정 모두).
+            // 저격총이 에임의 기본 주인: 업그레이드 배율을 AimController에 주입.
+            if (_aimController != null)
+                _aimController.SetRangeMultiplier(rangeMul);
         }
 
         protected override void Fire(AimController aim)

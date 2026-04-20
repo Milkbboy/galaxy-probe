@@ -1,5 +1,8 @@
 using UnityEngine;
 using DrillCorp.Aim;
+using DrillCorp.Core;
+using DrillCorp.Data;
+using DrillCorp.OutGame;
 
 namespace DrillCorp.Weapon.Laser
 {
@@ -46,6 +49,10 @@ namespace DrillCorp.Weapon.Laser
         private float _tickTimer;
         private readonly Collider[] _fieldBuffer = new Collider[128];
 
+        // v2 — WeaponUpgrade 반영된 실효값
+        private float _effectiveDamage;
+        private float _effectiveRadiusMul = 1f;  // FieldRadius에 곱할 배율 (laser_range)
+
         public float Heat => _heat;
         public float HeatRatio => _data != null ? _heat / _data.MaxHeat : 0f;
         public bool IsOverheated => _overheated;
@@ -81,6 +88,49 @@ namespace DrillCorp.Weapon.Laser
         private void Awake()
         {
             _baseData = _data;
+        }
+
+        private void OnEnable()
+        {
+            GameEvents.OnWeaponUpgraded += OnWeaponUpgradedAny;
+            RefreshEffectiveStats();
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.OnWeaponUpgraded -= OnWeaponUpgradedAny;
+        }
+
+        private void OnWeaponUpgradedAny(string upgradeId)
+        {
+            if (_data == null || string.IsNullOrEmpty(_data.WeaponId)) return;
+            if (string.IsNullOrEmpty(upgradeId)) { RefreshEffectiveStats(); return; }
+
+            var mgr = WeaponUpgradeManager.Instance;
+            var u = mgr != null ? mgr.FindUpgrade(upgradeId) : null;
+            if (u != null && u.WeaponId == _data.WeaponId) RefreshEffectiveStats();
+        }
+
+        private void RefreshEffectiveStats()
+        {
+            if (_data == null) return;
+
+            float dmgMul = 1f, rangeMul = 1f, cdMul = 1f;
+            var mgr = WeaponUpgradeManager.Instance;
+            if (mgr != null && !string.IsNullOrEmpty(_data.WeaponId))
+            {
+                (_, dmgMul)   = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Damage);
+                (_, rangeMul) = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Range);
+                (_, cdMul)    = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Cooldown);
+            }
+            _effectiveDamage = _data.Damage * dmgMul;
+            _effectiveRadiusMul = Mathf.Max(0.1f, rangeMul);
+            // cdMul은 HeatPerSecond에 반영하는 방식이 적절할 수 있지만, 현재는 SO 값 그대로.
+            // 필요 시 _heatMul 등으로 확장. (v2: ws.laser.cd → 0.25×cdMul 공식)
+
+            // 필드 반경 즉시 갱신
+            if (_field != null && _aim != null)
+                _field.SetWorldRadius(ResolveRadius(_aim));
         }
 
         public override void OnEquip(AimController aim)
@@ -123,8 +173,12 @@ namespace DrillCorp.Weapon.Laser
 
         private float ResolveRadius(AimController aim)
         {
-            if (_data != null && _data.FieldRadius > 0f) return _data.FieldRadius;
-            return aim != null ? aim.AimRadius : 1f;
+            // v2 — 레이저 range 업그레이드는 필드 반경에 배율 적용.
+            // FieldRadius가 명시되면 그것에, 아니면 에임 반경(저격총 range 배율 이미 적용됨)에 추가 배율.
+            float baseRadius = (_data != null && _data.FieldRadius > 0f)
+                ? _data.FieldRadius
+                : (aim != null ? aim.AimRadius : 1f);
+            return baseRadius * _effectiveRadiusMul;
         }
 
         private void SetFieldVisible(bool visible)
@@ -238,7 +292,7 @@ namespace DrillCorp.Weapon.Laser
             {
                 var c = _fieldBuffer[i];
                 if (c == null) continue;
-                DealDamage(c.transform, _data.Damage);
+                DealDamage(c.transform, _effectiveDamage);
             }
         }
 

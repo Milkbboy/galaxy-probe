@@ -51,6 +51,7 @@ namespace DrillCorp.Weapon.Laser
         // === Effective stats (WeaponUpgrade 반영) ===
         private float _effectiveDamage;
         private float _effectiveCooldown;
+        private float _effectiveRadius;   // v2 — 레이저 range 업그레이드 반영된 빔 반경
 
         /// <summary>빔 활성 중 여부. _activeBeam이 파괴되면 Unity가 null로 처리하므로 자동 false.</summary>
         private bool IsActive => _activeBeam != null;
@@ -103,15 +104,18 @@ namespace DrillCorp.Weapon.Laser
         {
             if (_data == null) return;
 
-            float dmgMul = 1f, cdMul = 1f;
+            float dmgMul = 1f, cdMul = 1f, rangeMul = 1f;
             var mgr = WeaponUpgradeManager.Instance;
             if (mgr != null && !string.IsNullOrEmpty(_data.WeaponId))
             {
-                (_, dmgMul) = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Damage);
-                (_, cdMul)  = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Cooldown);
+                (_, dmgMul)   = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Damage);
+                (_, cdMul)    = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Cooldown);
+                (_, rangeMul) = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Range);
             }
             _effectiveDamage = _data.Damage * dmgMul;
             _effectiveCooldown = Mathf.Max(0.1f, _data.Cooldown * cdMul);
+            // v2 — 레이저 range 업그레이드는 빔 반경(_beamRadius)에 배율 적용.
+            _effectiveRadius = _data.BeamRadius * Mathf.Max(0.1f, rangeMul);
         }
 
         private void Update()
@@ -154,7 +158,7 @@ namespace DrillCorp.Weapon.Laser
 
             if (_activeBeam != null)
             {
-                _activeBeam.Initialize(aim, _data, aim.BugLayer, _effectiveDamage);
+                _activeBeam.Initialize(aim, _data, aim.BugLayer, _effectiveDamage, _effectiveRadius);
                 AudioManager.Instance?.StartLaserBeamLoop();
             }
             else
@@ -175,7 +179,8 @@ namespace DrillCorp.Weapon.Laser
             if (_data.ScorchPrefab == null) return;
 
             var scorch = Instantiate(_data.ScorchPrefab, spawnPos, _data.ScorchPrefab.transform.rotation);
-            float diameter = _data.BeamRadius * 2f * _data.ScorchScaleMultiplier;
+            // v2 — 업그레이드된 빔 반경에 맞춰 스코치도 확장
+            float diameter = _effectiveRadius * 2f * _data.ScorchScaleMultiplier;
             scorch.transform.localScale = Vector3.one * diameter;
 
             var decay = scorch.GetComponent<DrillCorp.VFX.LaserScorchDecay>();

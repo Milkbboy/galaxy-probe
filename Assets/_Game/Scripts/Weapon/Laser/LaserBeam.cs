@@ -74,14 +74,21 @@ namespace DrillCorp.Weapon.Laser
         public float LifeRatio => _maxLife > 0f ? Mathf.Clamp01(_life / _maxLife) : 0f;
 
         public void Initialize(AimController aim, LaserWeaponData data, LayerMask bugLayer)
-            => Initialize(aim, data, bugLayer, data != null ? data.Damage : 0f);
+            => Initialize(aim, data, bugLayer, data != null ? data.Damage : 0f,
+                          data != null ? data.BeamRadius : 1f);
 
-        /// <summary>WeaponUpgrade 보정된 damage를 받는 오버로드.</summary>
+        /// <summary>WeaponUpgrade 보정된 damage만 받는 오버로드 — 반경은 data.BeamRadius.</summary>
         public void Initialize(AimController aim, LaserWeaponData data, LayerMask bugLayer, float effectiveDamage)
+            => Initialize(aim, data, bugLayer, effectiveDamage,
+                          data != null ? data.BeamRadius : 1f);
+
+        /// <summary>WeaponUpgrade 보정된 damage + radius 를 모두 받는 오버로드 (v2 range 업그레이드).</summary>
+        public void Initialize(AimController aim, LaserWeaponData data, LayerMask bugLayer,
+            float effectiveDamage, float effectiveRadius)
         {
             _aim = aim;
             _life = _maxLife = data.BeamDuration;
-            _radius = data.BeamRadius;
+            _radius = effectiveRadius;   // 업그레이드 반영된 반경
             _damage = effectiveDamage;
             _tickInterval = data.TickInterval;
             _speed = data.BeamSpeed;

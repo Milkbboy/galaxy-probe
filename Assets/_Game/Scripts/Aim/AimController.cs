@@ -67,15 +67,50 @@ namespace DrillCorp.Aim
         private Vector3 _aimPosition;
         private bool _hasBugInRange;
 
+        // v2 저격총 range 업그레이드 → 에임 반경 배율 (1.0 = 기본).
+        // SniperWeapon 또는 AimRangeUpgradeBinder가 외부에서 설정.
+        private float _rangeMultiplier = 1f;
+        private float _baseAimRadius;          // 스프라이트 자동 계산된 원본 반경
+        private Vector3 _baseCrosshairScale;   // 크로스헤어 원본 스케일
+
         private readonly List<Collider> _cachedBugs = new List<Collider>();
         private readonly Collider[] _overlapBuffer = new Collider[128];
 
         public bool HasBugInRange => _hasBugInRange;
         public Vector3 AimPosition => _aimPosition;
-        public float AimRadius => _aimRadius;
+        public float AimRadius => _aimRadius;        // 이미 배율 적용된 현재 반경
+        public float BaseAimRadius => _baseAimRadius; // 배율 미적용 기본 반경
+        public float RangeMultiplier => _rangeMultiplier;
         public LayerMask BugLayer => _bugLayer;
         public Transform MachineTransform => _machineTransform;
         public TextMeshPro InfoLabel => _infoLabel;
+
+        /// <summary>
+        /// v2 — 저격총 range 업그레이드 등으로 에임 반경을 동적으로 확장.
+        /// multiplier=1.0이 기본, 1.2면 +20% 확장. 스프라이트도 함께 스케일.
+        /// 모든 AimWeaponRing이 AimRadius를 기준으로 하므로 호들도 자동 따라감.
+        /// </summary>
+        public void SetRangeMultiplier(float multiplier)
+        {
+            multiplier = Mathf.Max(0.1f, multiplier);
+            if (Mathf.Approximately(_rangeMultiplier, multiplier)) return;
+
+            _rangeMultiplier = multiplier;
+            ApplyRangeMultiplier();
+        }
+
+        private void ApplyRangeMultiplier()
+        {
+            // 판정 반경 갱신
+            _aimRadius = _baseAimRadius * _rangeMultiplier;
+
+            // 시각 — 크로스헤어 스프라이트도 비례 스케일
+            if (_crosshairRenderer != null)
+            {
+                var t = _crosshairRenderer.transform;
+                t.localScale = _baseCrosshairScale * _rangeMultiplier;
+            }
+        }
 
         public void SetInfoText(string text)
         {
@@ -197,6 +232,14 @@ namespace DrillCorp.Aim
                 Vector3 spriteSize = _crosshairRenderer.bounds.size;
                 _aimRadius = Mathf.Max(spriteSize.x, spriteSize.z) / 2f;
             }
+
+            // 배율 적용을 위한 원본 값 보존
+            _baseAimRadius = _aimRadius;
+            _baseCrosshairScale = _crosshairRenderer != null
+                ? _crosshairRenderer.transform.localScale
+                : Vector3.one;
+
+            ApplyRangeMultiplier();  // 현재 배율 즉시 반영 (기본 1.0이면 변화 없음)
         }
 
         private void Update()
