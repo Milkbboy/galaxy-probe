@@ -21,6 +21,7 @@
 |---|---|
 | **총론 — 갭 분석 · 씬 구성 판단 · 작업 순서** | [V2_IntegrationPlan.md](V2_IntegrationPlan.md) |
 | 캐릭터 3종 + 어빌리티 9종 설계 | [CharacterAbilitySystem.md](CharacterAbilitySystem.md) |
+| 캐릭터 고유 장비 v2.html 원본 분석 (수치 타이 브레이커) | [CharacterAbility_v2Reference.md](CharacterAbility_v2Reference.md) |
 | 무기 해금 체인 · 무기별 강화 · 회전톱날 | [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md) |
 | 보석 드랍·채집 · 이중 재화 · mineTarget 승리 | [GemMiningSystem.md](GemMiningSystem.md) |
 | 신규 4개 시트 스키마 · UpgradeData 확장 | [GoogleSheetsGuide_v2Addendum.md](GoogleSheetsGuide_v2Addendum.md) |
