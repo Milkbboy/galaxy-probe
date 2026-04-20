@@ -33,7 +33,12 @@ namespace DrillCorp.OutGame
         {
             SetupButtons();
             UpdateCurrencyDisplay();
-            ShowMainPanel();
+
+            // v2 — Title 진입 = Hub 바로 표시. Hub가 없는 구형 씬만 MainPanel 폴백.
+            if (_useHubForUpgrade && _hubPanel != null)
+                ShowHubPanel();
+            else
+                ShowMainPanel();
 
             GameEvents.OnCurrencyChanged += OnCurrencyChanged;
         }

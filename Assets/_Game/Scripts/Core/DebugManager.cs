@@ -14,7 +14,6 @@ namespace DrillCorp.Core
         [SerializeField] private bool _showDebugUI = true;
 
         private MachineController _machine;
-        private bool _infiniteFuel;
 
         private void Start()
         {
@@ -31,12 +30,6 @@ namespace DrillCorp.Core
                 ToggleMachineInvincible();
             }
 
-            // F 키: 무한 연료 토글
-            if (Keyboard.current.fKey.wasPressedThisFrame)
-            {
-                ToggleInfiniteFuel();
-            }
-
             // H 키: 머신 체력 회복
             if (Keyboard.current.hKey.wasPressedThisFrame)
             {
@@ -48,12 +41,6 @@ namespace DrillCorp.Core
             {
                 KillAllBugs();
             }
-
-            // 무한 연료 적용
-            if (_infiniteFuel && _machine != null)
-            {
-                _machine.AddFuel(10f);
-            }
         }
 
         private void ToggleMachineInvincible()
@@ -62,12 +49,6 @@ namespace DrillCorp.Core
             {
                 _machine.ToggleInvincible();
             }
-        }
-
-        private void ToggleInfiniteFuel()
-        {
-            _infiniteFuel = !_infiniteFuel;
-            Debug.Log($"[Debug] Infinite Fuel: {_infiniteFuel}");
         }
 
         private void HealMachine()
@@ -94,13 +75,12 @@ namespace DrillCorp.Core
             if (!_showDebugUI) return;
 
             const float width = 250f;
-            const float height = 150f;
-            GUILayout.BeginArea(new Rect(Screen.width - width - 10f, 10f, width, height));
+            const float height = 130f;
+            GUILayout.BeginArea(new Rect(Screen.width - width - 10f, Screen.height - height - 10f, width, height));
             GUILayout.BeginVertical("box");
 
             GUILayout.Label("<b>디버그 단축키</b>");
             GUILayout.Label($"[I] 머신 무적: {(_machine != null && _machine.IsInvincible ? "<color=cyan>ON</color>" : "OFF")}");
-            GUILayout.Label($"[F] 무한 연료: {(_infiniteFuel ? "<color=cyan>ON</color>" : "OFF")}");
             GUILayout.Label("[H] 머신 체력 회복");
             GUILayout.Label("[K] 모든 벌레 즉사");
 

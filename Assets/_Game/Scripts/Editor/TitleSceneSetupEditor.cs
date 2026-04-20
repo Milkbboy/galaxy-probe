@@ -896,9 +896,9 @@ namespace DrillCorp.Editor
                     "Upgrade_MaxHealth",
                     "Upgrade_Armor",
                     "Upgrade_MiningRate",
-                    "Upgrade_AttackDamage",
-                    "Upgrade_AttackSpeed",
-                    "Upgrade_FuelEfficiency"
+                    "Upgrade_MiningTarget",
+                    "Upgrade_GemDrop",
+                    "Upgrade_GemSpeed"
                 };
 
                 upgradesProp.arraySize = upgradeNames.Length;

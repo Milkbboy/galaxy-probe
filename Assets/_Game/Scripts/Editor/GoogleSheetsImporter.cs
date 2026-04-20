@@ -1504,8 +1504,6 @@ namespace DrillCorp.Editor
                 SetSerializedField(so, "_maxHealth", GetFloatValue(row, headers, "MaxHealth", 100f));
                 SetSerializedField(so, "_healthRegen", GetFloatValue(row, headers, "HealthRegen", 0f));
                 SetSerializedField(so, "_armor", GetFloatValue(row, headers, "Armor", 0f));
-                SetSerializedField(so, "_maxFuel", GetFloatValue(row, headers, "MaxFuel", 60f));
-                SetSerializedField(so, "_fuelConsumeRate", GetFloatValue(row, headers, "FuelConsumeRate", 1f));
                 SetSerializedField(so, "_miningRate", GetFloatValue(row, headers, "MiningRate", 10f));
                 SetSerializedField(so, "_miningBonus", GetFloatValue(row, headers, "MiningBonus", 0f));
                 SetSerializedField(so, "_attackDamage", GetFloatValue(row, headers, "AttackDamage", 20f));

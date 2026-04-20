@@ -194,7 +194,7 @@ namespace DrillCorp.OutGame
         {
             PlayerPrefs.Save();
             if (_titleUI != null)
-                _titleUI.ShowMainPanel();
+                _titleUI.ShowHubPanel();  // v2 — Hub가 메인 화면이므로 Hub로 복귀
         }
     }
 }

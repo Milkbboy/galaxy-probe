@@ -12,10 +12,6 @@ namespace DrillCorp.UI
         [SerializeField] private Image _hpFillImage;
         [SerializeField] private TextMeshProUGUI _hpText;
 
-        [Header("Fuel Bar")]
-        [SerializeField] private Image _fuelFillImage;
-        [SerializeField] private TextMeshProUGUI _fuelText;
-
         [Header("References")]
         [SerializeField] private MachineController _machine;
 
@@ -30,13 +26,11 @@ namespace DrillCorp.UI
         private void OnEnable()
         {
             GameEvents.OnMachineDamaged += OnMachineDamaged;
-            GameEvents.OnFuelChanged += UpdateFuelBar;
         }
 
         private void OnDisable()
         {
             GameEvents.OnMachineDamaged -= OnMachineDamaged;
-            GameEvents.OnFuelChanged -= UpdateFuelBar;
         }
 
         private void Update()
@@ -69,21 +63,5 @@ namespace DrillCorp.UI
             }
         }
 
-        private void UpdateFuelBar(float currentFuel)
-        {
-            if (_machine == null) return;
-
-            float ratio = currentFuel / _machine.MaxFuel;
-
-            if (_fuelFillImage != null)
-            {
-                _fuelFillImage.fillAmount = ratio;
-            }
-
-            if (_fuelText != null)
-            {
-                _fuelText.text = $"{Mathf.CeilToInt(currentFuel)}s";
-            }
-        }
     }
 }

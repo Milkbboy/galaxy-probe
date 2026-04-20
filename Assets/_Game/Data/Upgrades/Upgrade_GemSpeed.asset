@@ -16,7 +16,7 @@ MonoBehaviour:
   _displayName: "\uBCF4\uC11D \uCC44\uC9D1 \uC18D\uB3C4"
   _description: "\uCC44\uC9D1 \uC18D\uB3C4 +20%"
   _icon: {fileID: 0}
-  _upgradeType: 13
+  _upgradeType: 11
   _maxLevel: 5
   _baseValue: 0
   _valuePerLevel: 0.20

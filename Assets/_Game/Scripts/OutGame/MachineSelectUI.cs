@@ -99,7 +99,6 @@ namespace DrillCorp.OutGame
                 _selectedStatsText.text =
                     $"HP: {selectedMachine.MaxHealth}\n" +
                     $"Armor: {selectedMachine.Armor}\n" +
-                    $"Fuel: {selectedMachine.MaxFuel}s\n" +
                     $"Mining: {selectedMachine.MiningRate}/s\n" +
                     $"Damage: {selectedMachine.AttackDamage}\n" +
                     $"Attack Speed: {1f / selectedMachine.AttackCooldown:F1}/s";

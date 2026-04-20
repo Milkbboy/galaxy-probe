@@ -2,24 +2,31 @@ using UnityEngine;
 
 namespace DrillCorp.Data
 {
+    /// <summary>
+    /// 업그레이드 타입.
+    ///
+    /// ⚠️ 순서·값 고정 규칙
+    /// - UpgradeData ScriptableObject가 이 enum을 int로 직렬화합니다.
+    /// - 중간에 값을 삭제하거나 삽입하지 마세요. 뒤 값들이 밀려 기존 에셋이 잘못된 타입으로 해석됩니다.
+    /// - 과거에 'MaxFuel', 'FuelEfficiency' 삭제로 동일 문제가 발생한 적 있습니다.
+    /// - 추가는 반드시 **맨 끝에만**. 불필요한 값은 이름을 Obsolete_로 바꾸고 자리는 보존하세요.
+    /// </summary>
     public enum UpgradeType
     {
-        MaxHealth,
-        Armor,
-        HealthRegen,
-        MaxFuel,
-        FuelEfficiency,
-        MiningRate,
-        AttackDamage,
-        AttackSpeed,
-        AttackRange,
-        CritChance,
-        CritDamage,
+        MaxHealth = 0,
+        Armor = 1,
+        HealthRegen = 2,
+        MiningRate = 3,
+        AttackDamage = 4,
+        AttackSpeed = 5,
+        AttackRange = 6,
+        CritChance = 7,
+        CritDamage = 8,
 
         // === v2 신규 ===
-        MiningTarget,       // 세션 승리 목표 채굴량 (+50/lv, Add)
-        GemDropRate,        // 보석 드랍 확률 (+2%/lv, Add)
-        GemCollectSpeed,    // 보석 채집 속도 (+20%/lv, Mul)
+        MiningTarget = 9,       // 세션 승리 목표 채굴량 (+50/lv, Add)
+        GemDropRate = 10,       // 보석 드랍 확률 (+2%/lv, Add)
+        GemCollectSpeed = 11,   // 보석 채집 속도 (+20%/lv, Mul)
     }
 
     [CreateAssetMenu(fileName = "Upgrade_New", menuName = "Drill-Corp/Upgrade Data", order = 4)]

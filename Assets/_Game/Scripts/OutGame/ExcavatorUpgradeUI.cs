@@ -10,7 +10,7 @@ namespace DrillCorp.OutGame
 {
     /// <summary>
     /// HubPanel의 ExcavatorUpgradeSubPanel에 부착.
-    /// 기존 UpgradeManager에서 굴착기 관련 업그레이드(체력·방어·연료·채굴 속도)만 필터해 표시.
+    /// 기존 UpgradeManager에서 굴착기 관련 업그레이드(체력·방어·채굴 속도·채굴 목표)만 필터해 표시.
     /// 첫 OnEnable 1회 빌드, 이후 이벤트엔 텍스트·색상·interactable만 패치.
     /// </summary>
     public class ExcavatorUpgradeUI : MonoBehaviour

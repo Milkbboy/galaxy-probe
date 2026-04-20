@@ -16,7 +16,7 @@ MonoBehaviour:
   _displayName: "\uBAA9\uD45C\uB7C9 \uD655\uC7A5"
   _description: "\uC138\uC158 \uBAA9\uD45C \uCC44\uAD74\uB7C9 +50"
   _icon: {fileID: 0}
-  _upgradeType: 11
+  _upgradeType: 9
   _maxLevel: 5
   _baseValue: 0
   _valuePerLevel: 50

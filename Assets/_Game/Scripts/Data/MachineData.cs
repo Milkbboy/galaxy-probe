@@ -15,10 +15,6 @@ namespace DrillCorp.Data
         [SerializeField] private float _healthRegen = 0f;
         [SerializeField] private float _armor = 0f;
 
-        [Header("Fuel")]
-        [SerializeField] private float _maxFuel = 60f;
-        [SerializeField] private float _fuelConsumeRate = 1f;
-
         [Header("Mining")]
         [SerializeField] private float _miningRate = 10f;
         [SerializeField] private float _miningBonus = 0f;
@@ -45,10 +41,6 @@ namespace DrillCorp.Data
         public float MaxHealth => _maxHealth;
         public float HealthRegen => _healthRegen;
         public float Armor => _armor;
-
-        // Properties - Fuel
-        public float MaxFuel => _maxFuel;
-        public float FuelConsumeRate => _fuelConsumeRate;
 
         // Properties - Mining
         public float MiningRate => _miningRate;

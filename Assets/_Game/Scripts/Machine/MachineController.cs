@@ -17,11 +17,6 @@ namespace DrillCorp.Machine
         [SerializeField] private float _armor = 0f;
         private float _currentHealth;
 
-        [Header("Fuel")]
-        [SerializeField] private float _maxFuel = 60f;
-        [SerializeField] private float _fuelConsumeRate = 1f;
-        private float _currentFuel;
-
         [Header("Mining")]
         [SerializeField] private float _miningRate = 10f;
         private int _totalMined;
@@ -41,10 +36,6 @@ namespace DrillCorp.Machine
         public float MaxHealth => _maxHealth;
         public bool IsDead => _currentHealth <= 0f && !_isInvincible;
 
-        public float CurrentFuel => _currentFuel;
-        public float MaxFuel => _maxFuel;
-        public bool IsFuelEmpty => _currentFuel <= 0f;
-
         public int TotalMined => _totalMined;
         public float MiningTarget => _miningTarget;
         public bool IsMiningTargetReached => _totalMined >= _miningTarget;
@@ -57,6 +48,15 @@ namespace DrillCorp.Machine
         public MachineData MachineData => _machineData;
 
         private bool _isSessionActive;
+        private int _sessionGemsCollected;
+        private int _sessionBugsKilled;
+
+        // v2 — 세션 광석 누적 (mineAmt*0.5 + bugScore*0.5).
+        // 승리 시 전액, 패배 시 50%만 DataManager.Ore로 적립.
+        private float _sessionOre;
+        public int SessionOre => Mathf.FloorToInt(_sessionOre);
+        public int SessionGems => _sessionGemsCollected;
+        public int SessionKills => _sessionBugsKilled;
 
         [Header("Debug")]
         [Tooltip("시작 시 무적 상태 (디버그/테스트용)")]
@@ -99,8 +99,6 @@ namespace DrillCorp.Machine
             {
                 _maxHealth = _machineData.MaxHealth;
                 _armor = _machineData.Armor;
-                _maxFuel = _machineData.MaxFuel;
-                _fuelConsumeRate = _machineData.FuelConsumeRate;
                 _miningRate = _machineData.TotalMiningRate;
                 _attackDamage = _machineData.AttackDamage;
                 _attackCooldown = _machineData.AttackCooldown;
@@ -115,17 +113,16 @@ namespace DrillCorp.Machine
             var um = UpgradeManager.Instance;
             if (um == null) return;
 
-            _maxHealth          += um.GetTotalBonus(UpgradeType.MaxHealth);     // +30/lv
-            _miningRate         += um.GetTotalBonus(UpgradeType.MiningRate);    // +2/lv
-            _miningTarget       += um.GetTotalBonus(UpgradeType.MiningTarget);  // +50/lv
-            _damageReductionPct  = Mathf.Clamp01(um.GetTotalBonus(UpgradeType.Armor)); // 0.15/lv → max 0.45
+            _maxHealth += um.GetTotalBonus(UpgradeType.MaxHealth);     // +30/lv
+            _miningRate += um.GetTotalBonus(UpgradeType.MiningRate);    // +2/lv
+            _miningTarget += um.GetTotalBonus(UpgradeType.MiningTarget);  // +50/lv
+            _damageReductionPct = Mathf.Clamp01(um.GetTotalBonus(UpgradeType.Armor)); // 0.15/lv → max 0.45
         }
 
         private void Update()
         {
             if (!_isSessionActive) return;
 
-            ConsumeFuel();
             Mining();
             CheckSessionEnd();
         }
@@ -133,19 +130,42 @@ namespace DrillCorp.Machine
         public void InitializeSession()
         {
             _currentHealth = _maxHealth;
-            _currentFuel = _maxFuel;
             _totalMined = 0;
             _miningAccumulator = 0f;
+            _sessionGemsCollected = 0;
+            _sessionBugsKilled = 0;
+            _sessionOre = 0f;
             _isSessionActive = true;
-
-            GameEvents.OnFuelChanged?.Invoke(_currentFuel);
+            GameEvents.OnSessionOreChanged?.Invoke(0);
+            GameEvents.OnSessionGemsChanged?.Invoke(0);
         }
 
-        private void ConsumeFuel()
+        private void OnEnable()
         {
-            _currentFuel -= _fuelConsumeRate * Time.deltaTime;
-            _currentFuel = Mathf.Max(0f, _currentFuel);
-            GameEvents.OnFuelChanged?.Invoke(_currentFuel);
+            GameEvents.OnGemCollected   += OnGemCollected;
+            GameEvents.OnBugKilled      += OnBugKilled;
+            GameEvents.OnBugScoreEarned += OnBugScoreEarned;
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.OnGemCollected   -= OnGemCollected;
+            GameEvents.OnBugKilled      -= OnBugKilled;
+            GameEvents.OnBugScoreEarned -= OnBugScoreEarned;
+        }
+
+        private void OnGemCollected(int amount)
+        {
+            _sessionGemsCollected += amount;
+            GameEvents.OnSessionGemsChanged?.Invoke(_sessionGemsCollected);
+        }
+        private void OnBugKilled(int kind) => _sessionBugsKilled++;
+
+        // v2 — 벌레 처치 시 score*0.5를 세션 광석에 보너스 누적.
+        private void OnBugScoreEarned(float score)
+        {
+            _sessionOre += score * 0.5f;
+            GameEvents.OnSessionOreChanged?.Invoke(SessionOre);
         }
 
         private void Mining()
@@ -160,6 +180,12 @@ namespace DrillCorp.Machine
                 _miningAccumulator -= mined;
                 _totalMined += mined;
                 GameEvents.OnMiningGained?.Invoke(mined);
+
+                // v2 — sessionOre += mined * 0.5 (연속값이라 누적). 정수 바뀔 때만 이벤트 발행.
+                int preSessionOre = SessionOre;
+                _sessionOre += mined * 0.5f;
+                if (SessionOre != preSessionOre)
+                    GameEvents.OnSessionOreChanged?.Invoke(SessionOre);
             }
         }
 
@@ -169,13 +195,23 @@ namespace DrillCorp.Machine
             {
                 _isSessionActive = false;
                 GameEvents.OnMachineDestroyed?.Invoke();
+                // v2 패배 정산 — 세션 광석·보석 각각 50%만 적립.
+                int oreReward = Mathf.FloorToInt(_sessionOre * 0.5f);
+                int gemReward = Mathf.FloorToInt(_sessionGemsCollected * 0.5f);
+                DataManager.Instance?.AddOre(oreReward);
+                DataManager.Instance?.AddGems(gemReward);
+                DataManager.Instance?.StoreSessionResult(false, oreReward, gemReward, _sessionBugsKilled);
                 GameManager.Instance?.SessionFailed();
             }
-            else if (IsFuelEmpty)
+            else if (IsMiningTargetReached)
             {
                 _isSessionActive = false;
-                GameEvents.OnSessionSuccess?.Invoke();
-                DataManager.Instance?.AddOre(_totalMined);
+                // v2 승리 정산 — 세션 광석·보석 전액 적립.
+                int oreReward = SessionOre;
+                int gemReward = _sessionGemsCollected;
+                DataManager.Instance?.AddOre(oreReward);
+                DataManager.Instance?.AddGems(gemReward);
+                DataManager.Instance?.StoreSessionResult(true, oreReward, gemReward, _sessionBugsKilled);
                 GameManager.Instance?.SessionSuccess();
             }
         }
@@ -230,13 +266,6 @@ namespace DrillCorp.Machine
 
             _currentHealth += amount;
             _currentHealth = Mathf.Min(_currentHealth, _maxHealth);
-        }
-
-        public void AddFuel(float amount)
-        {
-            _currentFuel += amount;
-            _currentFuel = Mathf.Min(_currentFuel, _maxFuel);
-            GameEvents.OnFuelChanged?.Invoke(_currentFuel);
         }
 
         #region Debug

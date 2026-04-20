@@ -11,11 +11,11 @@ namespace DrillCorp.Core
         // 머신 관련
         public static Action<float> OnMachineDamaged;       // 받은 데미지
         public static Action OnMachineDestroyed;
-        public static Action<float> OnFuelChanged;          // 현재 연료량
 
         // 벌레 관련
-        public static Action<int> OnBugKilled;              // 처치한 벌레 ID
+        public static Action<int> OnBugKilled;              // 처치한 벌레 ID (UI 카운터용)
         public static Action<Vector3, bool> OnBugDied;      // v2 — 사망 위치 + 엘리트 여부 (GemDropSpawner용)
+        public static Action<float> OnBugScoreEarned;       // v2 — 벌레 처치 점수 (세션 광석 보너스 계산용)
 
         // 웨이브 관련
         public static Action<int> OnWaveStarted;            // 웨이브 번호
@@ -27,10 +27,12 @@ namespace DrillCorp.Core
 
         // 채굴/재화
         public static Action<int> OnCurrencyChanged;        // 레거시 (Ore와 동일) — 기존 UI 호환용
-        public static Action<int> OnOreChanged;             // v2 — 광석 변동
-        public static Action<int> OnGemsChanged;            // v2 — 보석 변동
-        public static Action<int> OnMiningGained;           // 획득한 채굴량
+        public static Action<int> OnOreChanged;             // v2 — 플레이어 보유 광석 변동 (DataManager.Ore)
+        public static Action<int> OnGemsChanged;            // v2 — 플레이어 보유 보석 변동 (DataManager.Gems)
+        public static Action<int> OnMiningGained;           // 획득한 채굴량 (세션 내 누적)
         public static Action<int> OnGemCollected;           // v2 — 세션 중 채집한 보석 수 (1회당 invoke, HUD 누적용)
+        public static Action<int> OnSessionOreChanged;      // v2 — 세션 광석 총량 (MachineController._sessionOre)
+        public static Action<int> OnSessionGemsChanged;     // v2 — 세션 보석 총량 (Gem 채집마다 invoke)
 
         // 강화 시스템
         public static Action<string, int> OnUpgradePurchased;  // 업그레이드 ID, 새 레벨

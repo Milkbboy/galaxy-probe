@@ -251,10 +251,11 @@ namespace DrillCorp.Core
             Data.LastSessionResult.KillCount = kills;
             Data.LastSessionResult.TimestampTicks = DateTime.UtcNow.Ticks;
 
-            // 실제 재화 적립은 여기서
-            AddOre(oreGained);
-            AddGems(gemGained);
-            IncrementSessionsPlayed();
+            // 재화 적립 책임 분리:
+            //  - 광석: MachineController가 성공 시 AddOre(_totalMined) 호출 (패배 시 0).
+            //  - 보석: Gem.cs가 채집 순간 즉시 AddGems(1) 호출 (세션 중간에 사망해도 유지).
+            // 여기서 중복 AddOre/AddGems를 하면 이중 적립이 되므로 기록과 통계만 담당.
+            IncrementSessionsPlayed();  // 내부에서 Save 호출 — LastSessionResult 함께 저장됨
             AddBugsKilled(kills);
         }
 

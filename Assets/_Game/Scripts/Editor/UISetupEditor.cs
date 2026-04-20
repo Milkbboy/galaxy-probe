@@ -98,20 +98,11 @@ namespace DrillCorp.Editor
             Image hpFillImage = hpBarGroup.transform.Find("Fill").GetComponent<Image>();
             GameObject hpText = CreateText("HPText", hpBarGroup.transform, "100 / 100", 14, Color.black);
 
-            // Fuel Bar (배경 + Fill)
-            GameObject fuelBarGroup = CreateBarWithBackground("FuelBar", statusUI.transform,
-                new Vector2(0, -35), new Vector2(380, 25),
-                new Color(0.2f, 0.2f, 0.2f, 0.8f), new Color(0.9f, 0.7f, 0.1f));
-            Image fuelFillImage = fuelBarGroup.transform.Find("Fill").GetComponent<Image>();
-            GameObject fuelText = CreateText("FuelText", fuelBarGroup.transform, "60s", 14, Color.black);
-
             // MachineStatusUI 컴포넌트 추가
             MachineStatusUI machineStatusUI = statusUI.AddComponent<MachineStatusUI>();
             SerializedObject so = new SerializedObject(machineStatusUI);
             so.FindProperty("_hpFillImage").objectReferenceValue = hpFillImage;
             so.FindProperty("_hpText").objectReferenceValue = hpText.GetComponent<TextMeshProUGUI>();
-            so.FindProperty("_fuelFillImage").objectReferenceValue = fuelFillImage;
-            so.FindProperty("_fuelText").objectReferenceValue = fuelText.GetComponent<TextMeshProUGUI>();
             so.ApplyModifiedProperties();
 
             // Mining UI

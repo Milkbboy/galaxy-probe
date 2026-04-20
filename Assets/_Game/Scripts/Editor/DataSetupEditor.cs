@@ -228,7 +228,7 @@ namespace DrillCorp.Editor
             {
                 var machine = ScriptableObject.CreateInstance<MachineData>();
                 SetMachineData(machine, 1, "Drill-01", "Standard mining drill",
-                    maxHealth: 100f, maxFuel: 60f, fuelRate: 1f,
+                    maxHealth: 100f,
                     miningRate: 10f, attackDamage: 20f, attackCooldown: 0.5f, attackRange: 3f);
                 AssetDatabase.CreateAsset(machine, path + "Machine_Default.asset");
             }
@@ -238,7 +238,7 @@ namespace DrillCorp.Editor
             {
                 var heavy = ScriptableObject.CreateInstance<MachineData>();
                 SetMachineData(heavy, 2, "Drill-Heavy", "Armored mining drill with more health",
-                    maxHealth: 150f, maxFuel: 50f, fuelRate: 1.2f,
+                    maxHealth: 150f,
                     miningRate: 8f, attackDamage: 25f, attackCooldown: 0.7f, attackRange: 2.5f);
                 var so = new SerializedObject(heavy);
                 so.FindProperty("_armor").floatValue = 15f;
@@ -251,7 +251,7 @@ namespace DrillCorp.Editor
             {
                 var speed = ScriptableObject.CreateInstance<MachineData>();
                 SetMachineData(speed, 3, "Drill-Rapid", "Fast mining, fast shooting",
-                    maxHealth: 80f, maxFuel: 45f, fuelRate: 1.5f,
+                    maxHealth: 80f,
                     miningRate: 15f, attackDamage: 15f, attackCooldown: 0.3f, attackRange: 3.5f);
                 AssetDatabase.CreateAsset(speed, path + "Machine_Speed.asset");
             }
@@ -260,7 +260,7 @@ namespace DrillCorp.Editor
         }
 
         private static void SetMachineData(MachineData machine, int id, string name, string desc,
-            float maxHealth, float maxFuel, float fuelRate, float miningRate,
+            float maxHealth, float miningRate,
             float attackDamage, float attackCooldown, float attackRange)
         {
             var so = new SerializedObject(machine);
@@ -268,8 +268,6 @@ namespace DrillCorp.Editor
             so.FindProperty("_machineName").stringValue = name;
             so.FindProperty("_description").stringValue = desc;
             so.FindProperty("_maxHealth").floatValue = maxHealth;
-            so.FindProperty("_maxFuel").floatValue = maxFuel;
-            so.FindProperty("_fuelConsumeRate").floatValue = fuelRate;
             so.FindProperty("_miningRate").floatValue = miningRate;
             so.FindProperty("_attackDamage").floatValue = attackDamage;
             so.FindProperty("_attackCooldown").floatValue = attackCooldown;
@@ -316,7 +314,7 @@ namespace DrillCorp.Editor
                 AssetDatabase.CreateAsset(upgrade, path + "Upgrade_MiningRate.asset");
             }
 
-            // 옛 AttackDamage/AttackSpeed/FuelEfficiency는 v2 스펙에서 제외됨 — 무기별 강화로 이동.
+            // 옛 AttackDamage/AttackSpeed는 v2 스펙에서 제외됨 — 무기별 강화로 이동. 연료 시스템은 완전 삭제됨.
             Debug.Log("[DataSetupEditor] Upgrade assets created (v2 호환: 굴착기/보석 6종만)");
         }
 

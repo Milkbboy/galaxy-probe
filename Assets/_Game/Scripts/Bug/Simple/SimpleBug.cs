@@ -111,6 +111,9 @@ namespace DrillCorp.Bug.Simple
                 _isDead = true;
                 PlayDeathVfx();   // 치명타 — 사망 VFX만
                 GameEvents.OnBugKilled?.Invoke(_data != null ? (int)_data.Kind : 0);
+                GameEvents.OnBugScoreEarned?.Invoke(_score);   // v2 — sessionOre += score*0.5
+                bool isElite = _data != null && _data.Kind == SimpleBugData.BugKind.Elite;
+                GameEvents.OnBugDied?.Invoke(transform.position, isElite);
                 Destroy(gameObject);
             }
             else

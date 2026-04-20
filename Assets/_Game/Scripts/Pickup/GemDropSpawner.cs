@@ -24,6 +24,12 @@ namespace DrillCorp.Pickup
         [Tooltip("월드 보석 스프라이트. 비워두면 단색 Quad로 대체.")]
         [SerializeField] private Sprite _gemSprite;
 
+        // v2 보석 규칙 — 일반 보석 color #aadfff / value 1, 엘리트 보석 color #ffd700 / value 5.
+        private static readonly Color NormalGemColor = new Color(0.67f, 0.87f, 1f, 1f);
+        private static readonly Color EliteGemColor  = new Color(1f, 0.84f, 0f, 1f);
+        private const int NormalGemValue = 1;
+        private const int EliteGemValue  = 5;
+
         private void OnEnable()
         {
             GameEvents.OnBugDied += HandleBugDied;
@@ -42,7 +48,10 @@ namespace DrillCorp.Pickup
 
             if (Random.value > chance) return;
 
-            Gem.Create(position, _gemSprite);
+            if (isElite)
+                Gem.Create(position, _gemSprite, EliteGemValue, EliteGemColor);
+            else
+                Gem.Create(position, _gemSprite, NormalGemValue, NormalGemColor);
         }
 
         private static float GetUpgradeBonus()

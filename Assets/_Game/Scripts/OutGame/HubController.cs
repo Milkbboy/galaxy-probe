@@ -22,7 +22,8 @@ namespace DrillCorp.OutGame
         private Button _cheatButton;
         private Button _resetButton;
         private Button _startButton;
-        private Button _backButton;
+        private Button _optionsButton;
+        private Button _quitButton;
 
         // 리셋 2단계 확인용
         private Coroutine _resetConfirmRoutine;
@@ -38,14 +39,27 @@ namespace DrillCorp.OutGame
         {
             RefreshCurrency();
             RefreshTargetLabel();
-            GameEvents.OnOreChanged  += OnOreChanged;
-            GameEvents.OnGemsChanged += OnGemsChanged;
+            GameEvents.OnOreChanged       += OnOreChanged;
+            GameEvents.OnGemsChanged      += OnGemsChanged;
+            GameEvents.OnUpgradePurchased += OnUpgradePurchased;
+
+            // 첫 활성화 시 중첩된 CSF+VerticalLayoutGroup이 덜 계산되어
+            // CharacterSelectSubPanel이 TopBar를 덮는 현상 방지.
+            StartCoroutine(ForceRebuildNextFrame());
+        }
+
+        private IEnumerator ForceRebuildNextFrame()
+        {
+            yield return null;  // 모든 Awake/Start + CSF 1차 계산 끝난 뒤
+            var rt = transform as RectTransform;
+            if (rt != null) LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
         }
 
         private void OnDisable()
         {
-            GameEvents.OnOreChanged  -= OnOreChanged;
-            GameEvents.OnGemsChanged -= OnGemsChanged;
+            GameEvents.OnOreChanged       -= OnOreChanged;
+            GameEvents.OnGemsChanged      -= OnGemsChanged;
+            GameEvents.OnUpgradePurchased -= OnUpgradePurchased;
             CancelResetConfirm();
         }
 
@@ -66,18 +80,24 @@ namespace DrillCorp.OutGame
             _gemValueText = topBar.Find("GemDisplay/Value")?.GetComponent<TextMeshProUGUI>();
             _targetLabel  = topBar.Find("TitleGroup/TargetLabel")?.GetComponent<TextMeshProUGUI>();
 
-            _cheatButton  = topBar.Find("CheatButton")?.GetComponent<Button>();
-            _resetButton  = topBar.Find("ResetButton")?.GetComponent<Button>();
-            _startButton  = topBar.Find("StartButton")?.GetComponent<Button>();
-            _backButton   = topBar.Find("BackButton")?.GetComponent<Button>();
+            _cheatButton   = topBar.Find("CheatButton")?.GetComponent<Button>();
+            _resetButton   = topBar.Find("ResetButton")?.GetComponent<Button>();
+            _startButton   = topBar.Find("StartButton")?.GetComponent<Button>();
+            _optionsButton = topBar.Find("OptionsButton")?.GetComponent<Button>();
+            _quitButton    = topBar.Find("QuitButton")?.GetComponent<Button>();
+
+            // v2 — MainPanel 제거로 레거시 BackButton은 더 이상 사용 안 함.
+            var legacyBack = topBar.Find("BackButton");
+            if (legacyBack != null) legacyBack.gameObject.SetActive(false);
         }
 
         private void WireButtons()
         {
-            if (_cheatButton != null) _cheatButton.onClick.AddListener(OnCheatClicked);
-            if (_resetButton != null) _resetButton.onClick.AddListener(OnResetClicked);
-            if (_startButton != null) _startButton.onClick.AddListener(OnStartClicked);
-            if (_backButton  != null) _backButton.onClick.AddListener(OnBackClicked);
+            if (_cheatButton   != null) _cheatButton.onClick.AddListener(OnCheatClicked);
+            if (_resetButton   != null) _resetButton.onClick.AddListener(OnResetClicked);
+            if (_startButton   != null) _startButton.onClick.AddListener(OnStartClicked);
+            if (_optionsButton != null) _optionsButton.onClick.AddListener(OnOptionsClicked);
+            if (_quitButton    != null) _quitButton.onClick.AddListener(OnQuitClicked);
 
 #if !UNITY_EDITOR && !DEVELOPMENT_BUILD
             // 릴리즈 빌드에서는 치트 버튼 숨김
@@ -90,6 +110,9 @@ namespace DrillCorp.OutGame
         // ═══════════════════════════════════════════════════
         private void OnOreChanged(int _)  => RefreshCurrency();
         private void OnGemsChanged(int _) => RefreshCurrency();
+
+        // 업그레이드 구매 시 TopBar 목표 라벨(목표량/드랍확률/채집속도) 즉시 갱신.
+        private void OnUpgradePurchased(string _, int __) => RefreshTargetLabel();
 
         private void RefreshCurrency()
         {
@@ -133,11 +156,21 @@ namespace DrillCorp.OutGame
             GameManager.Instance?.LoadGameScene();
         }
 
-        private void OnBackClicked()
+        private void OnOptionsClicked()
         {
             CancelResetConfirm();
             if (_titleUI != null)
-                _titleUI.ShowMainPanel();
+                _titleUI.ShowOptionsPanel();
+        }
+
+        private void OnQuitClicked()
+        {
+            CancelResetConfirm();
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
         }
 
         private void OnCheatClicked()

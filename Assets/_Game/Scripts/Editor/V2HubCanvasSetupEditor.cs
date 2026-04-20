@@ -232,9 +232,6 @@ namespace DrillCorp.Editor
             hl.childForceExpandWidth = false;
             hl.childForceExpandHeight = false;   // 버튼이 세로로 강제 확장되지 않음
 
-            // 맨 왼쪽: 뒤로가기 버튼 (MainPanel로 복귀)
-            CreateSmallButton(bar.transform, "BackButton", "뒤로", ColBorder, 60, 14);
-
             // 왼쪽: 타이틀 + 서브타이틀
             var titleGroup = CreateVGroup(bar.transform, "TitleGroup", 340, 70);
             CreateText(titleGroup.transform, "TitleText", "DRILL-CORP", 22, ColTextHi);
@@ -259,6 +256,8 @@ namespace DrillCorp.Editor
             CreateCurrencyBadge(bar.transform, "GemDisplay", "보석", "0", ColGem, gemIcon);
             CreateSmallButton(bar.transform, "CheatButton", "치트 +1000", ColOk, 110);
             CreateSmallButton(bar.transform, "ResetButton", "초기화", ColDanger, 90);
+            CreateSmallButton(bar.transform, "OptionsButton", "옵션", ColBorder, 70, 14);
+            CreateSmallButton(bar.transform, "QuitButton", "종료", ColBorder, 70, 14);
             CreateSmallButton(bar.transform, "StartButton", "채굴 시작", ColAccent, 150, 18);
         }
 
@@ -313,7 +312,8 @@ namespace DrillCorp.Editor
         // ── 캐릭터 선택 (상단 전체 폭, 내용물 높이에 맞게 자동) ──
         static void CreateCharacterSelectSubPanel(Transform parent)
         {
-            var sub = CreateSubPanel(parent, "CharacterSelectSubPanel", "캐릭터 선택");
+            // 고정 높이(180)로 생성 — CSF 누적이 첫 프레임에 TopBar를 덮는 버그 방지.
+            var sub = CreateSubPanel(parent, "CharacterSelectSubPanel", "캐릭터 선택", 180f);
 
             // 내부 3열 컨테이너 — 카드 높이에 맞춰 자동
             var content = sub.transform.Find("Content").gameObject;
