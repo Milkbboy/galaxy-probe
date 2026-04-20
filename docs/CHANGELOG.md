@@ -6,6 +6,78 @@
 
 ---
 
+## [Unreleased] - 2026-04-20 (2) — Game HUD + 세션 정산 + Range 업그레이드 v2 포팅
+
+> 커밋 `cb5c63c`, `a0eefb1`.
+
+v2.html 원본과 동일한 인게임 HUD·세션 정산·범위 업그레이드 체계 완성.
+
+### Removed
+
+- **연료 시스템 완전 제거** — `MachineController._maxFuel / _currentFuel / _fuelConsumeRate / ConsumeFuel() / AddFuel() / IsFuelEmpty`, `MachineData.MaxFuel/FuelConsumeRate`, `GameEvents.OnFuelChanged`, `MachineStatusUI` 연료바, `DebugManager` [F] 무한 연료 토글, `UpgradeType.MaxFuel/FuelEfficiency` enum 값, 각종 에디터(`UISetupEditor`/`DataSetupEditor`/`TitleSceneSetupEditor`/`GoogleSheetsImporter`) 연료 참조
+- `Upgrade_MaxFuel.asset`, `Upgrade_FuelEfficiency.asset` 에셋은 이미 프로젝트에 없었음 (정리 불필요)
+
+### Added — Session Currency & Settlement
+
+- **`MachineController._sessionOre`** (float 내부 누적) + `SessionOre` / `SessionGems` / `SessionKills` 프로퍼티. v2 공식: `Mining()`이 tick마다 `mined × 0.5` 누적 + `OnBugScoreEarned` 구독이 `score × 0.5` 누적
+- **`GameEvents.OnBugScoreEarned(float)`** — 벌레 사망 시 `SimpleBug.TakeDamage`가 `_data.Score` 발행 (세션 광석 보너스용)
+- **`GameEvents.OnSessionOreChanged(int)` / `OnSessionGemsChanged(int)`** — HUD 실시간 갱신용
+- **정산 로직 교체** — `MachineController.CheckSessionEnd`:
+  - 승리(`IsMiningTargetReached`): `AddOre(sessionOre)` + `AddGems(sessionGems)` 전액
+  - 패배(`IsDead`): `AddOre(sessionOre × 0.5)` + `AddGems(sessionGems × 0.5)` 절반
+  - 나가기: 정산 없이 `LoadTitleScene` (v2 원본)
+- **승리 조건 단일화** — 연료 소진 분기 제거, `IsMiningTargetReached`만
+
+### Added — TopBarHud (v2 #ig-topbar 포팅)
+
+- **`Scripts/UI/HUD/TopBarHud.cs`** — 상단바 통합 컴포넌트. 5 슬롯(체력/채굴/처치/광석/보석) + 나가기 버튼. MachineController·GameEvents 구독해 실시간 갱신. 체력 슬롯은 매 프레임 갱신(타이밍 이슈 대비)
+- **`Scripts/Editor/TopBarHudSetupEditor.cs`** — 메뉴 `Drill-Corp/HUD/Build TopBar`. Canvas 상단 stretch 바 생성 + 아이콘(`06_gold`, `01_diamond`) 자동 바인딩. 기존 `MachineStatusUI`/`CurrencyHud` 자동 비활성화 + 미니맵 y offset `-20 → -84` + `EventSystem` 없으면 `InputSystemUIInputModule` 동반 자동 생성
+- 광석/보석 슬롯은 **세션 값**만 표시 (누적 보유량 아님). 채굴 슬롯 `mined / target`은 주황 강조
+- 나가기 버튼 = v2 원본과 동일: 정산 없이 Title 복귀
+
+### Added — Result Popup (v2 #resultPanel 포팅)
+
+- **`Scripts/UI/SessionResultUI.cs`** (통합 재작성) — Success/Failed 분리 패널 대신 단일 딤 배경 + 중앙 다이얼로그. 제목색·아이콘·부제·보상 수치 동적 전환. 승리=금색(#ffd700) + `채굴 완료!`, 패배=빨강(#ff6b6b) + `채굴 실패`
+- **지연 타이밍** — 승리 500ms / 패배 200ms 후 팝업 (v2 endGame). `StartCoroutine + WaitForSeconds`
+- **보상 행 아이콘** — `06_gold` + `01_diamond` 24×24. `CreateRewardRow` 헬퍼로 HubPanel TopBar와 스타일 통일
+- **버튼 2개** — `업그레이드 하기` → `LoadTitleScene`, `다시 도전` → `RestartSession`
+- **결과 아이콘 팩 신규** — `Assets/_Game/Sprites/UI/drillcorp_result_icons/{128,256,512}px/01_mining_success.png` / `02_mining_failure.png` (별도 팩)
+- **`Scripts/Editor/ResultPanelSetupEditor.cs`** — 메뉴 `Drill-Corp/HUD/Build Result Panel`. 레거시 SuccessPanel/FailedPanel **완전 삭제** + 단일 ResultPanel 재생성. `SessionResultUI` 컴포넌트는 Canvas에 부착(루트 비활성 문제 방지) + 자식 Dialog 참조
+- **핵심 함정 (학습)** — ResultPanel 루트를 SetActive(false)로 두면 같은 오브젝트의 MonoBehaviour는 `OnEnable`이 호출되지 않아 이벤트 구독 끊김. 컨트롤러는 **항상 활성인 Canvas**에 부착해야 함
+
+### Changed — Gem System (v2 2종 보석)
+
+- **`Gem.Create(pos, sprite, value, tint)`** — value/color 파라미터 추가. 채집 시 `OnGemCollected(_value)` 발행 (1 또는 5). **SpriteSize 0.7 → 1.2**로 확대 (사용자 피드백: 너무 작아서 안 보임). 링 반경·두께 비례 확대. 진행 링 색상도 `_tint` 기반 (엘리트는 금색 링)
+- **`Gem.Collect()`** — `DataManager.AddGems(1)` **직접 호출 제거**. v2와 동일하게 세션 종료 시 일괄 정산. 팝업은 `+{value} 보석`
+- **`GemDropSpawner`** — 엘리트 분기에서 `Gem.Create(pos, ..., value=5, color=#ffd700)`, 일반은 `value=1, color=#aadfff`
+
+### Added — Range Upgrade (v2 range 업그레이드 체계)
+
+- **`AimController.SetRangeMultiplier(float)` API 신규** — `_rangeMultiplier`, `_baseAimRadius`, `_baseCrosshairScale` 필드. `ApplyRangeMultiplier()`가 판정 반경(`_aimRadius = _base × mul`) + 크로스헤어 스프라이트 스케일 동시 적용. 모든 `AimWeaponRing`이 `AimRadius + _radiusOffset` 공식이므로 호 4개(Sniper/Bomb/Gun/Laser)가 자동 따라감 — offset이 상수라 겹침 없음
+- **`SniperWeapon.RefreshEffectiveStats`** — `WeaponUpgradeStat.Range` 조회 → `_aimController.SetRangeMultiplier(rangeMul)` 호출. v2 공식 `1 + lv × 0.2` 그대로. `WeaponUpgrade_Sniper_Range.asset`은 이미 존재했으나 런타임 미연결 상태였음
+- **`LaserWeapon._effectiveRadius`** 필드 추가. `RefreshEffectiveStats`에서 Range 배율을 `BeamRadius`에 곱함. `LaserBeam.Initialize` 시그니처 확장(`effectiveDamage + effectiveRadius` 오버로드 추가, 기존 오버로드는 새 버전 호출로 위임). 스코치 프리펩 크기도 확장 반경 반영
+- **레이저는 저격총 에임에 종속되지 않음** — `_beamRadius=1.0` (독립) + 자체 Range 배율. v2의 `ws.laser.range=28.8`이 `ws.sniper.range=24`와 별개인 구조 재현
+- **`LaserBeamWeapon.cs` 레거시 경로도 Damage/Range/Cooldown 구독 일관화** — Game 씬에선 `LaserWeapon`만 쓰이지만 혼동 방지
+
+### Fixed
+
+- **UpgradeType enum 순서 재배열 버그** — 연료 제거로 `MaxFuel/FuelEfficiency` 2값을 중간에서 삭제 → 뒤 값들 정수가 2씩 밀림. 기존 SO 에셋이 옛 정수값 보관해 잘못된 타입으로 매칭됨(`Upgrade_MiningTarget`=11 → 실제 enum 11은 `GemCollectSpeed`라 적용 안 됨). enum에 명시적 정수값 부여 + 에셋 4개 정수값 정정 (MiningRate 5→3, MiningTarget 11→9, GemDrop 12→10, GemSpeed 13→11). 재발 방지 주석 추가
+- **HubController 목표 라벨 미갱신** — `OnUpgradePurchased` 미구독이라 업그레이드 직후 TopBar 목표량/드랍/속도 라벨 안 바뀜. 이벤트 구독 + `RefreshTargetLabel` 연결
+- **DataManager.StoreSessionResult 이중 적립** — 내부 `AddOre/AddGems` 제거. 광석=MachineController, 보석=세션 누적에서 각각 적립하도록 책임 분리. StoreSessionResult는 기록/통계 전용
+
+### Changed — Title 초기 화면
+
+- **HubPanel 기본 진입** — `TitleUI.Start()`가 `ShowMainPanel` 대신 `ShowHubPanel` 호출. Hub가 메인 화면, MainPanel은 폴백으로만 남김
+- **Hub TopBar 재편** — `BackButton` 제거(대응 MainPanel 없음), `OptionsButton` / `QuitButton` 신규. `OptionsUI` 뒤로가기는 `ShowHubPanel`로 복귀
+- **HubPanel 첫 프레임 겹침 버그 방지** — `HubController.OnEnable`에서 `StartCoroutine(ForceRebuildNextFrame)` → `LayoutRebuilder.ForceRebuildLayoutImmediate` 호출. CSF+VLG 중첩으로 CharacterSelectSubPanel이 TopBar 덮는 현상 방지
+- **CharacterSelectSubPanel 고정 높이 180** — `V2HubCanvasSetupEditor`에서 `forcedHeight` 부여
+
+### Changed — DebugManager 위치
+
+- 디버그 단축키 OnGUI 창을 **우측 상단 → 우측 하단**으로 이동 (`Screen.height - height - 10f`). 높이 150 → 130 (연료 토글 항목 제거로 축소)
+
+---
+
 ## [Unreleased] - 2026-04-20 — 문서 일괄 갱신
 
 최근 v2 작업(Hub→Game 연결, 보석 드랍/채집)을 모든 핵심 문서에 반영.

@@ -1,6 +1,6 @@
 # 무기 해금 & 강화 시스템
 
-> 최종 갱신: 2026-04-20 (해금 필터 + 4종 강화 적용 완료, §11 참조)
+> 최종 갱신: 2026-04-20 (2) (저격총·레이저 Range 업그레이드 v2 포팅 완료, §12 참조)
 > 근거 프로토타입: `docs/v2.html`
 > 상위 문서: [V2_IntegrationPlan.md](V2_IntegrationPlan.md)
 > 관련 문서: [WeaponSystem.md](WeaponSystem.md) (기존 무기 아키텍처)
@@ -875,6 +875,124 @@ public void Initialize(Vector3 targetPos, BombData data, LayerMask bugLayer,
 
 ### 11.7 남은 작업
 
-- **Sniper/Laser Range 강화** — AimController 검색 반경에 weapon-specific 보정 통합 필요
-- **레거시 무기 SO 정리** — `Weapon_Laser.asset`(LaserBeamData)는 사용처 없음. `Weapon_BurstGun/LockOn/Shotgun.asset`은 이미 삭제됨
+- **레거시 무기 SO 정리** — `Weapon_Laser.asset`(LaserBeamData)는 사용처 없음
 - `docs/v2.html` 675~1000줄 — `BASE` 스탯 / `ws` 적용 / 무기 발사 구현 원본
+
+---
+
+## 12. 2026-04-20 (2) 업데이트 — Range 업그레이드 v2 포팅
+
+저격총·레이저의 Range(범위) 업그레이드를 v2 원본과 동일하게 구현.
+
+### 12.1 저격총 Range → 에임 반경 동적 확장
+
+v2 원본: `ws.sniper.range`가 **에임 원의 반경**. Range 업그레이드는 이 값에 1 + lv×0.2를 곱해 에임 크기 자체를 확대. 링(쿨다운 호)들도 `r+5`, `r+11` 상대 offset이라 자동 따라감.
+
+**우리 구현**:
+
+```csharp
+// Scripts/Aim/AimController.cs
+private float _rangeMultiplier = 1f;
+private float _baseAimRadius;
+private Vector3 _baseCrosshairScale;
+
+public void SetRangeMultiplier(float multiplier)
+{
+    multiplier = Mathf.Max(0.1f, multiplier);
+    if (Mathf.Approximately(_rangeMultiplier, multiplier)) return;
+    _rangeMultiplier = multiplier;
+    ApplyRangeMultiplier();
+}
+
+private void ApplyRangeMultiplier()
+{
+    _aimRadius = _baseAimRadius * _rangeMultiplier;
+    if (_crosshairRenderer != null)
+        _crosshairRenderer.transform.localScale = _baseCrosshairScale * _rangeMultiplier;
+}
+```
+
+`CalculateAimRadius`에서 `_baseAimRadius`/`_baseCrosshairScale`을 저장해 배율 적용 시 원본 값에 곱셈.
+
+**SniperWeapon 연결**:
+
+```csharp
+// Scripts/Weapon/Proto/SniperWeapon.cs — RefreshEffectiveStats
+(_, rangeMul) = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Range);
+if (_aimController != null)
+    _aimController.SetRangeMultiplier(rangeMul);
+```
+
+결과:
+- Sniper range lv 1 구매 → 에임 반경 1.2배 + 크로스헤어 스프라이트 1.2배 스케일
+- 모든 `AimWeaponRing`이 `AimRadius + _radiusOffset` 공식이므로 Sniper/Bomb/Gun/Laser 호 4개 **자동 확장** (offset은 상수라 겹침 없음)
+- `BugsInRange` 판정 반경도 같이 확장 → 실제 사격 범위 증가
+
+### 12.2 레이저 Range → 빔 반경 확장 (독립)
+
+v2 원본: `ws.laser.range=28.8`이 `ws.sniper.range=24`와 **별개 독립 변수**. 레이저 range 업그레이드는 빔 반경만 확장, 에임과 무관.
+
+**우리 구현**:
+
+```csharp
+// Scripts/Weapon/Laser/LaserWeapon.cs
+private float _effectiveRadius;
+
+private void RefreshEffectiveStats()
+{
+    // ...
+    (_, rangeMul) = mgr.GetBonus(_data.WeaponId, WeaponUpgradeStat.Range);
+    _effectiveRadius = _data.BeamRadius * Mathf.Max(0.1f, rangeMul);
+}
+
+// Fire()에서
+_activeBeam.Initialize(aim, _data, aim.BugLayer, _effectiveDamage, _effectiveRadius);
+```
+
+`LaserBeam.Initialize`에 **effectiveRadius 오버로드 추가**. 기존 오버로드 2개는 새 버전에 위임 (호환성 유지):
+
+```csharp
+// Scripts/Weapon/Laser/LaserBeam.cs
+public void Initialize(AimController aim, LaserWeaponData data, LayerMask bugLayer)
+    => Initialize(aim, data, bugLayer, data.Damage, data.BeamRadius);
+public void Initialize(AimController aim, LaserWeaponData data, LayerMask bugLayer, float effectiveDamage)
+    => Initialize(aim, data, bugLayer, effectiveDamage, data.BeamRadius);
+public void Initialize(AimController aim, LaserWeaponData data, LayerMask bugLayer,
+                       float effectiveDamage, float effectiveRadius)
+{
+    _radius = effectiveRadius;  // 업그레이드 반영
+    // 시각 레이어(Core/Ring/Glow/Crosshair/파티클) 모두 _radius 기반 → 자동 확장
+    // OverlapSphere 피격 판정도 _radius 기반 → 자동 확장
+}
+```
+
+Scorch 프리펩도 `_effectiveRadius × 2 × scaleMul`로 크기 조정.
+
+### 12.3 무기별 범위 독립성
+
+| 무기 | 범위 소스 | Range 업그레이드 대상 | 에임 종속? |
+|---|---|---|---|
+| Sniper | `aim.AimRadius` (에임 원) | **에임 반경 자체** (`RangeMultiplier`) | 에임이 곧 저격총 |
+| Bomb | `_explosionRadius` 독립 | `WeaponUpgradeStat.Radius` | ❌ 완전 독립 |
+| BurstGun | 최근접 1마리 | (범위 개념 없음) | ❌ |
+| Laser | `_beamRadius=1.0` 독립 | `_effectiveRadius = _beamRadius × rangeMul` | ❌ 완전 독립 |
+| Saw | `_orbitRadius`/`_bladeRadius` 독립 | `WeaponUpgradeStat.Radius` | ❌ 완전 독립 |
+
+저격총만 에임과 동일시 되고, 나머지는 자기 범위를 독립적으로 관리.
+
+### 12.4 버그 수정 — `Weapon_Laser.asset` vs `Weapon_LaserBeam.asset`
+
+Game 씬에 실제 부착된 것은 **`LaserWeapon + LaserWeaponData`** (에셋 `Weapon_LaserBeam.asset`). `LaserBeamWeapon + LaserBeamData`는 레거시 경로로 사용 안 됨. 두 경로 모두 Damage/Range/Cooldown 구독을 일관화 했으나 실제 반영되는 건 `LaserWeapon`만.
+
+### 12.5 호 겹침 방지
+
+현재 Game 씬의 AimWeaponRing 4개 `_radiusOffset`:
+
+| 무기 | offset |
+|---|---|
+| Sniper | 2.0 |
+| Bomb | 2.7 |
+| Gun | 3.5 |
+| Laser | 4.3 |
+
+계단식 차등. 에임 반경이 커지면 모든 링이 `+offset` 상수만큼 바깥에 위치하므로 **구조적으로 겹치지 않음** (v2 `r+5/r+11` 원리와 동일).
