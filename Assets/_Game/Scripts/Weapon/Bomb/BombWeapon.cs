@@ -41,6 +41,11 @@ namespace DrillCorp.Weapon.Bomb
         private float _effectiveRadius;
         private float _effectiveFireDelayMul = 1f;
 
+        // MineRunner 등 외부(어빌리티)에서 강화 반영된 실효값을 조회.
+        // 폭탄 무기 강화가 빅터 지뢰에 그대로 전파되는 규칙(v2 `ws.bomb.dmg/radius`) 준수.
+        public float EffectiveDamage => _effectiveDamage;
+        public float EffectiveRadius => _effectiveRadius;
+
         protected override float EffectiveFireDelay
             => _data != null ? _data.FireDelay * _effectiveFireDelayMul : 0f;
 

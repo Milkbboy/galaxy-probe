@@ -6,6 +6,62 @@
 
 ---
 
+## [Unreleased] - 2026-04-20 (3) — 빅터 어빌리티 3종 Game 구현
+
+> 문서: [Phase5_VictorAbility_Plan.md](Phase5_VictorAbility_Plan.md)
+
+v2.html 의 빅터(중장비 전문가) 3 어빌리티(네이팜·화염방사기·폭발지뢰)를 3D VFX 와 함께 Game 씬에서 동작하도록 구현. 캐릭터/어빌리티 SO + Registry 는 기존 완료 상태였고 본 페이즈는 **런타임 실행 레이어 + Polygon Arsenal 프리펩 바인딩**.
+
+### Added — Ability 런타임 스캐폴딩
+
+- **`Scripts/Ability/AbilityContext.cs`** — Runner 초기화 참조 번들 (Machine/Aim/BombWeapon/VfxParent/BugLayer)
+- **`Scripts/Ability/IAbilityRunner.cs`** — Type / Initialize / Tick / TryUse / CooldownNormalized 계약
+- **`Scripts/Ability/AbilitySlotController.cs`** — Game 씬에 1개 배치. `CharacterRegistry + PlayerData.SelectedCharacterId` 로 CharacterData 해결 → `UnlockedAbilities` 필터 → 3슬롯 Runner 인스턴스화. `Keyboard.current.digit1/2/3Key` (New Input System) 입력 바인딩. 단독 실행 대비 `_characterOverride` / `_ignoreUnlockGate` 옵션
+
+### Added — Victor 3 Runner
+
+- **`Scripts/Ability/Runners/NapalmRunner.cs`** — 회전된 직사각형 OBB 지속 장판. `Physics.OverlapBoxNonAlloc` 0.1s 주기 틱(0.5 dmg). VFX는 OilFireRed 를 길이축으로 N개 타일링(wrapper GO + 자식 타일). FloorTrapMolten `looping=false` 문제로 인스턴스화 직후 자식 ParticleSystem 전부 `main.loop = true` 강제. v2.html:1054-1056, 1005-1041, 1554 포팅
+- **`Scripts/Ability/Runners/FlameRunner.cs`** — 5초 지속 부채꼴 dps(10.8). 매 프레임 `aim.AimPosition - machine.position` XZ 방향 재계산 + VFX rotation 갱신. `Vector3.Angle` 로 `_angle`(rad→deg) 반각 필터. v2.html:1087, 1215-1241, 1749 포팅
+- **`Scripts/Ability/Runners/MineRunner.cs`** + **`MineInstance.cs`** — 최대 5개 배치. armTimer 0.5s 동안 스케일 pingpong 점멸, 이후 `Physics.OverlapSphere(1.4)` 탐지. 폭발 반경/데미지는 **BombWeapon 실효값에 배율 적용** (`EffectiveRadius×0.5`, bug `×1.5`, 보스 `×2` — v2.html:1259 준수). v2.html:1092-1099, 1243-1263 포팅
+
+### Modified
+
+- **`Scripts/Weapon/Bomb/BombWeapon.cs`** — `EffectiveDamage` / `EffectiveRadius` **public getter 2줄** 추가. MineRunner가 폭탄 강화 반영 실효값을 읽어 씀 (SSoT 유지, 중복 계산 방지)
+- **`Data/Abilities/Ability_Victor_Napalm.asset`** — `_range` 42 → 4 (v2 픽셀 → Unity 유닛 튜닝, Flame 의 180→18 비율과 일치)
+
+### Added — 에디터 자동화
+
+- **`Scripts/Editor/MinePrefabCreator.cs`** (메뉴 `Tools/Drill-Corp/3. 게임 초기 설정/7. 빅터 지뢰 프리펩 생성`) — `MineInstance.prefab` 자동 생성(루트 + MineInstance + Body=GlowZoneRed **90°X 회전(탑뷰 바닥 평면화)** + scale 0.5). MineInstance 의 `_bodyTransform` / `_explosionPrefab` / `_explosionPrefabBaseRadius` 필드 자동 바인딩. `Ability_Victor_Mine.asset._vfxPrefab` 자동 할당
+- **`Scripts/Editor/NapalmVfxBinder.cs`** (메뉴 `.../8. 빅터 네이팜 VFX 바인딩`) — `Ability_Victor_Napalm.asset._vfxPrefab` 에 `OilFireRed.prefab` 자동 할당 (타일링 방식 채택)
+
+### Fixed — 구현 중 발견한 이슈
+
+- **네이팜 사이즈 과대** — SO `_range: 42` 가 v2 픽셀 단위 그대로였음 → 4 로 재튜닝
+- **네이팜 VFX 3초 후 사라짐** — FloorTrapMolten 이 `looping=false` authoring. Runner 가 ParticleSystem.main.loop 강제
+- **네이팜 정사각형 모양** — 단일 FloorTrapMolten + 비등방 스케일이 90°X-회전된 자식 mesh 때문에 shear 발생 → OilFireRed 타일링 N개로 전환
+- **지뢰 세로로 섬** — GlowZoneRed 가 XY 평면 authoring. Body 자식에 `Euler(90, 0, 0)` 로 바닥 눕힘
+
+### Tuning 상수 (NapalmRunner)
+
+- `LengthToHalfWidthRatio = 10f` (length = halfW × 10. 탑뷰 프레임에 맞게 v2 20:1 에서 축소)
+- `TileSpacingMultiplier = 1f` (타일 간격 = halfW = 4 유닛, 총 10 타일)
+- `TileScaleMultiplier = 1f` (타일 스케일 = halfW)
+- `DamageTickInterval = 0.1f` (v2 6 frame)
+
+### Assets (준비 완료, UI 구현 시 바인딩)
+
+- **`Sprites/UI/drillcorp_victor_abilities/{64,128,256}px/`** — 빅터 3 아이콘 PNG (1_napalm / 2_flamethrower / 3_mine), 3 해상도. HUD에는 128px 권장
+
+### Deferred
+
+- 인게임 어빌리티 HUD (쿨다운 바/키 표시/아이콘) — **§11 에 별도 구현 계획 작성. 아이콘 에셋은 준비 완료, `AbilityData._icon` 에 바인딩만 남음**
+- Sara/Jinus 6 어빌리티 (BlackHole ~ SpiderDrone)
+- BossController 실구현 후 MineInstance.IsBoss 교체 (현재 `CompareTag("Boss")` fallback)
+- AbilityData 에 `_useSfx` 는 있지만 Runner가 AudioManager 호출 안 함
+- AbilitySlotController 씬 배치 자동화(Setup Editor 통합)
+
+---
+
 ## [Unreleased] - 2026-04-20 (2) — Game HUD + 세션 정산 + Range 업그레이드 v2 포팅
 
 > 커밋 `cb5c63c`, `a0eefb1`.
