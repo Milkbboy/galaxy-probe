@@ -30,5 +30,5 @@ MonoBehaviour:
   _maxInstances: 5
   _unlockGemCost: 30
   _requiredAbility: {fileID: 11400000, guid: 7d5aea08eba60f64695ad95ab17a4984, type: 2}
-  _vfxPrefab: {fileID: 0}
+  _vfxPrefab: {fileID: 3197714050619587664, guid: 8ed7796849b4e7a46862e7bf91fdd0ab, type: 3}
   _useSfx: {fileID: 0}
