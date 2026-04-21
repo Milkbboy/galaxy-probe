@@ -59,8 +59,8 @@ sysinfo.txt
 # TextMeshPro
 Assets/TextMesh Pro/Examples & Extras/
 
-# Screenshot (optional - 개발용 스크린샷)
-# Screenshot/
+# Screenshot (개발용 스크린샷 — 리포 크기 절약)
+Screenshot/
 
 # Google API Credentials (보안)
 Assets/_Game/Data/Credentials/google-credentials.json

@@ -57,6 +57,11 @@ MonoBehaviour:
   _hitVfxPrefab: {fileID: 1469201857544070, guid: e5292a181d7214e468d5d2de426b511c, type: 3}
   _deathVfxPrefab: {fileID: 5246394779498801318, guid: 8cfeeb3d559f2f14090de45627ca49a2, type: 3}
   _vfxScaleMultiplier: 10
+  _slowVfxPrefab: {fileID: 7471330421619993147, guid: 249f2d7c150622f4fa38432374750332, type: 3}
+  _rotateSlowVfxFlat: 1
+  _slowVfxScale: 3
+  _slowVfxDuration: 1.5
+  _slowTint: {r: 0.31, g: 0.76, b: 0.97, a: 0.55}
 --- !u!1 &5500000000000000110
 GameObject:
   m_ObjectHideFlags: 0

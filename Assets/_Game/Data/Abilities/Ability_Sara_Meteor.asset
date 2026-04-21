@@ -17,7 +17,7 @@ MonoBehaviour:
   _displayName: "\uBC18\uC911\uB825 \uBA54\uD14C\uC624"
   _description: 
   _iconEmoji: "\u2604"
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 805b1faa3b70e8c48b2d9a9c6de81f57, type: 3}
   _themeColor: {r: 1, g: 0.26666668, b: 0.53333336, a: 1}
   _slotKey: 3
   _abilityType: 5
@@ -31,5 +31,6 @@ MonoBehaviour:
   _maxInstances: 999
   _unlockGemCost: 30
   _requiredAbility: {fileID: 11400000, guid: adabcf0044d68924f996d77bdb55e7fe, type: 2}
-  _vfxPrefab: {fileID: 0}
+  _vfxPrefab: {fileID: 325910146911780912, guid: 810572a445bd0f241a14dbec2eb53a6d, type: 3}
   _useSfx: {fileID: 0}
+  _vfxScale: 1

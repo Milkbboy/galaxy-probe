@@ -6,6 +6,63 @@
 
 ---
 
+## [Unreleased] - 2026-04-21 — Phase 6 사라 어빌리티 (블랙홀 / 충격파 / 메테오)
+
+> 근거: `docs/v2.html:994~1000, 1055, 1061~1080, 1146~1184, 1265~1295`
+> 상세: [Phase6_SaraAbility_Plan.md](Phase6_SaraAbility_Plan.md)
+> 맥락: Phase 5 빅터 어빌리티 인프라(`AbilityContext`, `IAbilityRunner`, `AbilitySlotController`, `AbilityRangeDecal`, `AbilityDecalMeshBuilder`) 위에 사라 3종 구현.
+
+### Added — 사라 Runner 3종
+
+- **`BlackHoleRunner.cs`** — 마우스 위치에 중력 존 1개 지속 생성. 반경 18 내 SimpleBug 를 중심으로 `PullSpeedPerSec=5.4f` 로 끌어당김. `InnerCutoff=0.4f` 로 딱붙기 방지. 동시 1개 제한(v2 `!bh.active` 가드). VortexPortalPurple wrapper 에 `Quaternion.Euler(90,0,0)` 로 탑뷰 평면화. 바닥 데칼은 `BuildCircle(1)` + `localScale` 스케일링 방식(Mesh 재빌드 회피).
+- **`ShockwaveRunner.cs`** — 머신 중심에서 순간성(약 0.43초) 확장 링. `ExpandSpeedPerSec=84f`로 반경 36 까지 확장 → 링 통과한 SimpleBug 1회 히트 (`HashSet<Collider>` 중복 방지), `PushDistance=8f` 순간 변위 + `ApplySlow(0.5f, 3f)`. `BuildRing(0.85, 1.0)` Mesh 1회만 생성 후 `localScale` 확장. LightningWaveBlue 임팩트 VFX.
+- **`MeteorRunner.cs`** — AutoInterval `_autoIntervalSec=10`. 머신 기준 반경 3~15 랜덤 착지 위치 + **XZ 오프셋 14 유닛**으로 탑뷰에서 **대각선 낙하 궤적**(~38°). `FallSpeed=12f`, `FallHeight=18f`. `CooldownNormalized = 1 - _autoTimer/AutoIntervalSec` (HUD 차오름).
+- **`MeteorInstance.cs`** — 낙하체 MonoBehaviour. `startPos → targetPos` 직선 이동, `LookRotation(_fallDir)` 로 낙하 방향 바라봄(트레일 자연스러움). 도착 시 폭발 VFX(FireNovaYellow) + `MeteorFireZone` new GameObject 생성 후 자기 Destroy.
+- **`MeteorFireZone.cs`** — 착지 후 15초 지속 원형 화염. 0.1s 틱마다 `OverlapSphereNonAlloc(radius=5.5)` → `IDamageable.TakeDamage(0.5)`. FloorTrapMolten 자식 PS 전부 `main.loop = true` 강제(네이팜 타일링 패턴 재사용). 바닥 데칼은 `BuildCircle(1)` + localScale 주황.
+
+### Added — AbilityData 라이브 튜닝 훅
+
+- **`AbilityData.cs`** — `_vfxScale` 필드 신설 (기본 1.0, VFX 크기 배율). 판정/데칼은 영향 없고 VFX 만 조절.
+- **`AbilityData.OnValidated` 이벤트** — `#if UNITY_EDITOR` 로 빌드 제외. `OnValidate()` 에서 발행. Runner 가 구독해 활성 존의 판정 반경/VFX 스케일 실시간 갱신. `BlackHoleZone.ApplyLiveTuning` / `ShockwaveRing.ApplyLiveTuning` 구현.
+
+### Added — SimpleBug 슬로우 기능
+
+- **`SimpleBug.cs`** — `ApplySlow(strength, durationSec)` 공개 메서드 (BugController 와 동일 시그니처). `_slowStrength`/`_slowTimer` 필드 + Update 에서 이동속도 `(1 - _slowStrength)` 배율 적용.
+- **슬로우 시각 표시 (전략 3: 체인 임팩트 + 틴트)** — 90마리 동시 슬로우 시 프레임 드랍 이슈 해결.
+  - `_slowVfxPrefab`(ChainedFrost) 은 슬로우 시작 **순간 0.5초만** 재생 후 `Destroy(wrapper, _slowVfxDuration)` 자동 정리.
+  - 지속 표시는 **머티리얼 틴트** — Renderer 배열 캐싱 + 기본 색 저장 + `_BaseColor`/`_Color` 에 `_slowTint` (`#4fc3f7 α=0.55`) Lerp. 슬로우 해제 시 `ClearSlowTint` 복원. Unity 머티리얼 인스턴스 1회만 생성.
+  - `_slowVfxScale=3f` 로 벌레 localScale 상쇄 + 월드 기준 일정 크기.
+- **사망/풀 반환 시 정리** — `TakeDamage` 치명타 분기에서 `ClearSlowVfxImmediate` 호출.
+
+### Added — 에디터 자동화
+
+- **`Scripts/Editor/MeteorPrefabCreator.cs`** (메뉴 `Tools/Drill-Corp/3. 게임 초기 설정/사라/1. 메테오 프리펩 생성`) — `MeteorInstance.prefab` 자동 생성: Body(Sphere + `MeteorBody.mat` 빨강 Unlit) + ChargeAura(AuraChargeRed, 90°X 회전) + MeteorInstance 컴포넌트. `_impactVfxPrefab=FireNovaYellow` / `_fireZoneVfxPrefab=FloorTrapMolten` 필드 자동 바인딩. `Ability_Sara_Meteor.asset._vfxPrefab` 자동 할당. **`AssetDatabase.CreateAsset` 으로 `MeteorBody.mat` 에셋 저장** — `new Material()` 만으로는 프리펩 직렬화 안 되는 이슈 해결.
+
+### Modified — 인프라
+
+- **`AbilitySlotController.cs`** — switch 분기 3줄 추가 (BlackHole/Shockwave/Meteor → 각 Runner 생성). Drone/MiningDrone/SpiderDrone 은 Phase 7 대기.
+- **`docs/README.md`** — Phase별 구현 계획 섹션 추가 (Phase 2~6 링크).
+
+### 주요 의사 결정
+
+| # | 결정 | 근거 |
+|---|---|---|
+| 1 | 사라 먼저 (Jinus 는 Phase 7) | 기존 Runner 패턴 재사용 용이 — Jinus 는 드론 AI/발사체 추가 작업 큼 |
+| 2 | 블랙홀 흡인은 `Transform.position += delta` direct 조작 | BugController 안 씀(현 프로젝트 SimpleBug 전용). 다음 프레임 이동 로직에서 자연 복귀 |
+| 3 | 메테오 첫 발동은 v2 원본 그대로 (10초 대기) | UX 안정성 |
+| 4 | `_vfxBaseRadius` 역방향 → `_vfxScale` 직관적 배율 | 인스펙터에서 값 키우면 커지는 게 자연스러움 |
+| 5 | 슬로우 VFX 는 체인 유지 + 부하 해결 = 0.5초 임팩트 + 틴트 | "체인 연출감" 요구 + 대량 벌레 동시 적용 시 프레임 안정 양립 |
+| 6 | 충격파 VFX 는 FrostNova → LightningWaveBlue | "Wave" 의미 일치 + 사라 테마 청록 |
+
+### Deferred
+
+- `SaraVfxBinder.cs` 통합 메뉴 (Jinus VfxBinder 와 함께 작업)
+- 충격파 VFX "얼음이 팍" 스타일 재검토 (SpikeIce / MiniExploFrost / IceExplosion 후보 정리됨)
+- SimpleBug 스폰 반경 조정 — 사용자 피드백(너무 멀리 스폰)
+- 에디터 전용 코드 마킹 리팩토링 ([Refactor_EditorOnlyCode_Plan.md](Refactor_EditorOnlyCode_Plan.md))
+
+---
+
 ## [Unreleased] - 2026-04-21 — 빅터 어빌리티 폴리싱 (범위 표시 / 지뢰 연출 / HUD 테두리)
 
 > 근거: `docs/v2.html` + 인게임 피드백

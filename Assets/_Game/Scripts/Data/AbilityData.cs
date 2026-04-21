@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace DrillCorp.Data
@@ -108,6 +109,14 @@ namespace DrillCorp.Data
         [SerializeField] private GameObject _vfxPrefab;
         [SerializeField] private AudioClip _useSfx;
 
+        [Tooltip(
+            "VFX 크기 배율. 기본 1 = 판정 반경(Range)에 맞춘 자동 스케일.\n" +
+            "키우면 VFX가 커지고 줄이면 작아짐. 데칼·판정 반경은 영향 없음 (VFX만 조절).\n" +
+            "프리펩별 '한 유닛 반경' 은 각 Runner 내부 상수로 관리."
+        )]
+        [Min(0f)]
+        [SerializeField] private float _vfxScale = 1f;
+
         // ─── Properties ───
         public string AbilityId => _abilityId;
         public string CharacterId => _characterId;
@@ -130,5 +139,20 @@ namespace DrillCorp.Data
         public AbilityData RequiredAbility => _requiredAbility;
         public GameObject VfxPrefab => _vfxPrefab;
         public AudioClip UseSfx => _useSfx;
+        public float VfxScale => _vfxScale;
+
+#if UNITY_EDITOR
+        /// <summary>
+        /// 에디터에서 SO 값이 변경될 때 발생 (OnValidate 훅).
+        /// 빌드엔 포함되지 않음 — 개발 중 라이브 튜닝 전용.
+        /// Runner가 구독해 VFX 스케일/데칼 크기/판정 반경을 즉시 갱신할 수 있게 해줌.
+        /// </summary>
+        public event Action OnValidated;
+
+        private void OnValidate()
+        {
+            OnValidated?.Invoke();
+        }
+#endif
     }
 }

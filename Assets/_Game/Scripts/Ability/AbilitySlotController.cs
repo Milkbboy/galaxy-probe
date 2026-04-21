@@ -154,18 +154,18 @@ namespace DrillCorp.Ability
 
         /// <summary>
         /// AbilityType → IAbilityRunner 구현체 매핑.
-        /// Step 3/4/5 에서 Napalm/Flame/Mine 추가. 나머지(Sara/Jinus)는 후속 페이즈.
+        /// Phase5: Napalm/Flame/Mine. Phase6: BlackHole/Shockwave/Meteor. Jinus 3종은 후속 Phase.
         /// </summary>
         private static IAbilityRunner CreateRunner(AbilityType type)
         {
             switch (type)
             {
-                case AbilityType.Napalm: return new NapalmRunner();
-                case AbilityType.Flame:  return new FlameRunner();
-                case AbilityType.Mine:   return new MineRunner();
-                case AbilityType.BlackHole:
-                case AbilityType.Shockwave:
-                case AbilityType.Meteor:
+                case AbilityType.Napalm:    return new NapalmRunner();
+                case AbilityType.Flame:     return new FlameRunner();
+                case AbilityType.Mine:      return new MineRunner();
+                case AbilityType.BlackHole: return new BlackHoleRunner();
+                case AbilityType.Shockwave: return new ShockwaveRunner();
+                case AbilityType.Meteor:    return new MeteorRunner();
                 case AbilityType.Drone:
                 case AbilityType.MiningDrone:
                 case AbilityType.SpiderDrone:

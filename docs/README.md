@@ -1,6 +1,6 @@
 # Drill-Corp 문서 인덱스
 
-> 최종 갱신: 2026-04-21 (빅터 어빌리티 폴리싱: 범위 데칼 · 지뢰 연출 · HUD 테두리 — [CHANGELOG](CHANGELOG.md))
+> 최종 갱신: 2026-04-21 (Phase 6 사라 어빌리티: 블랙홀 · 충격파 · 메테오 + SimpleBug 슬로우 + 라이브 튜닝 훅 — [CHANGELOG](CHANGELOG.md))
 
 ## 🎯 시작점
 
@@ -42,6 +42,16 @@
 | 카메라 (Nuclear Throne 방식) | [CameraSystem.md](CameraSystem.md) |
 | 미니맵 (RenderTexture) | [MinimapSystem.md](MinimapSystem.md) |
 | 사운드 (AudioManager + 파형 편집 툴) | [SoundSystem.md](SoundSystem.md) |
+
+## 🧱 Phase별 구현 계획
+
+| Phase | 문서 |
+|---|---|
+| 2 — 폭탄 무기 | [Phase2_Bomb_Plan.md](Phase2_Bomb_Plan.md) |
+| 3 — 기관총 | [Phase3_MachineGun_Plan.md](Phase3_MachineGun_Plan.md) |
+| 4 — 레이저 | [Phase4_Laser_Plan.md](Phase4_Laser_Plan.md) |
+| 5 — 빅터 어빌리티 (네이팜·화염방사기·지뢰) | [Phase5_VictorAbility_Plan.md](Phase5_VictorAbility_Plan.md) |
+| 6 — 사라 어빌리티 (블랙홀·충격파·메테오) | [Phase6_SaraAbility_Plan.md](Phase6_SaraAbility_Plan.md) |
 
 ## 📊 데이터 / 연동
 

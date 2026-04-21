@@ -17,12 +17,12 @@ MonoBehaviour:
   _displayName: "\uCDA9\uACA9\uD30C"
   _description: 
   _iconEmoji: "\U0001F4A5"
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 7e11de6229005794180a294a2c783c40, type: 3}
   _themeColor: {r: 0.30980393, g: 0.7607843, b: 0.96862745, a: 1}
   _slotKey: 2
   _abilityType: 4
   _trigger: 0
-  _cooldownSec: 50
+  _cooldownSec: 1
   _durationSec: 0
   _autoIntervalSec: 0
   _damage: 0
@@ -31,5 +31,6 @@ MonoBehaviour:
   _maxInstances: 1
   _unlockGemCost: 30
   _requiredAbility: {fileID: 11400000, guid: 1270747385b52af418c16338f295cda6, type: 2}
-  _vfxPrefab: {fileID: 0}
+  _vfxPrefab: {fileID: 4536381561898669068, guid: 982ea0ce109c32948931ed73afdfdc32, type: 3}
   _useSfx: {fileID: 0}
+  _vfxScale: 1
