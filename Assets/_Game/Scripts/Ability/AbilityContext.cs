@@ -1,5 +1,6 @@
 using UnityEngine;
 using DrillCorp.Aim;
+using DrillCorp.Machine;
 using DrillCorp.Weapon.Bomb;
 
 namespace DrillCorp.Ability
@@ -28,5 +29,11 @@ namespace DrillCorp.Ability
         /// 씬에 BombWeapon이 없거나 해금 전이면 null. MineRunner가 null-safe 처리.
         /// </summary>
         public BombWeapon BombWeapon;
+
+        /// <summary>
+        /// 머신 참조 — 지누스 채굴 드론이 `AddBonusMining(x)`로 세션 채굴량을 증가시킨다.
+        /// 씬에 MachineController가 없으면 null. MiningDroneRunner가 null-safe 처리.
+        /// </summary>
+        public MachineController Machine;
     }
 }

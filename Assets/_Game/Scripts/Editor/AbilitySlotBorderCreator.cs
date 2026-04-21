@@ -84,7 +84,7 @@ namespace DrillCorp.EditorTools
 
             // 9-slice Border — 16×16 texture 안에서 left/bottom/right/top 각 4px 고정.
             // 다른 해상도의 Image에 할당해도 모서리 4px가 고정되고 가운데만 늘어나 테두리 두께 유지.
-            var settings = importer.spritesheet; // Single 모드라 원본 1개만 취급
+            // Single 모드는 TextureImporter.spriteBorder 만으로 충분 (spritesheet 배열 불필요).
             importer.spriteBorder = new Vector4(SliceMarginPx, SliceMarginPx, SliceMarginPx, SliceMarginPx);
 
             importer.SaveAndReimport();

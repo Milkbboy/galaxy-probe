@@ -6,6 +6,62 @@
 
 ---
 
+## [Unreleased] - 2026-04-21 (2) — Phase 7 지누스 어빌리티 (드론 포탑 / 채굴 드론 / 드론 거미)
+
+> 근거: `docs/v2.html:1042~1053, 1057~1060, 1081~1086, 1156~1164, 1185~1214, 1296~1303, 1643~1646`
+> 상세: [Phase7_JinusAbility_Plan.md](Phase7_JinusAbility_Plan.md)
+> 맥락: Phase 5·6 에서 만든 어빌리티 인프라 위에 지누스 3종을 **배치형 유닛(HP·AI 자체 보유)** 으로 구현. 빅터(즉시 장판)·사라(즉시 효과) 와 성격이 다른 유닛 중심 어빌리티.
+
+### Added — 지누스 Runner 3종
+
+- **`DroneRunner.cs` + `DroneInstance.cs`** — 수동 배치 드론 포탑. 20초 쿨, 최대 5기. 사거리 10 내 최근접 벌레 OverlapSphereNonAlloc 조준, yaw 회전 후 0.5초 주기로 DroneBullet 발사(±5° 산포). 벌레 접촉 시 HP 감소(30 dps/마리), 0 이하면 파괴 + burst. 사거리 링(`AbilityRangeDecal.BuildRing`) + 3D HP 바(Hp3DBar).
+- **`MiningDroneRunner.cs` + `MiningDroneInstance.cs`** — 수동 배치 채굴 버프. 30초 쿨, 10초 지속, 최대 1기. 매 프레임 `MachineController.AddBonusMining(5 * dt)` 호출로 초당 +5 채굴. 1초 주기로 10% 확률 `GameEvents.OnGemCollected(1)` 발행. 런타임 디스크 body(Cylinder) + 원호 타이머 + "Ns" 라벨.
+- **`SpiderDroneRunner.cs` + `SpiderDroneInstance.cs`** — **AutoInterval** 10초마다 자동 소환, 최대 3기. 머신 ±2 유닛 랜덤 위치 스폰. 사거리 12 내 타겟 추격(속도 18 u/s), 멜리 반경 1.2 도달 시 정지 + 접촉 피해 3 dps. 타겟 없으면 머신 주위 선회(orbit base 6 + sin 진폭 2). HP 40 자연감쇠 0.3/s. 런타임 primitive Sphere body + 3D HP 바.
+
+### Added — 지누스 드론 공용 부품
+
+- **`DroneBullet.cs`** — 경량 투사체(드론 포탑 전용). `MachineGunData` 의존 없이 `Initialize(dir, speed, damage, lifetime, bugLayer)` 로 상태 주입. XZ 직진 + OverlapSphereNonAlloc 첫 명중에 `IDamageable.TakeDamage` → Destroy. 수명 만료는 폭발 VFX 없이 소멸.
+- **`AbilityContext.Machine`** 필드 신규 — `MachineController` 참조 주입. 채굴 드론이 외부에서 채굴량 증가. `AbilitySlotController.BuildContext()` 에서 `FindAnyObjectByType<MachineController>()` 로 자동 해결.
+- **`MachineController.AddBonusMining(float)`** 공개 API — 외부 소스가 `_miningAccumulator` 에 누적. 정수화·이벤트 발행은 기존 `Mining()` 경로 재사용 (SSoT 원칙).
+
+### Added — 3D 월드 UI 공용 컴포넌트
+
+- **`Hp3DBar.cs`** — primitive Cube 2개(배경+Fill) 기반 월드 공간 HP 바. `Create(target, offset, size)` + `SetHealth(ratio)` + `SetColors(full, low, threshold)`. Fill 가로 축소 왼쪽 정렬, 30% 이하 빨강 전환. 런타임 머티리얼(URP/Unlit) + `shadowCastingMode=Off`. 드론 포탑(2×0.22×0.3) / 거미(1.2×0.15×0.2) 양쪽 사용.
+- **`MiningDroneTimer3D.cs`** — 채굴 드론 수명 시각화. LineRenderer 원호(12시 시작 시계방향 수축) + TextMeshPro 3D 라벨("Ns"). `SetProgress(0~1)` + `SetSeconds(int)`. `LineAlignment.View` 로 탑뷰 카메라 billboard (TransformZ 는 vertical plane 으로 서버리는 이슈 있음). v2.html:1643~1646 포팅.
+
+### Added — 에디터 자동화
+
+- **`Scripts/Editor/DronePrefabCreator.cs`** (메뉴 `Tools/Drill-Corp/3. 게임 초기 설정/10. 지누스 드론 프리펩 생성`) — 4개 프리펩 일괄 생성:
+  - `DroneBullet.prefab` — `DroneBullet` 컴포넌트 + Polygon Arsenal `BulletGreen` 자식 VFX
+  - `DroneInstance.prefab` — `DroneInstance` + Body(GlowPowerupBigGreen) + `_bulletPrefab` 자동 바인딩
+  - `MiningDroneInstance.prefab` — `MiningDroneInstance` + Body(CrystalGrowthGreen)
+  - `SpiderDroneInstance.prefab` — `SpiderDroneInstance` + Body(SparkleOrbGreen) · 탄 없음
+  - 각 `Ability_Jinus_*.asset._vfxPrefab` 자동 할당
+- **`Scripts/Editor/PolygonArsenalFbxFixer.cs`** (메뉴 `Tools/Drill-Corp/4. 서드파티 유틸/Polygon Arsenal FBX 머티리얼 경로 수정`) — Polygon Arsenal 153개 FBX 의 deprecated `MaterialLocation.External → InPrefab` 일괄 변경. `AssetDatabase.StartAssetEditing` 배치 처리. `!= InPrefab` 조건으로 obsolete enum 값 직접 참조 회피.
+
+### Changed — AbilityData 지누스 SO 3종
+
+- `Ability_Jinus_Drone._themeColor` → `#51cf66` (기존 사라 블루 `#4fc3f7` 수정)
+- `Ability_Jinus_SpiderDrone._themeColor` → `#51cf66` (기존 하늘색 수정)
+- HUD 테마 통일 — 캐릭터 컬러 일관성.
+
+### Changed — 드론 거미 근접 공격 전환 (v2 체감 우선)
+
+v2 원본은 탄을 쏘지만 공격적 접근 + 0거리 발사로 플레이 체감이 "달라붙어 뜯는 근접". Unity 포팅은 체감 우선 — `DroneBullet` 의존 제거, `_meleeRadius=1.2` + `_meleeDps=3` 접촉 피해로 전환. 멜리 범위 도달 시 이동 정지 (통과 방지).
+
+### Changed — 드론 거미 타겟 예약 (AI 개선)
+
+단순 "최근접 벌레" 선택 시 3기가 같은 벌레에 몰려 1기처럼 보이는 문제. `static HashSet<int> _claimedTargets` 공유 예약 세트 도입 — 다른 거미가 추적 중인 벌레는 skip, 미예약 없으면 fallback. 타겟 락으로 사거리 이탈/사망 전까지 재선택 안 함(thrashing 방지). `DestroySelf`/`OnDestroy` 에서 예약 해제.
+
+### Fixed — CS0618 deprecated API 경고
+
+- `Object.FindFirstObjectByType<T>()` → `FindAnyObjectByType<T>()` 4건 (AbilityHudSetupEditor, TopBarHudSetupEditor ×2, ResultPanelSetupEditor)
+- `TextureImporter.spritesheet` 참조 제거 (AbilitySlotBorderCreator — 실제 사용 안 됐음)
+- `ModelImporterMaterialLocation.External` 직접 비교 회피 (`!= InPrefab` 조건)
+- 사용자 피드백 반영 — 이미 CLAUDE.md 에 경고된 사항을 Phase 5·6 에서 반복 위반한 점 `feedback_unity_deprecated_apis.md` 메모리에 영구 기록.
+
+---
+
 ## [Unreleased] - 2026-04-21 — Phase 6 사라 어빌리티 (블랙홀 / 충격파 / 메테오)
 
 > 근거: `docs/v2.html:994~1000, 1055, 1061~1080, 1146~1184, 1265~1295`

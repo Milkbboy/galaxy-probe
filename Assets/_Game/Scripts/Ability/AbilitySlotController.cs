@@ -4,6 +4,7 @@ using DrillCorp.Ability.Runners;
 using DrillCorp.Aim;
 using DrillCorp.Core;
 using DrillCorp.Data;
+using DrillCorp.Machine;
 using DrillCorp.OutGame;
 using DrillCorp.Weapon.Bomb;
 
@@ -141,6 +142,7 @@ namespace DrillCorp.Ability
                 BugLayer = _aim != null ? _aim.BugLayer : 0,
                 VfxParent = _vfxParent,
                 BombWeapon = FindAnyObjectByType<BombWeapon>(),
+                Machine = FindAnyObjectByType<MachineController>(),
             };
             return ctx;
         }
@@ -163,12 +165,12 @@ namespace DrillCorp.Ability
                 case AbilityType.Napalm:    return new NapalmRunner();
                 case AbilityType.Flame:     return new FlameRunner();
                 case AbilityType.Mine:      return new MineRunner();
-                case AbilityType.BlackHole: return new BlackHoleRunner();
-                case AbilityType.Shockwave: return new ShockwaveRunner();
-                case AbilityType.Meteor:    return new MeteorRunner();
-                case AbilityType.Drone:
-                case AbilityType.MiningDrone:
-                case AbilityType.SpiderDrone:
+                case AbilityType.BlackHole:   return new BlackHoleRunner();
+                case AbilityType.Shockwave:   return new ShockwaveRunner();
+                case AbilityType.Meteor:      return new MeteorRunner();
+                case AbilityType.Drone:       return new DroneRunner();
+                case AbilityType.MiningDrone: return new MiningDroneRunner();
+                case AbilityType.SpiderDrone: return new SpiderDroneRunner();
                 default:
                     return null;
             }

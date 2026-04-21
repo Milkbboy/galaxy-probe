@@ -273,6 +273,17 @@ namespace DrillCorp.Machine
             _currentHealth = Mathf.Min(_currentHealth, _maxHealth);
         }
 
+        /// <summary>
+        /// 외부(채굴 드론 등)에서 세션 채굴량을 주입한다. _miningAccumulator에 누적되어
+        /// 다음 Update()의 Mining()이 FloorToInt 처리 + 이벤트 발행을 담당한다.
+        /// v2.html 지누스 채굴 드론(1299: `mineAmt += 5/60*dt`) 포팅용 훅.
+        /// </summary>
+        public void AddBonusMining(float amount)
+        {
+            if (!_isSessionActive || amount <= 0f) return;
+            _miningAccumulator += amount;
+        }
+
         #region Debug
 
         /// <summary>

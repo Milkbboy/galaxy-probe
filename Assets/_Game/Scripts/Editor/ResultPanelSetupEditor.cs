@@ -36,7 +36,7 @@ namespace DrillCorp.EditorTools
         [MenuItem("Drill-Corp/HUD/Build Result Panel")]
         public static void BuildResultPanel()
         {
-            var canvas = Object.FindFirstObjectByType<Canvas>();
+            var canvas = Object.FindAnyObjectByType<Canvas>();
             if (canvas == null)
             {
                 EditorUtility.DisplayDialog("ResultPanel 생성 실패", "현재 씬에 Canvas가 없습니다.", "확인");

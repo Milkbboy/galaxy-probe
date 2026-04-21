@@ -36,7 +36,7 @@ namespace DrillCorp.EditorTools
         [MenuItem("Drill-Corp/HUD/Build TopBar")]
         public static void BuildTopBar()
         {
-            var canvas = Object.FindFirstObjectByType<Canvas>();
+            var canvas = Object.FindAnyObjectByType<Canvas>();
             if (canvas == null)
             {
                 EditorUtility.DisplayDialog("TopBar 생성 실패", "현재 씬에 Canvas가 없습니다.", "확인");
@@ -277,7 +277,7 @@ namespace DrillCorp.EditorTools
         // 프로젝트는 New Input System을 쓰므로 InputSystemUIInputModule 사용.
         static void EnsureEventSystem()
         {
-            var existing = Object.FindFirstObjectByType<EventSystem>();
+            var existing = Object.FindAnyObjectByType<EventSystem>();
             if (existing != null) return;
 
             var go = new GameObject("EventSystem");

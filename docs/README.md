@@ -1,6 +1,6 @@
 # Drill-Corp 문서 인덱스
 
-> 최종 갱신: 2026-04-21 (Phase 6 사라 어빌리티: 블랙홀 · 충격파 · 메테오 + SimpleBug 슬로우 + 라이브 튜닝 훅 — [CHANGELOG](CHANGELOG.md))
+> 최종 갱신: 2026-04-21 (Phase 7 지누스 어빌리티: 드론 포탑 · 채굴 드론 · 드론 거미 + Hp3DBar · MiningDroneTimer3D 공용 컴포넌트 — [CHANGELOG](CHANGELOG.md))
 
 ## 🎯 시작점
 
@@ -52,6 +52,7 @@
 | 4 — 레이저 | [Phase4_Laser_Plan.md](Phase4_Laser_Plan.md) |
 | 5 — 빅터 어빌리티 (네이팜·화염방사기·지뢰) | [Phase5_VictorAbility_Plan.md](Phase5_VictorAbility_Plan.md) |
 | 6 — 사라 어빌리티 (블랙홀·충격파·메테오) | [Phase6_SaraAbility_Plan.md](Phase6_SaraAbility_Plan.md) |
+| 7 — 지누스 어빌리티 (드론 포탑·채굴 드론·드론 거미) | [Phase7_JinusAbility_Plan.md](Phase7_JinusAbility_Plan.md) |
 
 ## 📊 데이터 / 연동
 

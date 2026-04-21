@@ -47,7 +47,7 @@ namespace DrillCorp.EditorTools
         [MenuItem("Drill-Corp/HUD/Build Ability HUD")]
         public static void BuildAbilityHud()
         {
-            var canvas = Object.FindFirstObjectByType<Canvas>();
+            var canvas = Object.FindAnyObjectByType<Canvas>();
             if (canvas == null)
             {
                 EditorUtility.DisplayDialog("AbilityHud 생성 실패", "현재 씬에 Canvas가 없습니다.", "확인");
