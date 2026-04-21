@@ -569,12 +569,16 @@ public class AbilitySlotUI : MonoBehaviour
 
 ### 11.8 작업 체크리스트
 
-- [ ] **Step 9-1** `Scripts/Data/AbilityData.cs` 에 `_themeColor` 필드 추가 + 9개 SO 색 세팅 (빅터 3종 먼저)
-- [ ] **Step 9-2** `Scripts/Editor/VictorAbilityIconBinder.cs` — 빅터 3 SO 의 `_icon` 에 `drillcorp_victor_abilities/128px/*.png` 자동 할당 (메뉴 1회 실행)
-- [ ] **Step 9-3** `Scripts/UI/HUD/AbilityHud.cs` / `AbilitySlotUI.cs` 구현 (아이콘 Image 슬롯 포함)
-- [ ] **Step 9-4** `Scripts/Editor/AbilityHudSetupEditor.cs` — Canvas 에 HUD 자동 생성 메뉴 (TopBarHudSetupEditor 패턴 참고)
-- [ ] **Step 9-5** Game 씬에 AbilityHud 배치 (에디터 메뉴로 자동) + 수동 플레이 검증
-- [ ] **Step 9-6** TopBarHud 와 캐릭터 이름 표시 충돌 정리 (둘 중 하나로 일원화)
+- [x] **Step 9-1** `Scripts/Data/AbilityData.cs` 에 `_themeColor` 필드 추가 + 9개 SO 색 세팅 (v2 색표 그대로)
+- [~] **Step 9-2** ~~`VictorAbilityIconBinder.cs`~~ → **불필요** (사용자가 PNG Sprite 변환 + SO `_icon` 직접 바인딩 완료)
+- [x] **Step 9-3** `Scripts/UI/HUD/AbilityHud.cs` / `AbilitySlotUI.cs` 구현 (아이콘 Image 슬롯 포함)
+- [x] **Step 9-4** `Scripts/Editor/AbilityHudSetupEditor.cs` — Canvas 에 HUD 자동 생성 메뉴 (TopBarHudSetupEditor 패턴)
+- [ ] **Step 9-5** Game 씬에 AbilityHud 배치 (에디터 메뉴로 자동) + 수동 플레이 검증 ← **사용자 작업**
+- [x] **Step 9-6** TopBarHud 좌측에 `CharacterSlot` 흡수 (충돌 회피, 일원화)
+- [x] **메뉴 트리 정리** — 빅터 전용 메뉴는 `Tools/Drill-Corp/3. 게임 초기 설정/빅터/{1,2}` 서브메뉴로 이동
+  - `1. 지뢰 프리펩 생성` (MinePrefabCreator) — 빅터 전용 (지뢰 본체 프리펩)
+  - `2. 네이팜 VFX 바인딩` (NapalmVfxBinder) — 빅터 전용 (Napalm SO `_vfxPrefab` 바인딩)
+  - **AbilityHudSetupEditor**는 캐릭터 중립이므로 `Drill-Corp/HUD/Build Ability HUD` 공용 위치 (TopBar 메뉴와 동일 카테고리)
 
 ### 11.9 v2 원본 스크린샷 기준 해상도
 

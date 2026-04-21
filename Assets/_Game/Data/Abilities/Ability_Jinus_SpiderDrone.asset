@@ -18,6 +18,7 @@ MonoBehaviour:
   _description: 
   _iconEmoji: "\U0001F577"
   _icon: {fileID: 0}
+  _themeColor: {r: 0.53333336, g: 0.8666667, b: 1, a: 1}
   _slotKey: 3
   _abilityType: 8
   _trigger: 1

@@ -55,6 +55,9 @@ namespace DrillCorp.Data
 
         [SerializeField] private Sprite _icon;
 
+        [Tooltip("HUD 슬롯 강조색 (테두리·라벨·쿨다운바). v2 drawItemUI item.color 포팅값.")]
+        [SerializeField] private Color _themeColor = new Color(1f, 0.42f, 0.21f, 1f); // #ff6b35 기본
+
         [Header("Slot")]
         [Tooltip("인게임 입력 키 슬롯 (1 / 2 / 3)")]
         [Range(1, 3)]
@@ -112,6 +115,7 @@ namespace DrillCorp.Data
         public string Description => _description;
         public string IconEmoji => _iconEmoji;
         public Sprite Icon => _icon;
+        public Color ThemeColor => _themeColor;
         public int SlotKey => _slotKey;
         public AbilityType Type => _abilityType;
         public AbilityTrigger Trigger => _trigger;

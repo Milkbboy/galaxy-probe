@@ -32,13 +32,18 @@ namespace DrillCorp.Machine
         // legacy _armor(MachineData)와 별도 누적.
         private float _damageReductionPct;
 
+        [Header("Debug")]
+        [Tooltip("ON 이면 채굴 목표량을 무한으로 간주 — 세션이 채굴 성공으로 끝나지 않음. " +
+                 "어빌리티/HUD 디버깅 용도. 영구 데이터 영향 없음.")]
+        [SerializeField] private bool _debugInfiniteMiningTarget;
+
         public float CurrentHealth => _currentHealth;
         public float MaxHealth => _maxHealth;
         public bool IsDead => _currentHealth <= 0f && !_isInvincible;
 
         public int TotalMined => _totalMined;
         public float MiningTarget => _miningTarget;
-        public bool IsMiningTargetReached => _totalMined >= _miningTarget;
+        public bool IsMiningTargetReached => !_debugInfiniteMiningTarget && _totalMined >= _miningTarget;
 
         // Weapon properties for AimController
         public float AttackDamage => _attackDamage;

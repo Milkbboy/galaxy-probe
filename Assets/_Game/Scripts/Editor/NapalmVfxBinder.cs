@@ -11,7 +11,7 @@ namespace DrillCorp.EditorTools
     /// NapalmRunner가 이 단일 프리펩을 길이축으로 N개 복제 배치한다.
     /// FloorTrapMolten 은 원형 효과라 부적절 — 반드시 작은 불꽃(OilFire*) 을 쓸 것.
     ///
-    /// 메뉴: Tools/Drill-Corp/3. 게임 초기 설정/8. 빅터 네이팜 VFX 바인딩
+    /// 메뉴: Tools/Drill-Corp/3. 게임 초기 설정/빅터/2. 네이팜 VFX 바인딩
     /// </summary>
     public static class NapalmVfxBinder
     {
@@ -22,7 +22,7 @@ namespace DrillCorp.EditorTools
         private const string OilFireTilePath =
             "Assets/Polygon Arsenal/Prefabs/Environment/Fire/OilFire/OilFireRed.prefab";
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/8. 빅터 네이팜 VFX 바인딩")]
+        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/빅터/2. 네이팜 VFX 바인딩")]
         public static void BindNapalmVfx()
         {
             var tile = AssetDatabase.LoadAssetAtPath<GameObject>(OilFireTilePath);

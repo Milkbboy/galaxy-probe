@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using DrillCorp.Ability;
 using DrillCorp.Core;
 using DrillCorp.Machine;
 
@@ -22,6 +23,7 @@ namespace DrillCorp.UI.HUD
     public class TopBarHud : MonoBehaviour
     {
         [Header("Slots — 값 텍스트")]
+        [SerializeField] private TextMeshProUGUI _characterNameText;   // v2 좌상단 캐릭터 이름 — TopBar 좌측 흡수
         [SerializeField] private TextMeshProUGUI _healthText;
         [SerializeField] private TextMeshProUGUI _miningText;
         [SerializeField] private TextMeshProUGUI _killsText;
@@ -33,6 +35,8 @@ namespace DrillCorp.UI.HUD
 
         [Header("References")]
         [SerializeField] private MachineController _machine;
+        [Tooltip("비우면 FindAnyObjectByType<AbilitySlotController>() 자동 탐색. 캐릭터 이름·테마컬러 소스.")]
+        [SerializeField] private AbilitySlotController _abilityController;
 
         private int _sessionKills;
         private int _sessionGems;
@@ -42,6 +46,33 @@ namespace DrillCorp.UI.HUD
         {
             if (_machine == null) _machine = FindAnyObjectByType<MachineController>();
             if (_exitButton != null) _exitButton.onClick.AddListener(OnExitClicked);
+        }
+
+        private void Start()
+        {
+            // AbilitySlotController.Start 가 먼저 끝나야 ResolvedCharacter 가 채워짐.
+            // 못 찾으면 Update 에서 한 번 더 시도.
+            TryApplyCharacter();
+        }
+
+        private bool _characterApplied;
+
+        private void TryApplyCharacter()
+        {
+            if (_characterApplied) return;
+            if (_characterNameText == null) { _characterApplied = true; return; }
+
+            if (_abilityController == null)
+                _abilityController = FindAnyObjectByType<AbilitySlotController>();
+
+            var ch = _abilityController?.ResolvedCharacter;
+            if (ch == null) return;
+
+            _characterNameText.text  = ch.DisplayName;
+            // v2 ch.color + 'cc' = alpha 0.8
+            var c = ch.ThemeColor;
+            _characterNameText.color = new Color(c.r, c.g, c.b, 0.8f);
+            _characterApplied = true;
         }
 
         private void OnEnable()
@@ -134,6 +165,7 @@ namespace DrillCorp.UI.HUD
         private void Update()
         {
             UpdateHealth();
+            if (!_characterApplied) TryApplyCharacter();
         }
 
         // ───────────── 나가기 ─────────────

@@ -17,7 +17,8 @@ MonoBehaviour:
   _displayName: "\uD654\uC5FC\uBC29\uC0AC\uAE30"
   _description: 
   _iconEmoji: "\U0001F506"
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: fec2e2f824c8b0d42a963c407dde332b, type: 3}
+  _themeColor: {r: 1, g: 0.41960785, b: 0.20784314, a: 1}
   _slotKey: 2
   _abilityType: 1
   _trigger: 0

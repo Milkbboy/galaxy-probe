@@ -18,6 +18,7 @@ MonoBehaviour:
   _description: 
   _iconEmoji: "\u26CF"
   _icon: {fileID: 0}
+  _themeColor: {r: 0.31764707, g: 0.8117647, b: 0.4, a: 1}
   _slotKey: 2
   _abilityType: 7
   _trigger: 0

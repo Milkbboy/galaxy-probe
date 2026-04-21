@@ -24,14 +24,14 @@ namespace DrillCorp.EditorTools
         const string TopBarName = "TopBarHud";
 
         // HubPanel과 동일한 색상 팔레트
-        static readonly Color ColBg       = new Color32(0x1a, 0x1a, 0x30, 0xF5);
-        static readonly Color ColBorder   = new Color32(0x2a, 0x2a, 0x45, 0xFF);
-        static readonly Color ColDanger   = new Color32(0xff, 0x6b, 0x6b, 0xFF);
-        static readonly Color ColAccent   = new Color32(0xf4, 0xa4, 0x23, 0xFF); // 주황 (채굴 강조)
-        static readonly Color ColTextHi   = new Color32(0xee, 0xee, 0xee, 0xFF);
-        static readonly Color ColTextLow  = new Color32(0xaa, 0xaa, 0xaa, 0xFF);
-        static readonly Color ColOre      = new Color32(0xff, 0xd7, 0x00, 0xFF);
-        static readonly Color ColGem      = new Color32(0x88, 0xdd, 0xff, 0xFF);
+        static readonly Color ColBg = new Color32(0x1a, 0x1a, 0x30, 0xF5);
+        static readonly Color ColBorder = new Color32(0x2a, 0x2a, 0x45, 0xFF);
+        static readonly Color ColDanger = new Color32(0xff, 0x6b, 0x6b, 0xFF);
+        static readonly Color ColAccent = new Color32(0xf4, 0xa4, 0x23, 0xFF); // 주황 (채굴 강조)
+        static readonly Color ColTextHi = new Color32(0xee, 0xee, 0xee, 0xFF);
+        static readonly Color ColTextLow = new Color32(0xaa, 0xaa, 0xaa, 0xFF);
+        static readonly Color ColOre = new Color32(0xff, 0xd7, 0x00, 0xFF);
+        static readonly Color ColGem = new Color32(0x88, 0xdd, 0xff, 0xFF);
 
         [MenuItem("Drill-Corp/HUD/Build TopBar")]
         public static void BuildTopBar()
@@ -55,7 +55,7 @@ namespace DrillCorp.EditorTools
             var rt = root.AddComponent<RectTransform>();
             rt.anchorMin = new Vector2(0f, 1f);
             rt.anchorMax = new Vector2(1f, 1f);
-            rt.pivot     = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
             rt.anchoredPosition = new Vector2(0f, 0f);
             rt.sizeDelta = new Vector2(0f, 64f);
 
@@ -72,15 +72,16 @@ namespace DrillCorp.EditorTools
             hl.childForceExpandWidth = false;
             hl.childForceExpandHeight = false;
 
-            // 슬롯 5개 — v2 원본: 체력/채굴/처치/광석/보석.
+            // 슬롯 6개 — v2 원본: 캐릭터이름(좌상단 흡수)/체력/채굴/처치/광석/보석.
             var oreIcon = LoadUISprite("06_gold");
             var gemIcon = LoadUISprite("01_diamond");
 
+            var characterText = CreateSlot(root.transform, "CharacterSlot", "—", ColTextHi, 90);
             var healthText = CreateSlot(root.transform, "HealthSlot", "체력 100", ColTextHi, 140);
             var miningText = CreateSlot(root.transform, "MiningSlot", "0 / 100", ColAccent, 140);
-            var killsText  = CreateSlot(root.transform, "KillsSlot",  "처치 0",   ColTextHi, 110);
-            var oreText    = CreateIconSlot(root.transform, "OreSlot", "광석 0", ColOre, oreIcon, 160);
-            var gemText    = CreateIconSlot(root.transform, "GemSlot", "보석 0", ColGem, gemIcon, 160);
+            var killsText = CreateSlot(root.transform, "KillsSlot", "처치 0", ColTextHi, 110);
+            var oreText = CreateIconSlot(root.transform, "OreSlot", "광석 0", ColOre, oreIcon, 160);
+            var gemText = CreateIconSlot(root.transform, "GemSlot", "보석 0", ColGem, gemIcon, 160);
 
             // 우측 spacer (나가기 버튼을 우측으로 밀기)
             var spacer = new GameObject("Spacer");
@@ -97,11 +98,12 @@ namespace DrillCorp.EditorTools
             // TopBarHud 컴포넌트 + 자동 바인딩
             var hud = root.AddComponent<TopBarHud>();
             var so = new SerializedObject(hud);
+            so.FindProperty("_characterNameText").objectReferenceValue = characterText;
             so.FindProperty("_healthText").objectReferenceValue = healthText;
             so.FindProperty("_miningText").objectReferenceValue = miningText;
-            so.FindProperty("_killsText").objectReferenceValue  = killsText;
-            so.FindProperty("_oreText").objectReferenceValue    = oreText;
-            so.FindProperty("_gemText").objectReferenceValue    = gemText;
+            so.FindProperty("_killsText").objectReferenceValue = killsText;
+            so.FindProperty("_oreText").objectReferenceValue = oreText;
+            so.FindProperty("_gemText").objectReferenceValue = gemText;
             so.FindProperty("_exitButton").objectReferenceValue = exitBtn;
             so.ApplyModifiedPropertiesWithoutUndo();
 
@@ -237,10 +239,10 @@ namespace DrillCorp.EditorTools
 
             var btn = go.AddComponent<Button>();
             var cb = btn.colors;
-            cb.normalColor      = bg;
+            cb.normalColor = bg;
             cb.highlightedColor = Color.Lerp(bg, Color.white, 0.15f);
-            cb.pressedColor     = Color.Lerp(bg, Color.black, 0.15f);
-            cb.selectedColor    = bg;
+            cb.pressedColor = Color.Lerp(bg, Color.black, 0.15f);
+            cb.selectedColor = bg;
             btn.colors = cb;
             btn.targetGraphic = img;
 

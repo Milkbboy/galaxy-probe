@@ -23,7 +23,7 @@ namespace DrillCorp.EditorTools
     /// 저장 위치:
     ///   · Assets/_Game/Prefabs/Abilities/MineInstance.prefab
     ///
-    /// 메뉴: Tools/Drill-Corp/3. 게임 초기 설정/7. 빅터 지뢰 프리펩 생성
+    /// 메뉴: Tools/Drill-Corp/3. 게임 초기 설정/빅터/1. 지뢰 프리펩 생성
     /// </summary>
     public static class MinePrefabCreator
     {
@@ -42,7 +42,7 @@ namespace DrillCorp.EditorTools
         // MineInstance._explosionPrefabBaseRadius 로 들어감 — 실제 반경/이 값으로 폭발 VFX 스케일 배수 결정.
         private const float ExplosionBaseRadius = 2f;
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/7. 빅터 지뢰 프리펩 생성")]
+        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/빅터/1. 지뢰 프리펩 생성")]
         public static void CreateMinePrefab()
         {
             EnsureFolders();
