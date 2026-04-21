@@ -13,12 +13,14 @@ namespace DrillCorp.EditorTools
     /// 처리 내용:
     ///   1. MineInstance 프리펩 생성 — 루트 empty GO + MineInstance 컴포넌트
     ///      자식 "Body" = GlowZoneRed 프리펩 복제 (점멸용)
-    ///   2. MineInstance 의 _bodyTransform / _explosionPrefab / _explosionPrefabBaseRadius 자동 바인딩
+    ///      자식 "CenterDot" = GlowPowerupSmallRed 프리펩 복제 (armed 시 점등될 빨간 점, SetActive=false 상태로 시작)
+    ///   2. MineInstance 의 _bodyTransform / _centerDotObject / _explosionPrefab / _explosionPrefabBaseRadius 자동 바인딩
     ///   3. Ability_Victor_Mine.asset 의 _vfxPrefab 슬롯에 MineInstance 프리펩 자동 할당
     ///
     /// 의존 에셋(Polygon Arsenal 가져오기 후 기대 경로):
     ///   · Assets/Polygon Arsenal/Prefabs/Interactive/Zone/Glow/GlowZoneRed.prefab
-    ///   · Assets/Polygon Arsenal/Prefabs/Combat/Explosions/Mini/MiniExploFire.prefab
+    ///   · Assets/Polygon Arsenal/Prefabs/Interactive/Powerups/Orbs/Small/GlowPowerupSmallRed.prefab
+    ///   · Assets/Polygon Arsenal/Prefabs/Combat/Explosions/Sci-Fi/Grenade/GrenadeExplosionRed.prefab
     ///
     /// 저장 위치:
     ///   · Assets/_Game/Prefabs/Abilities/MineInstance.prefab
@@ -32,15 +34,22 @@ namespace DrillCorp.EditorTools
 
         private const string GlowZonePath =
             "Assets/Polygon Arsenal/Prefabs/Interactive/Zone/Glow/GlowZoneRed.prefab";
+        private const string CenterDotPath =
+            "Assets/Polygon Arsenal/Prefabs/Interactive/Powerups/Orbs/Small/GlowPowerupSmallRed.prefab";
         private const string ExplosionPath =
-            "Assets/Polygon Arsenal/Prefabs/Combat/Explosions/Mini/MiniExploFire.prefab";
+            "Assets/Polygon Arsenal/Prefabs/Combat/Explosions/Sci-Fi/Grenade/GrenadeExplosionRed.prefab";
 
         private const string MineAbilitySoPath =
             "Assets/_Game/Data/Abilities/Ability_Victor_Mine.asset";
 
-        // MiniExploFire 가 가진 "기준 반경" (Polygon Arsenal 기본 스케일 기준 대략치).
+        // GrenadeExplosionRed 의 "기준 반경" — Polygon Arsenal 기본 스케일 기준 대략치.
         // MineInstance._explosionPrefabBaseRadius 로 들어감 — 실제 반경/이 값으로 폭발 VFX 스케일 배수 결정.
-        private const float ExplosionBaseRadius = 2f;
+        // 지뢰 기본 폭발 반경이 1.5m 이므로 동일하게 두면 스케일 배수=1 (원본 크기 그대로).
+        private const float ExplosionBaseRadius = 1.5f;
+
+        // CenterDot 스케일 — GlowPowerupSmallRed 원본 크기. 1.0 = 원본 그대로.
+        // 0.3으로 줄이면 너무 작아서 안 보이고, 1.0이 지뢰 본체(GlowZoneRed 스케일 0.5)와 적당한 비율.
+        private const float CenterDotScale = 1.0f;
 
         [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/빅터/1. 지뢰 프리펩 생성")]
         public static void CreateMinePrefab()
@@ -48,6 +57,7 @@ namespace DrillCorp.EditorTools
             EnsureFolders();
 
             var glowZone = AssetDatabase.LoadAssetAtPath<GameObject>(GlowZonePath);
+            var centerDotPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(CenterDotPath);
             var explosion = AssetDatabase.LoadAssetAtPath<GameObject>(ExplosionPath);
 
             if (glowZone == null)
@@ -56,9 +66,14 @@ namespace DrillCorp.EditorTools
                                "Polygon Arsenal 패키지가 정상 import 됐는지 확인하세요.");
                 return;
             }
+            if (centerDotPrefab == null)
+            {
+                Debug.LogWarning($"[MinePrefabCreator] GlowPowerupSmallRed 프리펩을 찾을 수 없습니다: {CenterDotPath}\n" +
+                                 "중앙 점 없이 프리펩을 생성합니다. armed 연출이 밋밋해질 수 있으니 나중에 인스펙터에서 _centerDotObject 슬롯을 채워주세요.");
+            }
             if (explosion == null)
             {
-                Debug.LogWarning($"[MinePrefabCreator] MiniExploFire 프리펩을 찾을 수 없습니다: {ExplosionPath}\n" +
+                Debug.LogWarning($"[MinePrefabCreator] GrenadeExplosionRed 프리펩을 찾을 수 없습니다: {ExplosionPath}\n" +
                                  "폭발 VFX 없이 프리펩을 생성합니다. 나중에 인스펙터에서 _explosionPrefab 슬롯을 채워주세요.");
             }
 
@@ -77,9 +92,23 @@ namespace DrillCorp.EditorTools
             // 소형 지뢰 스케일 — 필요시 인스펙터에서 조정
             body.transform.localScale = Vector3.one * 0.5f;
 
-            // ── 3. MineInstance 필드 바인딩 ──
+            // ── 3. CenterDot 자식 (GlowPowerupSmallRed 복제, armed 시 점등) ──
+            GameObject centerDot = null;
+            if (centerDotPrefab != null)
+            {
+                centerDot = (GameObject)PrefabUtility.InstantiatePrefab(centerDotPrefab);
+                centerDot.name = "CenterDot";
+                centerDot.transform.SetParent(root.transform, worldPositionStays: false);
+                centerDot.transform.localPosition = new Vector3(0f, 0.05f, 0f); // 본체 살짝 위
+                centerDot.transform.localRotation = Quaternion.identity;
+                centerDot.transform.localScale = Vector3.one * CenterDotScale;
+                centerDot.SetActive(false); // Initialize에서 어차피 비활성화되지만 기본 상태도 맞춤
+            }
+
+            // ── 4. MineInstance 필드 바인딩 ──
             var so = new SerializedObject(mine);
             SetObject(so, "_bodyTransform", body.transform);
+            if (centerDot != null) SetObject(so, "_centerDotObject", centerDot);
             if (explosion != null) SetObject(so, "_explosionPrefab", explosion);
             SetFloat(so, "_explosionPrefabBaseRadius", ExplosionBaseRadius);
             so.ApplyModifiedPropertiesWithoutUndo();

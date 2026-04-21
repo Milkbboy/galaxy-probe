@@ -6,6 +6,69 @@
 
 ---
 
+## [Unreleased] - 2026-04-21 — 빅터 어빌리티 폴리싱 (범위 표시 / 지뢰 연출 / HUD 테두리)
+
+> 근거: `docs/v2.html` + 인게임 피드백
+> 맥락: [Phase5 Victor 어빌리티](Phase5_VictorAbility_Plan.md) 구현 이후, 인게임에서 **공격 범위가 안 보인다·지뢰가 밋밋하다·HUD 배경이 테마색으로 덮인다**는 플레이 피드백을 해결.
+
+### Added — 공통 바닥 데칼 유틸
+
+- **`Scripts/Ability/AbilityRangeDecal.cs`** — 어빌리티 바닥 범위 데칼 MonoBehaviour. 탑뷰(XZ 평면) 기반. 페이드인 → 펄스 → 페이드아웃 파이프라인. `SpriteRenderer`와 `MeshRenderer` 둘 다 지원. `SetupMesh(Mesh)` 호출 시 **`Sprites/Default` 셰이더 런타임 머티리얼** 생성(흰 × `_Color` 곱셈 방식이라 색 주입 안전).
+- **`Scripts/Ability/AbilityDecalMeshBuilder.cs`** — XZ 평면 Mesh 빌더 3종.
+  - `BuildRectangle(halfWidth, length)` — 네이팜 직사각형
+  - `BuildRing(innerRadius, outerRadius)` — 지뢰 예고 링
+  - `BuildCircle(radius)` / `BuildSector(halfAngleRad, range)` — 향후 원형/부채꼴 용도
+  - Unity 기본 앞면 = CW (법선 방향에서) 규칙에 맞춰 탑뷰(+Y 시점) CW winding 적용. 메쉬 자체가 XZ 평면이라 `Quaternion.Euler(90,0,0)` 불필요.
+
+### Modified — 어빌리티별 범위 시각화
+
+- **`NapalmRunner.cs`** — `NapalmZone` 생성 시 wrapper와 동일한 회전/위치에 **직사각형 범위 데칼** 부착. `halfW × length` 크기, 주황 틴트. Dispose 시 데칼도 페이드아웃 후 자기 자신 Destroy.
+- **`FlameRunner.cs`** — `SpawnVfx`에서 **부채꼴 범위 데칼** 생성(`Angle` 반각 × `Range` 길이). 머신 자식이 아닌 `VfxParent`(월드 루트)에 붙여 머신 회전·스케일 영향 제거. 매 프레임 `UpdateVfx`에서 월드 position + LookRotation 갱신.
+- **`MineInstance.cs`** — 대폭 개편
+  - **감지/폭발 반경 분리**: `_detectionRadius`(벌레 접촉용, 0.7m) ≠ 폭발 반경(`BombWeapon.EffectiveRadius × 0.5` = 1.5m). v2 원본의 `bug.sz+14` 접촉 감지 → 광역 AoE 폭발 흐름 복원.
+  - **폭발 예고 링**: 폭발 반경 크기의 `BuildRing` Mesh. armed 전 옅은 주황(`#ff9919`) → armed 후 또렷한 빨강(`#ff3326`).
+  - **armed idle pulse**: arm 완료 후에도 본체 스케일 느린 pingpong(`_armedPulseMin` 0.92, `_armedPulseSpeed` 3) 추가.
+  - **중앙 점**: armed 시 활성화될 `_centerDotObject` GameObject 참조 필드. `Initialize`에서 `SetActive(false)`, `SwitchToArmed`에서 `SetActive(true)`. v2.html의 "준비 완료 = 빨간 점 점등" 연출 포팅.
+  - **폭발 VFX 교체**: `MiniExploFire` → **`GrenadeExplosionRed`** (Polygon Arsenal / Combat / Explosions / Sci-Fi / Grenade). "펑!" 느낌 강화. BombWeapon VFX 공유 옵션은 의도적 탈락 — 지뢰와 폭탄 무기를 시각적으로 구분.
+  - **Explode**: 링을 detach + Dispose → 잠깐 잔상으로 폭발 영역 강조.
+  - **OnDrawGizmosSelected**: 감지 반경(노랑/빨강) + 폭발 반경(주황) 둘 다 표시.
+
+### Added — 에디터 툴
+
+- **`Scripts/Editor/AbilitySlotBorderCreator.cs`** (메뉴 `Tools/Drill-Corp/3. 게임 초기 설정/UI/어빌리티 슬롯 테두리 스프라이트 생성`) — 16×16 흰 테두리 1px + 투명 내부 PNG 생성 → `TextureImporter` 자동 세팅(Sprite Single, PPU 100, FilterMode Point, 9-slice Border (4,4,4,4)). 출력: `Assets/_Game/Prefabs/UI/AbilitySlotBorder.png`.
+  - 씬의 AbilitySlotUI 3개 `_border Image`에 수동 할당 + `Image.Type = Sliced` 필요 (스크립트가 강제하지 않음)
+
+### Modified — 에디터 툴
+
+- **`Scripts/Editor/MinePrefabCreator.cs`** — 3가지 업데이트
+  - `ExplosionPath`: `MiniExploFire` → `GrenadeExplosionRed`
+  - `CenterDot` 자식 추가: `GlowPowerupSmallRed` 복제, `SetActive(false)`로 시작, `_centerDotObject` 슬롯 자동 바인딩
+  - `ExplosionBaseRadius`: 2 → 1.5 (지뢰 기본 폭발 반경과 동일 → 스케일 배수=1, 원본 그대로 표시)
+
+### Modified — UI
+
+- **`Scripts/UI/HUD/AbilitySlotUI.cs`** — `_border.color` 알파 0.53 → **0.9** (v2 원본보다 진하게. 테마색 테두리가 또렷해짐). 스프라이트가 미할당된 씬 상태를 주석으로 명시.
+
+### Fixed — 이번 페이즈에서 해결한 이슈
+
+- **(네이팜/화염) 범위가 안 보임** → 바닥 데칼 Mesh 부착으로 해결. 부채꼴 Mesh winding이 초기에 뒤집혀 안 보였던 건 CW/CCW 재검증 후 `{0, i+1, i+2}`로 확정.
+- **(화염) 데칼이 머신 자식이면 안 보임** → 머신의 rotation/scale을 그대로 상속받아 Mesh가 눕지 않음. `VfxParent` 루트로 이전하고 매 프레임 월드 좌표 직접 갱신.
+- **(지뢰) 폭발 범위 = 감지 범위였음** → 접촉(0.7m) vs AoE(1.5m)로 분리.
+- **(지뢰) 중앙 점이 흰 플래시처럼 거대함** → 초기 Mesh + URP Unlit Transparent 조합에서 셰이더 키워드 세팅 불완전으로 흰 덩어리로 렌더. 접근 방식 전환: **Polygon Arsenal `GlowPowerupSmallRed` 프리펩 재활용** + `GameObject` 토글 방식으로 교체.
+- **(HUD) 어빌리티 슬롯 배경이 테마색으로 덮임** → `_border Image`가 스프라이트 미할당 + Simple 타입이라 **테두리가 아니라 풀 색 패널**로 렌더되고 있었음. 9-slice 테두리 스프라이트 에셋을 생성해 할당하는 방식으로 전환.
+
+### Docs / Policy
+
+- **`CLAUDE.md`** — "VFX 제작 정책" 섹션 추가. 새 VFX 만들기 전 `Assets/Polygon Arsenal/Prefabs/` 먼저 검색. 주요 카테고리 경로 명시.
+- **유저 메모리**: `feedback_vfx_polygon_arsenal_first.md` — VFX 우선순위 정책 기록.
+
+### 의사결정 로그
+
+- **Mesh 직접 제작 vs Polygon Arsenal 재활용**: 지뢰 중앙 점에서 처음엔 `BuildCircle` Mesh로 만들었다가 흰 플래시 이슈 발생. 사용자 피드백으로 Polygon Arsenal에서 `GlowPowerupSmallRed` 찾아 교체. 이후 정책화: **파티클/글로우류는 Polygon Arsenal 먼저 검색**.
+- **런타임 생성 vs 에디터 에셋**: 슬롯 테두리 스프라이트를 처음엔 `AbilitySlotUI`에서 런타임 Texture2D 생성했다가 에디터 툴 방식으로 전환. 이유: 프로젝트의 다른 UI 스프라이트(`BombLandingMarkerCircle.png` 등)가 모두 에셋 파일로 존재 — 일관성 + Unity 에디터에서 직접 튜닝 가능.
+
+---
+
 ## [Unreleased] - 2026-04-20 (3) — 빅터 어빌리티 3종 Game 구현
 
 > 문서: [Phase5_VictorAbility_Plan.md](Phase5_VictorAbility_Plan.md)

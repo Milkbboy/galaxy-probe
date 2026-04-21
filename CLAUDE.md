@@ -39,6 +39,12 @@ Unity / URP / Input System / TMP / 외부 패키지 코드를 작성·수정할 
 - `LateUpdate`에서 `transform.position = _target.position + _offset` 갱신
 - 참조 구현: `Assets/_Game/Scripts/Bug/BugHpBar.cs`
 
+## VFX 제작 정책
+**새 VFX(파티클·글로우·폭발·트레일 등) 만들기 전에 `Assets/Polygon Arsenal/Prefabs/` 폴더를 먼저 검색**해 재활용 가능한 프리펩이 있는지 확인. Mesh/ParticleSystem 직접 제작은 예외적인 경우에만.
+- 주요 카테고리: `Combat/Explosions` (폭발), `Combat/Muzzleflash` (총구), `Combat/Flamethrower` (화염), `Combat/Nova` (원형 폭발), `Interactive/Zone/Glow` (바닥 글로우), `Interactive/Powerups/Orbs` (소형 orb), `Interactive/Sparkle` (반짝임), `Environment/Sparks` (불꽃)
+- 색 변형: 대부분 Red/Blue/Green/Yellow/Pink/Purple 6색 존재 — 색 선택만으로 해결되는 경우가 많음
+- 프리펩 참조 경로는 에디터 셋업 툴(예: `MinePrefabCreator.cs`)에 상수로 박아두면 재생성 시 자동 바인딩
+
 ## TextMeshPro 폰트
 코드로 TMP 생성 시 반드시 D2Coding 적용.
 - **런타임**: `TMPFontHelper.ApplyDefaultFont(tmp)` (`DrillCorp.UI` 네임스페이스)

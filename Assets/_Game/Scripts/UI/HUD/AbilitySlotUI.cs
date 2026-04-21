@@ -54,7 +54,12 @@ namespace DrillCorp.UI.HUD
             _themeColor = data.ThemeColor;
 
             if (_border != null)
-                _border.color = WithAlpha(_themeColor, 0.53f);
+            {
+                // 씬에서 _border.sprite 슬롯에 AbilitySlotBorder.png(9-slice 흰 테두리) 가 연결돼야
+                // 테두리만 보이고 속은 배경이 비침. 미할당 상태면 풀 색 패널로 렌더되니 주의.
+                // 스프라이트는 "Tools/Drill-Corp/3. 게임 초기 설정/UI/어빌리티 슬롯 테두리 스프라이트 생성" 메뉴로 생성.
+                _border.color = WithAlpha(_themeColor, 0.9f); // 흰 스프라이트 × 테마색. 알파는 v2(0.53)보다 올려 테두리 또렷.
+            }
 
             if (_iconImage != null)
             {

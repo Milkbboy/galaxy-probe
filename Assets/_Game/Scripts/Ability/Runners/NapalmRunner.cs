@@ -5,6 +5,7 @@ using DrillCorp.Machine;
 
 namespace DrillCorp.Ability.Runners
 {
+
     /// <summary>
     /// 빅터 1번 어빌리티 — 네이팜.
     /// 머신 원점에서 마우스 방향으로 회전된 직사각형(OBB) 지속 장판 생성.
@@ -33,6 +34,8 @@ namespace DrillCorp.Ability.Runners
         private const float TileSpacingMultiplier = 1f;
         // 각 타일 스케일 배율 = halfW × 이 값. OilFireRed 한 타일이 halfW 를 덮도록.
         private const float TileScaleMultiplier = 1f;
+        // 바닥 데칼 살짝 띄움 — Z-fighting 방지.
+        private const float DecalYOffset = 0.02f;
 
         private AbilityData _data;
         private AbilityContext _ctx;
@@ -116,6 +119,7 @@ namespace DrillCorp.Ability.Runners
             private float _tickTimer;
             private float _life;
             private GameObject _vfxRoot;
+            private AbilityRangeDecal _decal;
 
             public NapalmZone(
                 Vector3 origin, Vector3 dir,
@@ -136,6 +140,22 @@ namespace DrillCorp.Ability.Runners
 
                 if (vfxPrefab != null)
                     BuildTiledVfx(origin, halfWidth, length, vfxPrefab, vfxParent);
+
+                BuildRangeDecal(origin, dir, halfWidth, length, vfxParent);
+            }
+
+            // 바닥 범위 데칼 — 직사각형 Mesh. wrapper와 독립된 루트로 붙여 페이드아웃을 따로 제어.
+            private void BuildRangeDecal(Vector3 origin, Vector3 dir, float halfWidth, float length, Transform vfxParent)
+            {
+                var decalGo = new GameObject("NapalmRangeDecal");
+                decalGo.transform.SetParent(vfxParent, false);
+                decalGo.transform.position = origin + new Vector3(0f, DecalYOffset, 0f);
+                decalGo.transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
+
+                var decal = decalGo.AddComponent<AbilityRangeDecal>();
+                decal.SetupMesh(AbilityDecalMeshBuilder.BuildRectangle(halfWidth, length));
+                decal.SetTint(new Color(1f, 0.4f, 0.15f, 1f));
+                _decal = decal;
             }
 
             // 타일링 — 머신 원점에서 dir 방향으로 N개 복제 배치.
@@ -212,6 +232,10 @@ namespace DrillCorp.Ability.Runners
             {
                 if (_vfxRoot != null) Object.Destroy(_vfxRoot);
                 _vfxRoot = null;
+
+                // 데칼은 자체 페이드아웃 후 자기 자신을 Destroy.
+                if (_decal != null) _decal.Dispose();
+                _decal = null;
             }
         }
     }

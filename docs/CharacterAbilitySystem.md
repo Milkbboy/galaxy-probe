@@ -361,6 +361,8 @@ v2.html의 숫자를 그대로 가져옴. 프레임 단위는 60fps 기준으로
 
 **동작**: 마우스 방향으로 긴 부채꼴 화염 지대 생성, 안에 들어온 벌레는 틱 데미지.
 
+**2026-04-21 폴리싱**: `NapalmRunner`가 `NapalmZone` 생성 시 바닥에 **직사각형 범위 데칼**(`AbilityRangeDecal` + `AbilityDecalMeshBuilder.BuildRectangle`) 부착. `halfW × length` 크기 주황 데칼로 플레이어에게 위험 영역을 명시.
+
 ### 5.2 Victor — 화염방사기 (`victor_flame`)
 
 | 속성 | 값 |
@@ -374,6 +376,8 @@ v2.html의 숫자를 그대로 가져옴. 프레임 단위는 60fps 기준으로
 
 **동작**: 활성화 후 5초간 매 프레임 마우스 방향 부채꼴에 데미지. 이동·무기 동시 사용 가능.
 
+**2026-04-21 폴리싱**: `FlameRunner.SpawnVfx`에서 **부채꼴 Mesh 범위 데칼** 생성(`BuildSector(halfAngle, range, 32)`). `VfxParent` 루트에 배치 + 매 프레임 월드 좌표·회전 직접 갱신(머신 자식 불가 — 머신 회전/스케일이 Mesh 평면을 기울임).
+
 ### 5.3 Victor — 폭발지뢰 (`victor_mine`)
 
 | 속성 | 값 |
@@ -386,6 +390,13 @@ v2.html의 숫자를 그대로 가져옴. 프레임 단위는 60fps 기준으로
 | req | `victor_napalm` |
 
 **동작**: 마우스 위치에 지뢰 설치, 0.5초 후 활성화. 벌레 근접(반경 14) 시 폭발. 폭탄 무기 반경·데미지 배율 적용 — **폭탄 무기 강화가 지뢰에도 영향**.
+
+**2026-04-21 폴리싱** — 지뢰 연출 대폭 강화:
+- **감지/폭발 반경 분리**: `_detectionRadius`(접촉 0.7m, 벌레 평균 반경 0.3m 기준) ≠ 폭발 반경(`BombWeapon.EffectiveRadius × 0.5` = 기본 1.5m). v2 원본의 `bug.sz+14` 접촉 감지 → 광역 AoE 폭발 흐름 복원.
+- **폭발 예고 링**: 폭발 반경 크기의 `BuildRing` Mesh. armed 전 옅은 주황 → armed 후 또렷한 빨강.
+- **중앙 점**: `_centerDotObject` 필드로 armed 시 활성화될 GameObject 지정. `MinePrefabCreator`가 **Polygon Arsenal `GlowPowerupSmallRed`** 프리펩 자식 추가 + 자동 바인딩. v2.html 원본의 "준비 완료 = 빨간 점 점등" 연출 포팅.
+- **polish pulse**: armed 후 본체 스케일 느린 pingpong (`_armedPulseMin` 0.92, `_armedPulseSpeed` 3).
+- **폭발 VFX**: `MiniExploFire` → **`GrenadeExplosionRed`** 로 교체 (Polygon Arsenal / Combat / Explosions / Sci-Fi / Grenade). 폭탄 무기와 시각적으로 분리.
 
 ### 5.4 Sara — 블랙홀 (`sara_blackhole`)
 
@@ -526,6 +537,8 @@ SlotUI
 ```
 
 캐릭터 컬러로 테두리 표시. 해금되지 않은 슬롯은 숨김 또는 비활성.
+
+**2026-04-21 폴리싱**: v2.html 원본(`rgba(10,10,30,0.75)` 짙은 네이비 배경 + 테마색 1px 테두리)과 맞춤. Unity에선 `ctx.stroke(roundRect)` 같은 라인 렌더가 없어 **9-slice 테두리 스프라이트**가 필요 — `Scripts/Editor/AbilitySlotBorderCreator.cs` 로 `Assets/_Game/Prefabs/UI/AbilitySlotBorder.png` 자동 생성(16×16, 흰 1px 테두리 + 투명 내부, TextureImporter Border (4,4,4,4)). 씬의 3개 `AbilitySlotUI`의 `_border Image` 에 수동 할당 + `Image.Type = Sliced` 필요. `_border.color` 는 `AbilitySlotUI.Bind` 에서 테마색 × α=0.9 자동 주입.
 
 ---
 
