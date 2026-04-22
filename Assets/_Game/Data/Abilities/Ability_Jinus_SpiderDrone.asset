@@ -24,7 +24,7 @@ MonoBehaviour:
   _trigger: 1
   _cooldownSec: 0
   _durationSec: 0
-  _autoIntervalSec: 10
+  _autoIntervalSec: 3
   _damage: 0
   _range: 12
   _angle: 0
