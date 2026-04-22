@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using DrillCorp.Ability;
 using DrillCorp.Core;
+using DrillCorp.Diagnostics;
 using DrillCorp.Machine;
 
 namespace DrillCorp.UI.HUD
@@ -164,6 +165,8 @@ namespace DrillCorp.UI.HUD
         // 매 프레임 체력 갱신 (초기화/회복 타이밍 이슈 대비 — MachineStatusUI와 동일한 방식)
         private void Update()
         {
+            using var _perf = PerfMarkers.TopBarHud_Update.Auto();
+
             UpdateHealth();
             if (!_characterApplied) TryApplyCharacter();
         }

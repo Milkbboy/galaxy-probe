@@ -42,6 +42,7 @@
 | 카메라 (Nuclear Throne 방식) | [CameraSystem.md](CameraSystem.md) |
 | 미니맵 (RenderTexture) | [MinimapSystem.md](MinimapSystem.md) |
 | 사운드 (AudioManager + 파형 편집 툴) | [SoundSystem.md](SoundSystem.md) |
+| **프레임 드랍 원인 파악 (에디터 성능 조사)** | [FrameDropInvestigation.md](FrameDropInvestigation.md) |
 
 ## 🧱 Phase별 구현 계획
 

@@ -62,5 +62,8 @@ Assets/TextMesh Pro/Examples & Extras/
 # Screenshot (개발용 스크린샷 — 리포 크기 절약)
 Screenshot/
 
+# Perf logs (PerfRecorder 출력 — 각자 로컬에서 측정)
+PerfLogs/
+
 # Google API Credentials (보안)
 Assets/_Game/Data/Credentials/google-credentials.json

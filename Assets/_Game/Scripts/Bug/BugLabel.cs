@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using DrillCorp.Diagnostics;
 using DrillCorp.UI;
 
 namespace DrillCorp.Bug
@@ -35,6 +36,8 @@ namespace DrillCorp.Bug
 
         private void LateUpdate()
         {
+            using var _perf = PerfMarkers.BugLabel_LateUpdate.Auto();
+
             if (_target == null) return;
 
             // 월드 좌표로 위치 설정 (부모 회전 무시)

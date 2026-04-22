@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using DrillCorp.Core;
 using DrillCorp.Data;
+using DrillCorp.Diagnostics;
 using DrillCorp.Machine;
 using DrillCorp.Bug.Behaviors;
 using DrillCorp.Bug.Behaviors.Data;
@@ -187,6 +188,8 @@ namespace DrillCorp.Bug
         private void Update()
         {
             if (_isDead) return;
+
+            using var _perf = PerfMarkers.BugController_Update.Auto();
 
             float deltaTime = Time.deltaTime;
             _aliveTime += deltaTime;

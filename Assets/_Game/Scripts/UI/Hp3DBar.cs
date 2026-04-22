@@ -1,4 +1,5 @@
 using UnityEngine;
+using DrillCorp.Diagnostics;
 
 namespace DrillCorp.UI
 {
@@ -90,6 +91,8 @@ namespace DrillCorp.UI
 
         private void LateUpdate()
         {
+            using var _perf = PerfMarkers.Hp3DBar_LateUpdate.Auto();
+
             if (_target == null)
             {
                 Destroy(gameObject);

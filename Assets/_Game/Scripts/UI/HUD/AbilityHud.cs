@@ -1,6 +1,7 @@
 using UnityEngine;
 using DrillCorp.Ability;
 using DrillCorp.Data;
+using DrillCorp.Diagnostics;
 
 namespace DrillCorp.UI.HUD
 {
@@ -33,6 +34,8 @@ namespace DrillCorp.UI.HUD
 
         private void Update()
         {
+            using var _perf = PerfMarkers.AbilityHud_Update.Auto();
+
             if (!_bound)
             {
                 TryBind();

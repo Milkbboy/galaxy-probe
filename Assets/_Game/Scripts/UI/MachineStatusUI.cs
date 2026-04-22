@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using DrillCorp.Core;
+using DrillCorp.Diagnostics;
 using DrillCorp.Machine;
 
 namespace DrillCorp.UI
@@ -35,6 +36,7 @@ namespace DrillCorp.UI
 
         private void Update()
         {
+            using var _perf = PerfMarkers.MachineStatusUI_Update.Auto();
             // 매 프레임 HP 업데이트 (초기화 타이밍 문제 해결)
             UpdateHPBar();
         }

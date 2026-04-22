@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using DrillCorp.Data;
+using DrillCorp.Diagnostics;
 using DrillCorp.UI;
 
 namespace DrillCorp.Ability.Runners
@@ -126,6 +127,8 @@ namespace DrillCorp.Ability.Runners
         {
             if (_currentHp <= 0f) return;
 
+            using var _perf = PerfMarkers.Drone_Update.Auto();
+
             float dt = Time.deltaTime;
 
             var target = FindClosestBug(_abilityData != null ? _abilityData.Range : 0f);
@@ -148,7 +151,9 @@ namespace DrillCorp.Ability.Runners
         private Collider FindClosestBug(float range)
         {
             if (range <= 0f) return null;
-            int hits = Physics.OverlapSphereNonAlloc(transform.position, range, _overlapBuffer, _bugLayer);
+            int hits;
+            using (PerfMarkers.Drone_OverlapSphere.Auto())
+                hits = Physics.OverlapSphereNonAlloc(transform.position, range, _overlapBuffer, _bugLayer);
             if (hits <= 0) return null;
 
             Collider closest = null;

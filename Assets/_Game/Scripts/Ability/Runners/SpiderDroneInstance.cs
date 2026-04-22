@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using DrillCorp.Data;
+using DrillCorp.Diagnostics;
 using DrillCorp.Machine;
 using DrillCorp.UI;
 
@@ -90,12 +91,12 @@ namespace DrillCorp.Ability.Runners
 
         // 타겟 락 — 사거리 이탈/사망 전까지 유지해 re-target thrashing 방지.
         private Collider _lockedTarget;
-        private int _lockedTargetInstanceId;
+        private EntityId _lockedTargetId;
 
-        // 모든 SpiderDroneInstance 공유 — 이미 다른 거미가 추적 중인 벌레 InstanceID 집합.
+        // 모든 SpiderDroneInstance 공유 — 이미 다른 거미가 추적 중인 벌레 EntityId 집합.
         // 신규 타겟 선택 시 이 집합에 있는 벌레는 스킵 → 3거미가 3벌레에 분산됨.
         // 사거리 내에 미예약 벌레가 없으면 fallback 으로 예약된 벌레라도 선택 (starvation 방지).
-        private static readonly HashSet<int> _claimedTargets = new HashSet<int>();
+        private static readonly HashSet<EntityId> _claimedTargets = new HashSet<EntityId>();
 
         private readonly Collider[] _overlapBuffer = new Collider[16];
 
@@ -151,6 +152,8 @@ namespace DrillCorp.Ability.Runners
         {
             if (_currentHp <= 0f) return;
 
+            using var _perf = PerfMarkers.Spider_Update.Auto();
+
             float dt = Time.deltaTime;
             _lp += _orbitLpSpeed * dt;
 
@@ -196,7 +199,9 @@ namespace DrillCorp.Ability.Runners
         private Collider FindBestBugExcludingClaimed(float range)
         {
             if (range <= 0f) return null;
-            int hits = Physics.OverlapSphereNonAlloc(transform.position, range, _overlapBuffer, _bugLayer);
+            int hits;
+            using (PerfMarkers.Spider_OverlapSphere.Auto())
+                hits = Physics.OverlapSphereNonAlloc(transform.position, range, _overlapBuffer, _bugLayer);
             if (hits <= 0) return null;
 
             Collider bestUnclaimed = null;
@@ -214,7 +219,7 @@ namespace DrillCorp.Ability.Runners
 
                 if (d < bestAnyDistSqr) { bestAnyDistSqr = d; bestAny = c; }
 
-                if (!_claimedTargets.Contains(c.GetInstanceID()) && d < bestUnclaimedDistSqr)
+                if (!_claimedTargets.Contains(c.GetEntityId()) && d < bestUnclaimedDistSqr)
                 { bestUnclaimedDistSqr = d; bestUnclaimed = c; }
             }
             return bestUnclaimed != null ? bestUnclaimed : bestAny;
@@ -222,17 +227,17 @@ namespace DrillCorp.Ability.Runners
 
         private void SetTarget(Collider newTarget)
         {
-            // 이전 예약 해제 (InstanceID 로 기억 — 벌레 파괴돼도 확실히 제거).
-            if (_lockedTargetInstanceId != 0)
+            // 이전 예약 해제 (EntityId 로 기억 — 벌레 파괴돼도 확실히 제거).
+            if (_lockedTargetId != default)
             {
-                _claimedTargets.Remove(_lockedTargetInstanceId);
-                _lockedTargetInstanceId = 0;
+                _claimedTargets.Remove(_lockedTargetId);
+                _lockedTargetId = default;
             }
             _lockedTarget = newTarget;
             if (newTarget != null)
             {
-                _lockedTargetInstanceId = newTarget.GetInstanceID();
-                _claimedTargets.Add(_lockedTargetInstanceId);
+                _lockedTargetId = newTarget.GetEntityId();
+                _claimedTargets.Add(_lockedTargetId);
             }
         }
 

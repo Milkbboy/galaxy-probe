@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using DrillCorp.Core;
+using DrillCorp.Diagnostics;
 using DrillCorp.Machine;
 
 namespace DrillCorp.UI
@@ -51,6 +52,8 @@ namespace DrillCorp.UI
 
         private void Update()
         {
+            using var _perf = PerfMarkers.MiningUI_Update.Auto();
+
             if (_machine != null)
             {
                 UpdateMiningText(_machine.TotalMined);
