@@ -5,7 +5,7 @@
 
 ## 한 줄 요약
 
-프레임 드랍의 주범으로 지목된 **VFX/DamagePopup Instantiate/Destroy 누수**를 **오브젝트 풀링**으로 차단. 개발자 PC HierarchyDumper 측정에서 **50초 세션 GC Δ +2.69 MB** 까지 개선 확인. **⚠️ 기획자 PC 재측정은 아직 안 된 상태** — "해결" 은 개발자 PC 기준으로만 확정됐고, 원 보고 환경(RTX 3060 기획자 PC)의 스파이크 75→115ms 가 실제로 감소했는지 CSV 로 검증 필요.
+프레임 드랍의 주범으로 지목된 **VFX/DamagePopup Instantiate/Destroy 누수**를 **오브젝트 풀링**으로 차단. 개발자 PC HierarchyDumper 측정에서 **50초 세션 GC Δ +2.69 MB** 까지 개선 확인. URP 에셋 비용도 **Shadow Cascade 4→2, Shadowmap 2048→1024, SSAO off** 로 정리. **⚠️ 기획자 PC 재측정은 아직 안 된 상태** — "해결" 은 개발자 PC 기준으로만 확정됐고, 원 보고 환경(RTX 3060 기획자 PC)의 스파이크 75→115ms 가 실제로 감소했는지 CSV 로 검증 필요.
 
 ---
 
@@ -17,6 +17,7 @@
 |---|---|---:|---|
 | **VfxPool** | 피격·사망·폭발·총구 파티클 VFX | 약 583개 | 자동 부트스트랩 |
 | **DamagePopupPool** | 머신 피격 / 보석 획득 텍스트 | 약 339개 | 자동 부트스트랩 |
+| **BulletPool** | 기관총 탄환 본체 (MachineGunBullet) | 16 prewarm | 자동 부트스트랩 |
 | **BugPool** (기존) | 벌레 프리팹 | 300개 (설정값) | Inspector 배치 |
 
 모두 `DontDestroyOnLoad` + `RuntimeInitializeOnLoadMethod(AfterSceneLoad)` 로 씬 배치 없이 동작.
@@ -45,6 +46,7 @@
 | `Assets/_Game/Scripts/VFX/Pool/VfxPool.cs` | VFX 풀 매니저 (프리팹별 Stack, auto-prewarm 8) |
 | `Assets/_Game/Scripts/VFX/Pool/PooledVfx.cs` | VFX 프리팹 부착 컴포넌트 (cullingMode AlwaysSimulate 강제, OnParticleSystemStopped → Return) |
 | `Assets/_Game/Scripts/UI/DamagePopupPool.cs` | DamagePopup 풀 매니저 (단일 Stack) |
+| `Assets/_Game/Scripts/Weapon/Pool/BulletPool.cs` | 탄환 프리팹별 Stack 풀. 호출자가 명시적 Return |
 | `Assets/_Game/Scripts/Editor/VfxPoolAttacher.cs` | VFX 프리팹에 PooledVfx 일괄 부착 메뉴 (선택적) |
 | `Assets/_Game/Scripts/Editor/HierarchyDumper.cs` | A/B 스냅샷 + diff 도구 (진단용) |
 
@@ -55,6 +57,8 @@
 | `Bug/Simple/SimpleBug.cs` | 320 | `_hitVfxPrefab`, `_deathVfxPrefab` |
 | `Weapon/WeaponBase.cs` | 199 | `_baseData.HitVfxPrefab` |
 | `Weapon/MachineGun/MachineGunBullet.cs` | 97 | `_data.HitVfxPrefab` |
+| `Weapon/MachineGun/MachineGunWeapon.cs` | 198 | `BulletPrefab` → `BulletPool.Get` |
+| `Weapon/MachineGun/MachineGunBullet.cs` | Despawn | `Destroy` → `BulletPool.Return` |
 | `Weapon/Bomb/BombProjectile.cs` | 147, 155 | `HitVfxPrefab`, `ExplosionVfxPrefab` |
 | `Weapon/Shotgun/ShotgunWeapon.cs` | 39 | `MuzzleVfxPrefab` |
 | `UI/DamagePopup.cs` | 전체 | `new GameObject` → `DamagePopupPool.Acquire()` |
@@ -138,12 +142,21 @@
 
 | 항목 | 대상 | 기대 효과 |
 |---|---|---|
-| URP 에셋 튜닝 | `Assets/Settings/PC_RPAsset.asset` | Shadow Cascade 4→2, Shadowmap 2048→1024, SSAO off, Bloom HQ off |
-| `MachineGunBullet` 탄환 본체 풀링 | `Weapon/MachineGun/MachineGunBullet.cs` | 현재 `Destroy(gameObject)` — 초당 10발. VFX 만 풀링된 상태 |
 | `Gem` 드롭 오브젝트 풀링 | `Pickup/Gem.cs` | 초당 소수, 영향 작음 |
 | `WorldUiTicker` 단일 tick (C-1) | HP바/라벨/미니맵 아이콘 LateUpdate 통합 | 벌레 많을 때 의미 |
 | Gizmos 가드 (C-2) | `OnDrawGizmosSelected` 에 `#if UNITY_EDITOR` | 위생 |
 | 미니맵 갱신 주기 완화 (C-3) | `MinimapCamera` | 매 프레임 렌더 → 격프레임 or 0.1s |
+
+### ✅ 완료 (이번 세션 추가)
+
+| 항목 | 변경 | 파일 |
+|---|---|---|
+| Shadow Cascade 4→2 | `m_ShadowCascadeCount: 4 → 2` | `Assets/Settings/PC_RPAsset.asset` |
+| Shadowmap 해상도 2048→1024 | `m_MainLightShadowmapResolution`, `m_AdditionalLightsShadowmapResolution` | `Assets/Settings/PC_RPAsset.asset` |
+| SSAO 비활성화 | `ScreenSpaceAmbientOcclusion.m_Active: 1 → 0` | `Assets/Settings/PC_Renderer.asset` |
+| MachineGunBullet 본체 풀링 | `BulletPool` 도입, `Destroy/Instantiate` → `BulletPool.Get/Return`. TrailRenderer Clear 재사용 대응 | `Weapon/Pool/BulletPool.cs`, `Weapon/MachineGun/MachineGunBullet.cs`, `MachineGunWeapon.cs` |
+| VFX 프리팹 duration 트리밍 (전체 8종) | 고빈도 3종 + 폭탄·레이저 5종. `lengthInSec` 를 startLifetime 최대값 수준으로 단축. **실측: FX_Bullet_Impact 풀 124→36, 전체 PooledVfx 143→48 (66% 감소)** | `VFX/Prefabs/FX_Bullet_Impact.prefab`, `FX_Bullet_Muzzle.prefab`, `FX_Death_01.prefab`, `FX_Grenade_Impact.prefab`, `FX_Grenade_Muzzle.prefab`, `FX_Grenade_Projectile.prefab`, `FX_Laser_Impact.prefab`, `FX_Laser_Muzzle.prefab` |
+| (Bloom / DoF / Motion Blur / Vignette / FilmGrain) | 원래부터 intensity=0 — 변경 불필요 | `Assets/Settings/DefaultVolumeProfile.asset` |
 
 
 ---

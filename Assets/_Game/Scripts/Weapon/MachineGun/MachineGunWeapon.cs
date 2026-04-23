@@ -4,6 +4,7 @@ using DrillCorp.Audio;
 using DrillCorp.Core;
 using DrillCorp.Data;
 using DrillCorp.OutGame;
+using DrillCorp.Weapon.Pool;
 
 namespace DrillCorp.Weapon.MachineGun
 {
@@ -195,11 +196,12 @@ namespace DrillCorp.Weapon.MachineGun
             Vector3 dir = Quaternion.AngleAxis(spread * Mathf.Rad2Deg, Vector3.up) * toAim;
 
             // 3D 탄환 — 비행 방향을 바라보게 회전. (+Z forward 모델 기준)
-            var obj = Instantiate(_data.BulletPrefab, spawnPos, Quaternion.LookRotation(dir, Vector3.up));
+            // 풀링: Destroy/Instantiate 대신 BulletPool 에서 재사용. _prefab 참조를 Initialize 에 넘겨 풀 복귀 키로 사용.
+            var obj = BulletPool.Get(_data.BulletPrefab, spawnPos, Quaternion.LookRotation(dir, Vector3.up));
             var bullet = obj.GetComponent<MachineGunBullet>();
             if (bullet != null)
             {
-                bullet.Initialize(dir, _data, aim.BugLayer, _effectiveDamage);
+                bullet.Initialize(dir, _data, aim.BugLayer, _effectiveDamage, _data.BulletPrefab);
                 AudioManager.Instance?.PlayMachineGunFire();
             }
             else

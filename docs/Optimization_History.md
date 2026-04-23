@@ -288,12 +288,27 @@ PooledVfx (프리팹 부착 컴포넌트)
 | A-1 | 드론/거미 `OverlapSphere` 프레임 분산 | 2차 B-1 | `Ability/Runners/DroneInstance.cs:131, 215`, `SpiderDroneInstance.cs:199, 260` | 어빌리티 중심 플레이 시나리오 측정 시 |
 | A-2 | 어빌리티 Runner VFX 풀링 | (이번 세션 파생) | `Ability/Runners/DroneRunner.cs:64`, `MeteorRunner.cs:122`, `MineRunner.cs:69`, `MiningDroneRunner.cs:64`, `SpiderDroneRunner.cs:103`, `BlackHoleRunner.cs:170`, `ShockwaveRunner.cs:190`, `MeteorFireZone.cs:80`, `MeteorInstance.cs:106`, `MineInstance.cs:259` | 동일 |
 
+### ✅ 완료 — 독립 작업 (2026-04-23 오후)
+
+| # | 항목 | 변경 | 파일 |
+|---|---|---|---|
+| M-1 | URP 에셋 튜닝 | Shadow Cascade 4→2, MainLight/AdditionalLights Shadowmap 2048→1024, SSAO `m_Active` 1→0 | `Assets/Settings/PC_RPAsset.asset`, `Assets/Settings/PC_Renderer.asset` |
+| M-2 | MachineGunBullet 본체 풀링 | `BulletPool` 싱글톤 도입. `MachineGunWeapon.Fire` 의 `Instantiate` → `BulletPool.Get`. `MachineGunBullet.Despawn` 의 `Destroy` → `BulletPool.Return`. `Initialize` 시그니처에 `GameObject prefabKey` 추가, `_consumed = false` 리셋. TrailRenderer 궤적 잔상 방지 Clear 호출 | `Weapon/Pool/BulletPool.cs` (신규), `Weapon/MachineGun/MachineGunBullet.cs`, `Weapon/MachineGun/MachineGunWeapon.cs` |
+| M-7 | VFX 프리팹 PS duration 트리밍 | 전체 8종 프리팹 처리. `lengthInSec` 를 startLifetime 최대값 수준으로 단축 → PS 가 빈 idle 상태로 버티는 시간 제거 → `OnParticleSystemStopped` 빠르게 와서 풀 반환 가속. 실측 검증: FX_Bullet_Impact 풀 크기 **124 → 36** (71% 감소), 전체 PooledVfx **143 → 48** (66% 감소) | 고빈도 3종: `FX_Bullet_Impact`(5→1), `FX_Bullet_Muzzle`(5→1), `FX_Death_01`(5→1.5). 폭탄·레이저 5종: `FX_Grenade_Impact`(2.5→1.5), `FX_Grenade_Muzzle`(5→1), `FX_Grenade_Projectile`(5→0.5), `FX_Laser_Impact`(2.5→1), `FX_Laser_Muzzle`(2.5→1) |
+
+**비고 — Bloom/DoF/Motion Blur/Vignette/FilmGrain**: `DefaultVolumeProfile` 에서 이미 `intensity: 0` 으로 비활성 상태 → 변경 불필요. Volume 컴포넌트는 활성(`active: 1`)이지만 intensity 0 이면 실제 셰이더 패스 영향 거의 없음. 추후 완전 제거 원하면 컴포넌트 override 해제.
+
+**M-2 설계 노트 — BulletPool 이 VfxPool 과 다른 점**:
+- **반환 트리거**: VfxPool 은 `OnParticleSystemStopped` 콜백으로 자동 반환. BulletPool 은 탄환 로직(수명/명중)이 명시적으로 `Return` 호출.
+- **부착 컴포넌트 없음**: `PooledVfx` 같은 별도 컴포넌트 불필요. `MachineGunBullet` 자체에 `_prefabKey` 만 저장.
+- **재사용 시 주의**: 
+  - `_consumed = false` 리셋 (Despawn 가드 해제)
+  - TrailRenderer 는 `SetActive` 토글 시 points 유지 → `Clear()` 명시 호출로 순간이동 선 방지
+
 ### 🟢 미착수 — 독립 작업
 
 | # | 항목 | 원본 계획 | 대상 | 기대 효과 |
 |---|---|---|---|---|
-| M-1 | URP 에셋 튜닝 | 2차 A-2 | `Assets/Settings/PC_RPAsset.asset`, `PC_Renderer`, Volume profile | Shadow Cascade 4→2, Shadowmap 2048→1024, SSAO off, Bloom HQ off |
-| M-2 | `MachineGunBullet` 탄환 본체 풀링 | (이번 세션 파생) | `Weapon/MachineGun/MachineGunBullet.cs:108` | VFX 는 풀링됐으나 탄환 GameObject 자체는 `Destroy`. 초당 10발 |
 | M-3 | `Gem` 드롭 오브젝트 풀링 | — | `Pickup/Gem.cs` | 초당 소수 — 영향 작지만 완전성 측면 |
 | M-4 | `WorldUiTicker` 단일 tick | 2차 C-1 | 드론/거미/벌레 개별 LateUpdate 통합 싱글턴 | 월드 UI 수십~수백 개일 때 의미 |
 | M-5 | Gizmos 가드 (`#if UNITY_EDITOR`) | 2차 C-2 | `Camera/DynamicCamera.cs`, `BugSpawner.cs` 등 | Scene+Game 동시 띄운 환경 한정 |
@@ -303,8 +318,9 @@ PooledVfx (프리팹 부착 컴포넌트)
 
 1. [ ] V-1 (기획자 PC 재측정) 수행 → 결과에 따라 F-1~F-4 우선순위 결정
 2. [ ] V-1 결과 본 문서에 덧붙이기
-3. [ ] 🟢 M-1 (URP 튜닝) 은 V-1 전에 독립적으로 착수 가능
-4. [ ] B-1~B-4 는 BugController 경로 활성화 시까지 동결 상태 유지
+3. [x] ~~🟢 M-1 (URP 튜닝)~~ 완료 (2026-04-23)
+4. [x] ~~🟢 M-2 (MachineGunBullet 풀링)~~ 완료 (2026-04-23)
+5. [ ] B-1~B-4 는 BugController 경로 활성화 시까지 동결 상태 유지
 
 ---
 
