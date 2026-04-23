@@ -1,5 +1,6 @@
 using UnityEngine;
 using DrillCorp.Machine;
+using DrillCorp.VFX.Pool;
 
 namespace DrillCorp.Weapon.MachineGun
 {
@@ -94,8 +95,7 @@ namespace DrillCorp.Weapon.MachineGun
             if (_data.HitVfxPrefab != null)
             {
                 // 프리펩 회전 보존 — Quaternion.identity 금지 (탑뷰 스프라이트가 카메라 쪽으로 서버림)
-                var hitVfx = Instantiate(_data.HitVfxPrefab, target.transform.position, _data.HitVfxPrefab.transform.rotation);
-                Destroy(hitVfx, _data.HitVfxLifetime);
+                VfxPool.Get(_data.HitVfxPrefab, target.transform.position, _data.HitVfxPrefab.transform.rotation);
             }
 
             Despawn();

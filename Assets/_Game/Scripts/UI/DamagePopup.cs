@@ -4,7 +4,8 @@ using TMPro;
 namespace DrillCorp.UI
 {
     /// <summary>
-    /// 데미지 팝업 텍스트
+    /// 데미지 팝업 텍스트. <see cref="DamagePopupPool"/> 로 풀링 재사용.
+    /// 공개 API (Create/CreateText) 는 기존 시그니처 그대로 — 내부 구현만 풀 경로로 전환.
     /// </summary>
     public class DamagePopup : MonoBehaviour
     {
@@ -19,12 +20,9 @@ namespace DrillCorp.UI
         public static DamagePopup Create(Vector3 position, float damage, PopupType type = PopupType.Normal)
         {
             // 탑다운 뷰: Z축이 화면 위쪽
-            GameObject popupObj = new GameObject("DamagePopup");
-            popupObj.transform.position = position + Vector3.forward * 0.5f + Vector3.up * 0.1f;
-
-            DamagePopup popup = popupObj.AddComponent<DamagePopup>();
+            Vector3 spawnPos = position + Vector3.forward * 0.5f + Vector3.up * 0.1f;
+            var popup = Spawn(spawnPos);
             popup.Initialize(damage, type);
-
             return popup;
         }
 
@@ -33,40 +31,16 @@ namespace DrillCorp.UI
         /// </summary>
         public static DamagePopup Create(Transform target, float damage, PopupType type = PopupType.Normal)
         {
-            Vector3 position = target.position;
-
-            // 콜라이더가 있으면 경계 위쪽에 표시
-            var collider = target.GetComponent<Collider>();
-            if (collider != null)
-            {
-                float radius = Mathf.Max(collider.bounds.extents.x, collider.bounds.extents.z);
-                position += Vector3.forward * (radius + 0.3f);
-            }
-            else
-            {
-                position += Vector3.forward * 0.5f;
-            }
-
-            position += Vector3.up * 0.1f;
-
-            GameObject popupObj = new GameObject("DamagePopup");
-            popupObj.transform.position = position;
-
-            DamagePopup popup = popupObj.AddComponent<DamagePopup>();
+            var popup = Spawn(ResolvePositionForTarget(target));
             popup.Initialize(damage, type);
-
             return popup;
         }
 
         public static DamagePopup CreateText(Vector3 position, string text, Color color)
         {
-            // 탑다운 뷰: Z축이 화면 위쪽
-            GameObject popupObj = new GameObject("DamagePopup");
-            popupObj.transform.position = position + Vector3.forward * 0.5f + Vector3.up * 0.1f;
-
-            DamagePopup popup = popupObj.AddComponent<DamagePopup>();
+            Vector3 spawnPos = position + Vector3.forward * 0.5f + Vector3.up * 0.1f;
+            var popup = Spawn(spawnPos);
             popup.InitializeText(text, color);
-
             return popup;
         }
 
@@ -75,8 +49,16 @@ namespace DrillCorp.UI
         /// </summary>
         public static DamagePopup CreateText(Transform target, string text, Color color)
         {
-            Vector3 position = target.position;
+            var popup = Spawn(ResolvePositionForTarget(target));
+            popup.InitializeText(text, color);
+            return popup;
+        }
 
+        // ─── 내부 공통 헬퍼 ───
+
+        private static Vector3 ResolvePositionForTarget(Transform target)
+        {
+            Vector3 position = target.position;
             var collider = target.GetComponent<Collider>();
             if (collider != null)
             {
@@ -87,29 +69,23 @@ namespace DrillCorp.UI
             {
                 position += Vector3.forward * 0.5f;
             }
-
             position += Vector3.up * 0.1f;
+            return position;
+        }
 
-            GameObject popupObj = new GameObject("DamagePopup");
-            popupObj.transform.position = position;
-
-            DamagePopup popup = popupObj.AddComponent<DamagePopup>();
-            popup.InitializeText(text, color);
-
+        // 풀에서 꺼내거나 첫 생성 — 위치/활성만 여기서 처리, 텍스트 설정은 호출자가 Initialize*.
+        private static DamagePopup Spawn(Vector3 position)
+        {
+            var popup = DamagePopupPool.Acquire();
+            popup.transform.position = position;
+            popup.gameObject.SetActive(true);
+            popup._timer = 0f; // 재활용 시 수명 초기화 필수
             return popup;
         }
 
         private void Initialize(float damage, PopupType type)
         {
-            // TextMeshPro 컴포넌트 생성
-            if (_text == null)
-            {
-                _text = gameObject.AddComponent<TextMeshPro>();
-                _text.alignment = TextAlignmentOptions.Center;
-                _text.fontSize = 4f;
-                _text.sortingOrder = 200;
-                TMPFontHelper.ApplyDefaultFont(_text);
-            }
+            EnsureTextComponent();
 
             // 타입별 설정
             switch (type)
@@ -159,15 +135,9 @@ namespace DrillCorp.UI
 
         private void InitializeText(string text, Color color)
         {
-            if (_text == null)
-            {
-                _text = gameObject.AddComponent<TextMeshPro>();
-                _text.alignment = TextAlignmentOptions.Center;
-                _text.fontSize = 4f;
-                _text.sortingOrder = 200;
-                TMPFontHelper.ApplyDefaultFont(_text);
-            }
-
+            EnsureTextComponent();
+            // CreateText 계열은 fontSize 를 건드리지 않아 마지막 상태가 남을 수 있음 → 기본값으로 복구
+            _text.fontSize = 4f;
             _text.text = text;
             _color = color;
             _text.color = _color;
@@ -177,6 +147,23 @@ namespace DrillCorp.UI
             if (Camera.main != null)
             {
                 transform.rotation = Camera.main.transform.rotation;
+            }
+        }
+
+        // 풀에서 꺼낸 재활용 인스턴스는 이미 TextMeshPro 가 있으므로 첫 생성 때만 붙임.
+        private void EnsureTextComponent()
+        {
+            if (_text == null)
+            {
+                _text = GetComponent<TextMeshPro>();
+                if (_text == null)
+                {
+                    _text = gameObject.AddComponent<TextMeshPro>();
+                    _text.alignment = TextAlignmentOptions.Center;
+                    _text.fontSize = 4f;
+                    _text.sortingOrder = 200;
+                    TMPFontHelper.ApplyDefaultFont(_text);
+                }
             }
         }
 
@@ -191,10 +178,10 @@ namespace DrillCorp.UI
             float alpha = 1f - (_timer / _lifetime);
             _text.color = new Color(_color.r, _color.g, _color.b, alpha);
 
-            // 수명 종료
+            // 수명 종료 — Destroy 대신 풀로 반환
             if (_timer >= _lifetime)
             {
-                Destroy(gameObject);
+                DamagePopupPool.Release(this);
             }
         }
     }

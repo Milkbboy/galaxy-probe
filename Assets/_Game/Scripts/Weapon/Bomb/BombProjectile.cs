@@ -1,6 +1,7 @@
 using UnityEngine;
 using DrillCorp.Machine;
 using DrillCorp.Audio;
+using DrillCorp.VFX.Pool;
 
 namespace DrillCorp.Weapon.Bomb
 {
@@ -144,16 +145,14 @@ namespace DrillCorp.Weapon.Bomb
                 if (data.HitVfxPrefab != null)
                 {
                     // 프리펩 회전 보존 (탑뷰 스프라이트는 90,0,0 — identity 쓰면 카메라 쪽으로 서버림)
-                    var hitVfx = Instantiate(data.HitVfxPrefab, col.transform.position, data.HitVfxPrefab.transform.rotation);
-                    Destroy(hitVfx, data.HitVfxLifetime);
+                    VfxPool.Get(data.HitVfxPrefab, col.transform.position, data.HitVfxPrefab.transform.rotation);
                 }
             }
 
             if (data.ExplosionVfxPrefab != null)
             {
                 // 프리펩 회전 보존 (탑뷰 스프라이트는 90,0,0 — identity 쓰면 카메라 쪽으로 서버림)
-                var vfx = Instantiate(data.ExplosionVfxPrefab, pos, data.ExplosionVfxPrefab.transform.rotation);
-                Destroy(vfx, data.ExplosionVfxLifetime);
+                VfxPool.Get(data.ExplosionVfxPrefab, pos, data.ExplosionVfxPrefab.transform.rotation);
             }
         }
 

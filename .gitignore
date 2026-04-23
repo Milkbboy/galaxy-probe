@@ -65,5 +65,8 @@ Screenshot/
 # Perf logs (PerfRecorder 출력 — 각자 로컬에서 측정)
 PerfLogs/
 
+# Hierarchy 덤프 (HierarchyDumper 출력 — 디버깅용)
+HierarchyDumps/
+
 # Google API Credentials (보안)
 Assets/_Game/Data/Credentials/google-credentials.json

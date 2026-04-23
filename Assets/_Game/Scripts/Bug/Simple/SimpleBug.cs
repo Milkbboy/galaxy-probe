@@ -3,6 +3,7 @@ using DrillCorp.Machine;
 using DrillCorp.UI.Minimap;
 using DrillCorp.Audio;
 using DrillCorp.Core;
+using DrillCorp.VFX.Pool;
 
 namespace DrillCorp.Bug.Simple
 {
@@ -308,17 +309,49 @@ namespace DrillCorp.Bug.Simple
             if (_deathVfxPrefab != null) SpawnScaledVfx(_deathVfxPrefab);
         }
 
-        // VFX 스폰 — 프리펩 authored 회전·스케일 보존 + 벌레 크기에 비례 스케일링
+        // VFX 스폰 — 프리펩 authored 회전·스케일 보존 + 벌레 크기에 비례 스케일링.
+        // VfxPool.Get 으로 재사용 — Destroy/Instantiate 0 회, GC 압박 없음.
+        // 루트에 ParticleSystem 이 없는 프리팹(자식에만 PS)은 풀링 대상 아니므로 레거시 경로.
         private void SpawnScaledVfx(GameObject prefab)
         {
-            GameObject vfx = Instantiate(prefab);
-            vfx.transform.position = _fxSocket != null ? _fxSocket.position : transform.position;
-            vfx.transform.localScale = Vector3.Scale(
-                vfx.transform.localScale,
-                transform.localScale * _vfxScaleMultiplier);
+            if (prefab == null) return;
+            Vector3 pos = _fxSocket != null ? _fxSocket.position : transform.position;
 
-            var ps = vfx.GetComponent<ParticleSystem>();
-            Destroy(vfx, ps != null ? ps.main.duration + ps.main.startLifetime.constantMax : 2f);
+            if (prefab.GetComponent<ParticleSystem>() != null)
+            {
+                GameObject vfx = VfxPool.Get(prefab, pos, Quaternion.identity);
+                if (vfx == null) return;
+                vfx.transform.localScale = Vector3.Scale(
+                    prefab.transform.localScale,
+                    transform.localScale * _vfxScaleMultiplier);
+                return;
+            }
+
+            // 레거시 — 루트에 PS 없는 프리팹은 Instantiate + 타이머 폴백 (자식 PS 최장 수명 기준)
+            GameObject legacy = Instantiate(prefab);
+            legacy.transform.position = pos;
+            legacy.transform.localScale = Vector3.Scale(
+                legacy.transform.localScale,
+                transform.localScale * _vfxScaleMultiplier);
+            DestroyByLongestLife(legacy);
+        }
+
+        private static void DestroyByLongestLife(GameObject vfx)
+        {
+            if (vfx == null) return;
+            var systems = vfx.GetComponentsInChildren<ParticleSystem>(true);
+            if (systems.Length == 0) { Object.Destroy(vfx, 2f); return; }
+
+            float maxLife = 0f;
+            foreach (var ps in systems)
+            {
+                var main = ps.main;
+                float life = main.duration
+                    + main.startLifetime.constantMax
+                    + Mathf.Max(main.startDelay.constantMax, 0f);
+                if (life > maxLife) maxLife = life;
+            }
+            Object.Destroy(vfx, maxLife + 0.5f);
         }
 
         public void Heal(float amount)
