@@ -6,7 +6,7 @@
 
 ---
 
-## [Unreleased] - 2026-04-23 — SimpleBug 전면 교체 Phase A~D + C-2 진행
+## [Unreleased] - 2026-04-23 — SimpleBug 전면 교체 Phase A~D + 레거시 코드·에셋 일괄 제거
 
 > 상세: `docs/SimpleBugSheet.md` (SSoT 임시 문서), 프로젝트 메모리 `project_simplebug_migration.md`
 > 맥락: 레거시 `BugData`·`BugBehaviorData`(Movement/Attack/Passive/Skill/Trigger) + `WaveManager`(SpawnGroup/Formation 기반) 시스템은 이미 `SimpleBug` 계열로 런타임 교체된 dead code 상태. 이번 작업으로 시트 연동 + 레거시 제거 일괄 진행.
@@ -35,11 +35,25 @@
 - 웨이브는 난이도 곡선일 뿐 게임 종료와 무관. 마지막 웨이브(`KillTarget=-1`)는 세션 끝까지 파라미터 유지.
 - 시트 값: Wave 1=15, Wave 2=25, Wave 3=40, Wave 4=60, Wave 5=-1. Score는 SimpleBugData.Score 그대로 (Normal=1, Elite=5, Swift=0.5).
 
-### In Progress — Phase C (레거시 제거)
-- ✅ C-1/C-2 완료: 비-제거 파일의 레거시 참조 끊기 (SawWeapon/DebugManager/PerfMarkers/PerfRecorder + BugController.cs 선제 수정).
-- 🔜 C-3: Game 씬에서 `FormationSpawner` orphan GameObject 삭제 (사용자 수동).
-- 🔜 C-4~C-6: 레거시 런타임 코드/데이터 일괄 삭제 + 최종 컴파일·Play 재검증.
-- ⏳ Phase E: 문서 정리 (DataStructure.md/GoogleSheetsGuide.md 개편, Behavior/Formation 문서 archive 이동, SimpleBugSheet.md 흡수 후 삭제).
+### Removed — Phase C (레거시 제거)
+- ✅ C-1/C-2: 비-제거 파일의 레거시 참조 끊기 (SawWeapon/DebugManager/PerfMarkers/PerfRecorder + BugController.cs 선제 수정) — 직전 커밋.
+- ✅ C-3 의존성 검증: Game/Title 씬, Weapon/Ability/Core/Machine/UI/Diagnostics 코드에 레거시 심볼 참조 0건 확인 (Explore agent). `FormationSpawner` orphan GameObject도 씬에 없음.
+- ✅ C-3 Step 1 — 런타임·에디터 `.cs` 일괄 삭제 (141 파일, -11479 lines). 커밋 `08e80ea`.
+  - `Scripts/Bug/Behaviors/**` (40 cs) — Attack/Movement/Passive/Skill/Trigger/Data 전부.
+  - `Scripts/Bug/Formation/**` (5 cs) — FormationSpawner/Data/Group/Member/OffsetCalculator.
+  - `Scripts/Bug/Pool/**` (3 cs) — BugPool/Config/PooledBug (SimpleBugSpawner 미사용).
+  - `Scripts/Bug/{BugBase,BugController,BugSpawner,BugManager,BeetleBug,CentipedeBug,FlyBug,BugHpBar,BugLabel,OffscreenVisibilityTracker}.cs`.
+  - `Scripts/Data/{BugData,WaveData}.cs`, `Scripts/Wave/WaveManager.cs`.
+  - `Scripts/Editor/{DataSetupEditor,BugBehaviorSampleCreator,BugTestPrefabCreator,BugPrefabEditor,BehaviorDataEditors}.cs`.
+- ✅ C-3 Step 2 — 레거시 프리펩·머티리얼 제거:
+  - `Prefabs/Bugs/Test/` 폴더 전체 (Bug_Test_*.prefab + _Mat.mat 21쌍) — BugController 기반 테스트 프리펩.
+  - `Prefabs/Bugs/{BugProjectile.prefab, BugProjectile_Mat.mat, Bug_{Beetle,Centipede,Fly}_Mat.mat}` — Behaviors/Attack + 구 벌레 3종 머티리얼.
+  - `Prefabs/UI/BugHpBar.prefab` — SimpleBug 미사용. `CLAUDE.md`의 월드 UI 참조 구현을 `MinimapIcon.cs`로 갱신.
+
+### Remaining — Phase C-4·C-5 (다음 세션)
+- 🔜 C-4: 구 `Wave_01~05.asset` 타입 확인. SimpleWaveAssetSetup 은 파일 존재 시 스킵하므로 구 `WaveData` 타입 에셋이 남아있을 가능성. 삭제 후 SimpleWaveData 타입으로 재생성 필요.
+- 🔜 C-5: Game 씬에 `SimpleWaveManager` GameObject 바인딩 (`Tools/Drill-Corp/3. 게임 초기 설정/SimpleBug/2. Game 씬에 SimpleWaveManager 바인딩` 메뉴).
+- ⏳ Phase E (문서 정리): `DataStructure.md`/`GoogleSheetsGuide.md` 개편, `BugBehaviorSystem.md`/`BugBehaviorPatterns.md`/`FormationSystem.md` → `archive/` 이동, `SimpleBugSheet.md` 흡수 후 삭제.
 
 ---
 

@@ -37,7 +37,7 @@ Unity / URP / Input System / TMP / 외부 패키지 코드를 작성·수정할 
 - 오프셋은 Z로 띄우기 (예: `new Vector3(0, 0.1f, 0.8f)`)
 - 회전 고정: `Quaternion.Euler(90,0,0)` 또는 `Quaternion.identity` — 부모 회전 무시
 - `LateUpdate`에서 `transform.position = _target.position + _offset` 갱신
-- 참조 구현: `Assets/_Game/Scripts/Bug/BugHpBar.cs`
+- 참조 구현: `Assets/_Game/Scripts/UI/Minimap/MinimapIcon.cs` (LateUpdate 월드 추적 + 부모 회전 무시)
 
 ## VFX 제작 정책
 **새 VFX(파티클·글로우·폭발·트레일 등) 만들기 전에 `Assets/Polygon Arsenal/Prefabs/` 폴더를 먼저 검색**해 재활용 가능한 프리펩이 있는지 확인. Mesh/ParticleSystem 직접 제작은 예외적인 경우에만.
