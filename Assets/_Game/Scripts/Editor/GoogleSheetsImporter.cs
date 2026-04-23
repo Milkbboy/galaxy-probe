@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine.Networking;
 using DrillCorp.Data;
-using DrillCorp.Bug.Behaviors.Data;
+using DrillCorp.Bug.Simple;
 
 namespace DrillCorp.Editor
 {
@@ -27,18 +27,15 @@ namespace DrillCorp.Editor
 
         // 미리보기 데이터
         private int _previewTab = 0;
-        private readonly string[] _previewTabNames = { "BugData", "WaveData", "SpawnGroups", "MachineData", "UpgradeData" };
+        private readonly string[] _previewTabNames = { "SimpleBugData", "WaveData", "MachineData", "UpgradeData" };
 
-        // BugBehavior 폴더 경로
-        private const string BEHAVIOR_DATA_PATH = "Assets/_Game/Data/BugBehaviors";
         private Dictionary<string, List<List<string>>> _previewData = new Dictionary<string, List<List<string>>>();
         private Vector2 _previewScrollPosition;
         private bool _isLoading = false;
 
         // 시트 이름
-        private const string SHEET_BUG_DATA = "BugData";
+        private const string SHEET_SIMPLE_BUG_DATA = "SimpleBugData";
         private const string SHEET_WAVE_DATA = "WaveData";
-        private const string SHEET_WAVE_SPAWN_GROUPS = "WaveSpawnGroups";
         private const string SHEET_MACHINE_DATA = "MachineData";
         private const string SHEET_UPGRADE_DATA = "UpgradeData";
 
@@ -229,7 +226,6 @@ namespace DrillCorp.Editor
                 _previewTab = GUILayout.Toolbar(_previewTab, _previewTabNames);
 
                 string currentSheet = _previewTabNames[_previewTab];
-                if (currentSheet == "SpawnGroups") currentSheet = SHEET_WAVE_SPAWN_GROUPS;
 
                 if (_previewData.ContainsKey(currentSheet) && _previewData[currentSheet].Count > 0)
                 {
@@ -330,7 +326,7 @@ namespace DrillCorp.Editor
 
             try
             {
-                string[] sheetNames = { SHEET_BUG_DATA, SHEET_WAVE_DATA, SHEET_WAVE_SPAWN_GROUPS, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA };
+                string[] sheetNames = { SHEET_SIMPLE_BUG_DATA, SHEET_WAVE_DATA, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA };
 
                 foreach (var sheetName in sheetNames)
                 {
@@ -374,9 +370,9 @@ namespace DrillCorp.Editor
             EditorGUILayout.Space(5);
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("BugData"))
+            if (GUILayout.Button("SimpleBugData"))
             {
-                ImportBugData();
+                ImportSimpleBugData();
             }
             if (GUILayout.Button("WaveData"))
             {
@@ -650,10 +646,10 @@ namespace DrillCorp.Editor
 
             try
             {
-                await ImportBugDataAsync();
-                await ImportWaveDataAsync();
+                await ImportSimpleBugDataAsync();
                 await ImportMachineDataAsync();
                 await ImportUpgradeDataAsync();
+                await ImportWaveDataAsync();
 
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
@@ -667,17 +663,17 @@ namespace DrillCorp.Editor
             }
         }
 
-        private async void ImportBugData()
+        private async void ImportSimpleBugData()
         {
-            SetStatus("BugData 가져오는 중...", MessageType.Info);
+            SetStatus("SimpleBugData 가져오는 중...", MessageType.Info);
             try
             {
-                await ImportBugDataAsync();
-                SetStatus("BugData 가져오기 완료!", MessageType.Info);
+                await ImportSimpleBugDataAsync();
+                SetStatus("SimpleBugData 가져오기 완료!", MessageType.Info);
             }
             catch (Exception e)
             {
-                SetStatus($"BugData 오류: {e.Message}", MessageType.Error);
+                SetStatus($"SimpleBugData 오류: {e.Message}", MessageType.Error);
             }
         }
 
@@ -869,601 +865,145 @@ namespace DrillCorp.Editor
 
         #region Data Import Implementation
 
-        private async Task ImportBugDataAsync()
+        // ─────────────────────────────────────────────
+        // SimpleBugData import
+        // 매칭 기준: SO 내부 BugName 필드 (파일명 오타 SimpleBug_Elit.asset 수용)
+        // 빈 셀 → 기존 SO 값 보존. Prefab 필드는 절대 덮어쓰지 않음.
+        // ─────────────────────────────────────────────
+        private async Task ImportSimpleBugDataAsync()
         {
-            var rows = await ReadSheetAsync(SHEET_BUG_DATA);
-            if (rows.Count < 2) return; // 헤더 + 최소 1행
+            var rows = await ReadSheetAsync(SHEET_SIMPLE_BUG_DATA);
+            if (rows.Count < 2) return;
 
             var headers = rows[0];
             string savePath = "Assets/_Game/Data/Bugs";
-            string behaviorSavePath = $"{BEHAVIOR_DATA_PATH}/Imported";
-
-            // 폴더 생성
             if (!AssetDatabase.IsValidFolder(savePath))
-            {
                 AssetDatabase.CreateFolder("Assets/_Game/Data", "Bugs");
-            }
-            EnsureBehaviorFolders();
 
-            // 기존 Movement/Attack SO 캐시 (참조용)
-            var movementCache = LoadBehaviorCache<MovementBehaviorData>($"{BEHAVIOR_DATA_PATH}/Movement");
-            var attackCache = LoadBehaviorCache<AttackBehaviorData>($"{BEHAVIOR_DATA_PATH}/Attack");
-            var passiveCache = LoadBehaviorCache<PassiveBehaviorData>($"{BEHAVIOR_DATA_PATH}/Passive");
-            var skillCache = LoadBehaviorCache<SkillBehaviorData>($"{BEHAVIOR_DATA_PATH}/Skill");
-            var triggerCache = LoadBehaviorCache<TriggerBehaviorData>($"{BEHAVIOR_DATA_PATH}/Trigger");
+            // 기존 SimpleBugData SO 전부 로드 후 BugName으로 인덱싱
+            var cache = new Dictionary<string, SimpleBugData>(StringComparer.OrdinalIgnoreCase);
+            foreach (var guid in AssetDatabase.FindAssets("t:SimpleBugData"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var so = AssetDatabase.LoadAssetAtPath<SimpleBugData>(path);
+                if (so != null && !string.IsNullOrEmpty(so.BugName))
+                    cache[so.BugName] = so;
+            }
 
             for (int i = 1; i < rows.Count; i++)
             {
                 var row = rows[i];
                 if (row.Count == 0 || string.IsNullOrEmpty(row[0])) continue;
 
-                string bugName = GetValue(row, headers, "BugName", $"Bug_{i}");
-                string assetPath = $"{savePath}/Bug_{bugName}.asset";
-
-                BugData bugData = AssetDatabase.LoadAssetAtPath<BugData>(assetPath);
-                if (bugData == null)
+                string bugName = GetValue(row, headers, "BugName", "");
+                if (string.IsNullOrEmpty(bugName))
                 {
-                    bugData = ScriptableObject.CreateInstance<BugData>();
-                    AssetDatabase.CreateAsset(bugData, assetPath);
+                    Debug.LogWarning($"[GoogleSheetsImporter] SimpleBugData row {i}: BugName 비어있음, 스킵");
+                    continue;
                 }
 
-                var so = new SerializedObject(bugData);
-                SetSerializedField(so, "_bugId", GetIntValue(row, headers, "BugId", i));
-                SetSerializedField(so, "_bugName", GetValue(row, headers, "BugName", ""));
-                SetSerializedField(so, "_description", GetValue(row, headers, "Description", ""));
-                SetSerializedField(so, "_maxHealth", GetFloatValue(row, headers, "MaxHealth", 10f));
-                SetSerializedField(so, "_moveSpeed", GetFloatValue(row, headers, "MoveSpeed", 2f));
-                SetSerializedField(so, "_attackDamage", GetFloatValue(row, headers, "AttackDamage", 5f));
-                SetSerializedField(so, "_attackCooldown", GetFloatValue(row, headers, "AttackCooldown", 1f));
-                SetSerializedField(so, "_attackRange", GetFloatValue(row, headers, "AttackRange", 1f));
-                SetSerializedField(so, "_scale", GetFloatValue(row, headers, "Scale", 1f));
-                SetSerializedField(so, "_currencyReward", GetIntValue(row, headers, "CurrencyReward", 1));
-                SetSerializedField(so, "_dropChance", GetFloatValue(row, headers, "DropChance", 1f));
-
-                // HpBarOffset
-                float hpX = GetFloatValue(row, headers, "HpBarOffsetX", 0f);
-                float hpY = GetFloatValue(row, headers, "HpBarOffsetY", 0.1f);
-                float hpZ = GetFloatValue(row, headers, "HpBarOffsetZ", 0.8f);
-                var offsetProp = so.FindProperty("_hpBarOffset");
-                if (offsetProp != null)
+                SimpleBugData data;
+                if (!cache.TryGetValue(bugName, out data))
                 {
-                    offsetProp.vector3Value = new Vector3(hpX, hpY, hpZ);
+                    data = ScriptableObject.CreateInstance<SimpleBugData>();
+                    data.BugName = bugName;
+                    string newPath = $"{savePath}/SimpleBug_{bugName}.asset";
+                    AssetDatabase.CreateAsset(data, newPath);
+                    cache[bugName] = data;
+                    Debug.Log($"[GoogleSheetsImporter] 신규 생성: {newPath}");
                 }
 
-                so.ApplyModifiedPropertiesWithoutUndo();
-                EditorUtility.SetDirty(bugData);
-
-                // === Behavior 데이터 처리 ===
-                string movementType = GetValue(row, headers, "MovementType", "");
-                string attackType = GetValue(row, headers, "AttackType", "");
-
-                // 행동 컬럼이 있으면 BugBehaviorData 생성/갱신
-                if (!string.IsNullOrEmpty(movementType) || !string.IsNullOrEmpty(attackType))
+                // Kind enum
+                string kindStr = GetValue(row, headers, "Kind", "");
+                if (!string.IsNullOrEmpty(kindStr) && Enum.TryParse<SimpleBugData.BugKind>(kindStr, true, out var kind))
                 {
-                    var behaviorData = CreateOrUpdateBugBehaviorData(
-                        bugName,
-                        behaviorSavePath,
-                        row,
-                        headers,
-                        movementCache,
-                        attackCache,
-                        passiveCache,
-                        skillCache,
-                        triggerCache
-                    );
-
-                    // BugData에 BehaviorData 참조 설정
-                    so = new SerializedObject(bugData);
-                    var behaviorProp = so.FindProperty("_behaviorData");
-                    if (behaviorProp != null)
-                    {
-                        behaviorProp.objectReferenceValue = behaviorData;
-                    }
-                    so.ApplyModifiedPropertiesWithoutUndo();
-                    EditorUtility.SetDirty(bugData);
-
-                    Debug.Log($"[GoogleSheetsImporter] Imported with Behavior: {bugName}");
+                    data.Kind = kind;
                 }
-                else
+
+                // 숫자 필드 — 빈 셀은 기존값 보존
+                data.BaseHp = GetFloatOrKeep(row, headers, "BaseHp", data.BaseHp);
+                data.HpPerWave = GetFloatOrKeep(row, headers, "HpPerWave", data.HpPerWave);
+                data.BaseSpeed = GetFloatOrKeep(row, headers, "BaseSpeed", data.BaseSpeed);
+                data.SpeedPerWave = GetFloatOrKeep(row, headers, "SpeedPerWave", data.SpeedPerWave);
+                data.SpeedRandom = GetFloatOrKeep(row, headers, "SpeedRandom", data.SpeedRandom);
+                data.Size = GetFloatOrKeep(row, headers, "Size", data.Size);
+                data.Score = GetFloatOrKeep(row, headers, "Score", data.Score);
+
+                // TintHex — 빈 셀은 기존 Tint 보존
+                string tintHex = GetValue(row, headers, "TintHex", "");
+                if (!string.IsNullOrEmpty(tintHex) && TryParseHexColor(tintHex, out var tint))
                 {
-                    Debug.Log($"[GoogleSheetsImporter] Imported: {bugName}");
+                    data.Tint = tint;
                 }
+
+                EditorUtility.SetDirty(data);
+                Debug.Log($"[GoogleSheetsImporter] Imported SimpleBugData: {bugName}");
             }
 
             AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
         }
 
-        /// <summary>
-        /// Behavior 폴더 구조 확인 및 생성
-        /// </summary>
-        private void EnsureBehaviorFolders()
-        {
-            string[] folders = { "Imported", "Movement", "Attack", "Passive", "Skill", "Trigger" };
-
-            if (!AssetDatabase.IsValidFolder(BEHAVIOR_DATA_PATH))
-            {
-                AssetDatabase.CreateFolder("Assets/_Game/Data", "BugBehaviors");
-            }
-
-            foreach (var folder in folders)
-            {
-                string path = $"{BEHAVIOR_DATA_PATH}/{folder}";
-                if (!AssetDatabase.IsValidFolder(path))
-                {
-                    AssetDatabase.CreateFolder(BEHAVIOR_DATA_PATH, folder);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 특정 폴더의 Behavior SO들을 이름으로 캐시
-        /// </summary>
-        private Dictionary<string, T> LoadBehaviorCache<T>(string folderPath) where T : ScriptableObject
-        {
-            var cache = new Dictionary<string, T>(System.StringComparer.OrdinalIgnoreCase);
-
-            if (!AssetDatabase.IsValidFolder(folderPath))
-                return cache;
-
-            var guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}", new[] { folderPath });
-            foreach (var guid in guids)
-            {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var asset = AssetDatabase.LoadAssetAtPath<T>(path);
-                if (asset != null)
-                {
-                    // 파일명에서 키 추출 (Movement_Linear -> Linear)
-                    string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
-                    string[] parts = fileName.Split('_');
-                    string key = parts.Length > 1 ? parts[1] : fileName;
-                    cache[key] = asset;
-                }
-            }
-
-            return cache;
-        }
-
-        /// <summary>
-        /// BugBehaviorData SO 생성 또는 업데이트
-        /// </summary>
-        private BugBehaviorData CreateOrUpdateBugBehaviorData(
-            string bugName,
-            string savePath,
-            List<string> row,
-            List<string> headers,
-            Dictionary<string, MovementBehaviorData> movementCache,
-            Dictionary<string, AttackBehaviorData> attackCache,
-            Dictionary<string, PassiveBehaviorData> passiveCache,
-            Dictionary<string, SkillBehaviorData> skillCache,
-            Dictionary<string, TriggerBehaviorData> triggerCache)
-        {
-            string assetPath = $"{savePath}/BugBehavior_{bugName}.asset";
-
-            BugBehaviorData behaviorData = AssetDatabase.LoadAssetAtPath<BugBehaviorData>(assetPath);
-            if (behaviorData == null)
-            {
-                behaviorData = ScriptableObject.CreateInstance<BugBehaviorData>();
-                AssetDatabase.CreateAsset(behaviorData, assetPath);
-                AssetDatabase.SaveAssets();
-            }
-
-            var so = new SerializedObject(behaviorData);
-
-            // === Movement 설정 ===
-            string movementTypeStr = GetValue(row, headers, "MovementType", "Linear");
-            float movementParam1 = GetFloatValue(row, headers, "MovementParam1", 0f);
-            float movementParam2 = GetFloatValue(row, headers, "MovementParam2", 0f);
-
-            // 기존 SO 있으면 참조, 없으면 새로 생성
-            MovementBehaviorData movementSO = FindOrCreateMovementSO(
-                movementTypeStr, movementParam1, movementParam2, movementCache);
-
-            var movementProp = so.FindProperty("_defaultMovement");
-            if (movementProp != null)
-            {
-                movementProp.objectReferenceValue = movementSO;
-            }
-
-            // === Attack 설정 ===
-            string attackTypeStr = GetValue(row, headers, "AttackType", "Melee");
-            float attackRange = GetFloatValue(row, headers, "AttackRange", 1.5f);
-            float attackParam1 = GetFloatValue(row, headers, "AttackParam1", 0f);
-            float attackParam2 = GetFloatValue(row, headers, "AttackParam2", 0f);
-
-            AttackBehaviorData attackSO = FindOrCreateAttackSO(
-                attackTypeStr, attackRange, attackParam1, attackParam2, attackCache);
-
-            var attackProp = so.FindProperty("_defaultAttack");
-            if (attackProp != null)
-            {
-                attackProp.objectReferenceValue = attackSO;
-            }
-
-            // === Passives 설정 ===
-            string passivesStr = GetValue(row, headers, "Passives", "");
-            var passiveSOList = ParseAndCreatePassives(passivesStr, passiveCache);
-            SetSOListProperty(so, "_passives", passiveSOList);
-
-            // === Skills 설정 ===
-            string skillsStr = GetValue(row, headers, "Skills", "");
-            var skillSOList = ParseAndCreateSkills(skillsStr, skillCache);
-            SetSOListProperty(so, "_skills", skillSOList);
-
-            // === Triggers 설정 ===
-            string triggersStr = GetValue(row, headers, "Triggers", "");
-            var triggerSOList = ParseAndCreateTriggers(triggersStr, triggerCache);
-            SetSOListProperty(so, "_triggers", triggerSOList);
-
-            so.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(behaviorData);
-
-            return behaviorData;
-        }
-
-        /// <summary>
-        /// Movement SO 찾거나 새로 생성
-        /// </summary>
-        private MovementBehaviorData FindOrCreateMovementSO(
-            string typeStr, float param1, float param2,
-            Dictionary<string, MovementBehaviorData> cache)
-        {
-            // 기존 캐시에서 찾기 (파라미터 무시하고 타입만으로)
-            if (cache.TryGetValue(typeStr, out var existing))
-            {
-                return existing;
-            }
-
-            // 없으면 Imported 폴더에 새로 생성
-            if (!System.Enum.TryParse(typeStr, true, out MovementType movementType))
-            {
-                movementType = MovementType.Linear;
-            }
-
-            string assetPath = $"{BEHAVIOR_DATA_PATH}/Imported/Movement_{typeStr}_{param1}_{param2}.asset";
-
-            // 이미 같은 파라미터로 생성된 것 있는지 확인
-            var existingImported = AssetDatabase.LoadAssetAtPath<MovementBehaviorData>(assetPath);
-            if (existingImported != null)
-                return existingImported;
-
-            var newSO = ScriptableObject.CreateInstance<MovementBehaviorData>();
-            AssetDatabase.CreateAsset(newSO, assetPath);
-
-            var so = new SerializedObject(newSO);
-            SetSerializedEnumField(so, "_type", (int)movementType);
-            SetSerializedField(so, "_displayName", $"{typeStr} (Imported)");
-            SetSerializedField(so, "_param1", param1);
-            SetSerializedField(so, "_param2", param2);
-            so.ApplyModifiedPropertiesWithoutUndo();
-
-            cache[typeStr] = newSO;
-            return newSO;
-        }
-
-        /// <summary>
-        /// Attack SO 찾거나 새로 생성
-        /// </summary>
-        private AttackBehaviorData FindOrCreateAttackSO(
-            string typeStr, float range, float param1, float param2,
-            Dictionary<string, AttackBehaviorData> cache)
-        {
-            if (cache.TryGetValue(typeStr, out var existing))
-            {
-                return existing;
-            }
-
-            if (!System.Enum.TryParse(typeStr, true, out AttackType attackType))
-            {
-                attackType = AttackType.Melee;
-            }
-
-            string assetPath = $"{BEHAVIOR_DATA_PATH}/Imported/Attack_{typeStr}_{range}.asset";
-
-            var existingImported = AssetDatabase.LoadAssetAtPath<AttackBehaviorData>(assetPath);
-            if (existingImported != null)
-                return existingImported;
-
-            var newSO = ScriptableObject.CreateInstance<AttackBehaviorData>();
-            AssetDatabase.CreateAsset(newSO, assetPath);
-
-            var so = new SerializedObject(newSO);
-            SetSerializedEnumField(so, "_type", (int)attackType);
-            SetSerializedField(so, "_displayName", $"{typeStr} (Imported)");
-            SetSerializedField(so, "_range", range);
-            SetSerializedField(so, "_param1", param1);
-            SetSerializedField(so, "_param2", param2);
-            so.ApplyModifiedPropertiesWithoutUndo();
-
-            cache[typeStr] = newSO;
-            return newSO;
-        }
-
-        /// <summary>
-        /// Passives 문자열 파싱 및 SO 리스트 생성
-        /// 형식: "Armor:5, Shield:20:2"
-        /// </summary>
-        private List<PassiveBehaviorData> ParseAndCreatePassives(
-            string passivesStr,
-            Dictionary<string, PassiveBehaviorData> cache)
-        {
-            var result = new List<PassiveBehaviorData>();
-            if (string.IsNullOrEmpty(passivesStr)) return result;
-
-            string[] entries = passivesStr.Split(',');
-            foreach (var entry in entries)
-            {
-                string trimmed = entry.Trim();
-                if (string.IsNullOrEmpty(trimmed)) continue;
-
-                var (type, param1, param2) = PassiveBehaviorData.Parse(trimmed);
-                string typeStr = type.ToString();
-
-                // 캐시 확인
-                if (cache.TryGetValue(typeStr, out var existing))
-                {
-                    result.Add(existing);
-                    continue;
-                }
-
-                // 새로 생성
-                string assetPath = $"{BEHAVIOR_DATA_PATH}/Imported/Passive_{typeStr}_{param1}_{param2}.asset";
-                var existingImported = AssetDatabase.LoadAssetAtPath<PassiveBehaviorData>(assetPath);
-                if (existingImported != null)
-                {
-                    result.Add(existingImported);
-                    continue;
-                }
-
-                var newSO = ScriptableObject.CreateInstance<PassiveBehaviorData>();
-                AssetDatabase.CreateAsset(newSO, assetPath);
-
-                var so = new SerializedObject(newSO);
-                SetSerializedEnumField(so, "_type", (int)type);
-                SetSerializedField(so, "_displayName", $"{typeStr} (Imported)");
-                SetSerializedField(so, "_param1", param1);
-                SetSerializedField(so, "_param2", param2);
-                so.ApplyModifiedPropertiesWithoutUndo();
-
-                result.Add(newSO);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Skills 문자열 파싱 및 SO 리스트 생성
-        /// 형식: "Nova:5:10:3" (Type:Cooldown:Param1:Param2)
-        /// </summary>
-        private List<SkillBehaviorData> ParseAndCreateSkills(
-            string skillsStr,
-            Dictionary<string, SkillBehaviorData> cache)
-        {
-            var result = new List<SkillBehaviorData>();
-            if (string.IsNullOrEmpty(skillsStr)) return result;
-
-            string[] entries = skillsStr.Split(',');
-            foreach (var entry in entries)
-            {
-                string trimmed = entry.Trim();
-                if (string.IsNullOrEmpty(trimmed)) continue;
-
-                var (type, cooldown, param1, param2, stringParam) = SkillBehaviorData.Parse(trimmed);
-                string typeStr = type.ToString();
-
-                if (cache.TryGetValue(typeStr, out var existing))
-                {
-                    result.Add(existing);
-                    continue;
-                }
-
-                string assetPath = $"{BEHAVIOR_DATA_PATH}/Imported/Skill_{typeStr}_{cooldown}.asset";
-                var existingImported = AssetDatabase.LoadAssetAtPath<SkillBehaviorData>(assetPath);
-                if (existingImported != null)
-                {
-                    result.Add(existingImported);
-                    continue;
-                }
-
-                var newSO = ScriptableObject.CreateInstance<SkillBehaviorData>();
-                AssetDatabase.CreateAsset(newSO, assetPath);
-
-                var so = new SerializedObject(newSO);
-                SetSerializedEnumField(so, "_type", (int)type);
-                SetSerializedField(so, "_displayName", $"{typeStr} (Imported)");
-                SetSerializedField(so, "_cooldown", cooldown);
-                SetSerializedField(so, "_param1", param1);
-                SetSerializedField(so, "_param2", param2);
-                if (!string.IsNullOrEmpty(stringParam))
-                {
-                    SetSerializedField(so, "_stringParam", stringParam);
-                }
-                so.ApplyModifiedPropertiesWithoutUndo();
-
-                result.Add(newSO);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Triggers 문자열 파싱 및 SO 리스트 생성
-        /// 형식: "Enrage:30:50, ExplodeOnDeath:10:2"
-        /// </summary>
-        private List<TriggerBehaviorData> ParseAndCreateTriggers(
-            string triggersStr,
-            Dictionary<string, TriggerBehaviorData> cache)
-        {
-            var result = new List<TriggerBehaviorData>();
-            if (string.IsNullOrEmpty(triggersStr)) return result;
-
-            string[] entries = triggersStr.Split(',');
-            foreach (var entry in entries)
-            {
-                string trimmed = entry.Trim();
-                if (string.IsNullOrEmpty(trimmed)) continue;
-
-                var (type, param1, param2, param3, stringParam) = TriggerBehaviorData.Parse(trimmed);
-                string typeStr = type.ToString();
-
-                if (cache.TryGetValue(typeStr, out var existing))
-                {
-                    result.Add(existing);
-                    continue;
-                }
-
-                string assetPath = $"{BEHAVIOR_DATA_PATH}/Imported/Trigger_{typeStr}_{param1}_{param2}.asset";
-                var existingImported = AssetDatabase.LoadAssetAtPath<TriggerBehaviorData>(assetPath);
-                if (existingImported != null)
-                {
-                    result.Add(existingImported);
-                    continue;
-                }
-
-                var newSO = ScriptableObject.CreateInstance<TriggerBehaviorData>();
-                AssetDatabase.CreateAsset(newSO, assetPath);
-
-                var so = new SerializedObject(newSO);
-                SetSerializedEnumField(so, "_type", (int)type);
-                SetSerializedField(so, "_displayName", $"{typeStr} (Imported)");
-                SetSerializedField(so, "_param1", param1);
-                SetSerializedField(so, "_param2", param2);
-                SetSerializedField(so, "_param3", param3);
-                if (!string.IsNullOrEmpty(stringParam))
-                {
-                    SetSerializedField(so, "_stringParam", stringParam);
-                }
-                so.ApplyModifiedPropertiesWithoutUndo();
-
-                result.Add(newSO);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// SO 리스트를 SerializedProperty에 설정
-        /// </summary>
-        private void SetSOListProperty<T>(SerializedObject so, string propertyName, List<T> list) where T : ScriptableObject
-        {
-            var prop = so.FindProperty(propertyName);
-            if (prop == null) return;
-
-            prop.arraySize = list.Count;
-            for (int i = 0; i < list.Count; i++)
-            {
-                prop.GetArrayElementAtIndex(i).objectReferenceValue = list[i];
-            }
-        }
-
-        /// <summary>
-        /// Enum 필드 설정
-        /// </summary>
-        private void SetSerializedEnumField(SerializedObject so, string fieldName, int value)
-        {
-            var prop = so.FindProperty(fieldName);
-            if (prop != null) prop.enumValueIndex = value;
-        }
-
+        // ─────────────────────────────────────────────
+        // WaveData import (새 스키마)
+        // SimpleWaveData SO에 오버라이드 값 주입. -1/빈셀 → -1로 기록(런타임 Resolve에서 폴백), 0 → 0 기록.
+        // 기존 Wave_NN.asset을 WaveNumber 기준으로 매칭, 없으면 신규 생성.
+        // ─────────────────────────────────────────────
         private async Task ImportWaveDataAsync()
         {
-            // WaveData 기본 정보
-            var waveRows = await ReadSheetAsync(SHEET_WAVE_DATA);
-            // SpawnGroups
-            var spawnRows = await ReadSheetAsync(SHEET_WAVE_SPAWN_GROUPS);
+            var rows = await ReadSheetAsync(SHEET_WAVE_DATA);
+            if (rows.Count < 2) return;
 
-            if (waveRows.Count < 2) return;
-
-            var waveHeaders = waveRows[0];
-            var spawnHeaders = spawnRows.Count > 0 ? spawnRows[0] : new List<string>();
-
+            var headers = rows[0];
             string savePath = "Assets/_Game/Data/Waves";
-
             if (!AssetDatabase.IsValidFolder(savePath))
-            {
                 AssetDatabase.CreateFolder("Assets/_Game/Data", "Waves");
-            }
 
-            // BugData 캐시
-            var bugDataCache = new Dictionary<int, BugData>();
-            var bugGuids = AssetDatabase.FindAssets("t:BugData", new[] { "Assets/_Game/Data/Bugs" });
-            foreach (var guid in bugGuids)
+            // 기존 SimpleWaveData SO 전부 로드 후 WaveNumber로 인덱싱
+            var cache = new Dictionary<int, SimpleWaveData>();
+            foreach (var guid in AssetDatabase.FindAssets("t:SimpleWaveData"))
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
-                var bugData = AssetDatabase.LoadAssetAtPath<BugData>(path);
-                if (bugData != null)
-                {
-                    bugDataCache[bugData.BugId] = bugData;
-                }
+                var so = AssetDatabase.LoadAssetAtPath<SimpleWaveData>(path);
+                if (so != null) cache[so.WaveNumber] = so;
             }
 
-            for (int i = 1; i < waveRows.Count; i++)
+            for (int i = 1; i < rows.Count; i++)
             {
-                var row = waveRows[i];
+                var row = rows[i];
                 if (row.Count == 0 || string.IsNullOrEmpty(row[0])) continue;
 
-                int waveNumber = GetIntValue(row, waveHeaders, "WaveNumber", i);
-                string assetPath = $"{savePath}/Wave_{waveNumber:D2}.asset";
-
-                WaveData waveData = AssetDatabase.LoadAssetAtPath<WaveData>(assetPath);
-                if (waveData == null)
+                int waveNumber = GetIntValue(row, headers, "WaveNumber", -1);
+                if (waveNumber < 1)
                 {
-                    waveData = ScriptableObject.CreateInstance<WaveData>();
-                    AssetDatabase.CreateAsset(waveData, assetPath);
+                    Debug.LogWarning($"[GoogleSheetsImporter] WaveData row {i}: WaveNumber 이상({waveNumber}), 스킵");
+                    continue;
                 }
 
-                var so = new SerializedObject(waveData);
-                SetSerializedField(so, "_waveNumber", waveNumber);
-                SetSerializedField(so, "_waveName", GetValue(row, waveHeaders, "WaveName", $"Wave {waveNumber}"));
-                SetSerializedField(so, "_waveDuration", GetFloatValue(row, waveHeaders, "WaveDuration", 60f));
-                SetSerializedField(so, "_delayBeforeNextWave", GetFloatValue(row, waveHeaders, "DelayBeforeNextWave", 3f));
-                SetSerializedField(so, "_healthMultiplier", GetFloatValue(row, waveHeaders, "HealthMultiplier", 1f));
-                SetSerializedField(so, "_damageMultiplier", GetFloatValue(row, waveHeaders, "DamageMultiplier", 1f));
-                SetSerializedField(so, "_speedMultiplier", GetFloatValue(row, waveHeaders, "SpeedMultiplier", 1f));
-
-                // SpawnGroups 찾기
-                var groups = new List<SpawnGroupData>();
-                for (int j = 1; j < spawnRows.Count; j++)
+                SimpleWaveData wave;
+                if (!cache.TryGetValue(waveNumber, out wave))
                 {
-                    var spawnRow = spawnRows[j];
-                    if (spawnRow.Count == 0) continue;
-
-                    int spawnWaveNum = GetIntValue(spawnRow, spawnHeaders, "WaveNumber", -1);
-                    if (spawnWaveNum != waveNumber) continue;
-
-                    int bugId = GetIntValue(spawnRow, spawnHeaders, "BugId", 1);
-                    BugData bugData = bugDataCache.ContainsKey(bugId) ? bugDataCache[bugId] : null;
-
-                    groups.Add(new SpawnGroupData
-                    {
-                        BugData = bugData,
-                        Count = GetIntValue(spawnRow, spawnHeaders, "Count", 5),
-                        StartDelay = GetFloatValue(spawnRow, spawnHeaders, "StartDelay", 0f),
-                        SpawnInterval = GetFloatValue(spawnRow, spawnHeaders, "SpawnInterval", 1f),
-                        RandomPosition = GetBoolValue(spawnRow, spawnHeaders, "RandomPosition", true)
-                    });
+                    wave = ScriptableObject.CreateInstance<SimpleWaveData>();
+                    wave.WaveNumber = waveNumber;
+                    string newPath = $"{savePath}/Wave_{waveNumber:D2}.asset";
+                    AssetDatabase.CreateAsset(wave, newPath);
+                    cache[waveNumber] = wave;
+                    Debug.Log($"[GoogleSheetsImporter] 신규 생성: {newPath}");
                 }
 
-                // SpawnGroups 배열 설정
-                var spawnGroupsProp = so.FindProperty("_spawnGroups");
-                if (spawnGroupsProp != null)
-                {
-                    spawnGroupsProp.arraySize = groups.Count;
-                    for (int g = 0; g < groups.Count; g++)
-                    {
-                        var element = spawnGroupsProp.GetArrayElementAtIndex(g);
-                        element.FindPropertyRelative("BugData").objectReferenceValue = groups[g].BugData;
-                        element.FindPropertyRelative("Count").intValue = groups[g].Count;
-                        element.FindPropertyRelative("StartDelay").floatValue = groups[g].StartDelay;
-                        element.FindPropertyRelative("SpawnInterval").floatValue = groups[g].SpawnInterval;
-                        element.FindPropertyRelative("RandomPosition").boolValue = groups[g].RandomPosition;
-                    }
-                }
+                wave.WaveNumber = waveNumber;
+                wave.WaveName = GetValue(row, headers, "WaveName", wave.WaveName);
+                wave.KillTarget = GetFloatOrKeep(row, headers, "KillTarget", wave.KillTarget);
 
-                so.ApplyModifiedPropertiesWithoutUndo();
-                EditorUtility.SetDirty(waveData);
+                // 오버라이드 — 빈 셀은 기존 값 유지. 시트에 "-1"을 명시하면 -1로 기록되어 런타임에서 폴백 동작.
+                wave.NormalSpawnInterval = GetFloatOrKeep(row, headers, "NormalSpawnInterval", wave.NormalSpawnInterval);
+                wave.EliteSpawnInterval = GetFloatOrKeep(row, headers, "EliteSpawnInterval", wave.EliteSpawnInterval);
+                wave.MaxBugs = GetIntOrKeep(row, headers, "MaxBugs", wave.MaxBugs);
+                wave.TunnelEnabled = GetBoolValue(row, headers, "TunnelEnabled", wave.TunnelEnabled);
+                wave.TunnelEventInterval = GetFloatOrKeep(row, headers, "TunnelEventInterval", wave.TunnelEventInterval);
+                wave.SwiftPerTunnel = GetIntOrKeep(row, headers, "SwiftPerTunnel", wave.SwiftPerTunnel);
 
-                Debug.Log($"[GoogleSheetsImporter] Imported: Wave_{waveNumber:D2} with {groups.Count} spawn groups");
+                EditorUtility.SetDirty(wave);
+                Debug.Log($"[GoogleSheetsImporter] Imported Wave_{waveNumber:D2} ({wave.WaveName})");
             }
 
             AssetDatabase.SaveAssets();
@@ -1612,6 +1152,31 @@ namespace DrillCorp.Editor
             return defaultValue;
         }
 
+        // 셀이 비어있으면 기존값(keep) 유지, 채워져 있으면 파싱. "-1" 명시는 -1로 기록됨.
+        private float GetFloatOrKeep(List<string> row, List<string> headers, string column, float keep)
+        {
+            int index = headers.IndexOf(column);
+            if (index < 0 || index >= row.Count) return keep;
+            string value = row[index];
+            if (string.IsNullOrEmpty(value)) return keep;
+            return float.TryParse(value, out float result) ? result : keep;
+        }
+
+        private int GetIntOrKeep(List<string> row, List<string> headers, string column, int keep)
+        {
+            int index = headers.IndexOf(column);
+            if (index < 0 || index >= row.Count) return keep;
+            string value = row[index];
+            if (string.IsNullOrEmpty(value)) return keep;
+            return int.TryParse(value, out int result) ? result : keep;
+        }
+
+        // "#RRGGBB" 또는 "#RRGGBBAA" 파싱. ColorUtility.TryParseHtmlString 위임.
+        private bool TryParseHexColor(string hex, out Color color)
+        {
+            return ColorUtility.TryParseHtmlString(hex.Trim(), out color);
+        }
+
         private void SetSerializedField(SerializedObject so, string fieldName, int value)
         {
             var prop = so.FindProperty(fieldName);
@@ -1682,15 +1247,6 @@ namespace DrillCorp.Editor
             public string range;
             public string majorDimension;
             public string values; // JSON 배열 문자열
-        }
-
-        private class SpawnGroupData
-        {
-            public BugData BugData;
-            public int Count;
-            public float StartDelay;
-            public float SpawnInterval;
-            public bool RandomPosition;
         }
 
         #endregion

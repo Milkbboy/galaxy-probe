@@ -9,24 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9ee43dbe552f1d4dbb0a944763030c0, type: 3}
+  m_Script: {fileID: 11500000, guid: 812b76d41e2950146af19bcd64bcd9b8, type: 3}
   m_Name: Wave_03
-  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.WaveData
-  _waveNumber: 3
-  _waveName: 'Wave 3: Fly Rush'
-  _spawnGroups:
-  - BugData: {fileID: 11400000, guid: 0979a09a05ba65f43aea855d3b473a6b, type: 2}
-    Count: 10
-    StartDelay: 0
-    SpawnInterval: 0.5
-    RandomPosition: 1
-  - BugData: {fileID: 11400000, guid: 3594161d79dd3b14483169c0f8dcd1e5, type: 2}
-    Count: 3
-    StartDelay: 5
-    SpawnInterval: 3
-    RandomPosition: 1
-  _waveDuration: 45
-  _delayBeforeNextWave: 3
-  _healthMultiplier: 1.1
-  _damageMultiplier: 1
-  _speedMultiplier: 1
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.SimpleWaveData
+  WaveNumber: 3
+  WaveName: "\uB545\uAD74 \uCD9C\uD604"
+  KillTarget: 40
+  NormalSpawnInterval: 0.083
+  EliteSpawnInterval: 15
+  MaxBugs: 90
+  TunnelEnabled: 1
+  TunnelEventInterval: 15
+  SwiftPerTunnel: 10

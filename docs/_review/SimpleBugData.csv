@@ -1,0 +1,4 @@
+BugName,Kind,BaseHp,HpPerWave,BaseSpeed,SpeedPerWave,SpeedRandom,Size,Score,TintHex
+Normal,Normal,2,0.5,0.5,0.06,0.15,0.4,1,#51CF66
+Elite,Elite,10,0.5,0.35,0.04,0.15,0.8,5,#FFD700
+Swift,Swift,1,0,3,0,0,0.2,0.5,#DEDEFF

@@ -6,6 +6,43 @@
 
 ---
 
+## [Unreleased] - 2026-04-23 — SimpleBug 전면 교체 Phase A~D + C-2 진행
+
+> 상세: `docs/SimpleBugSheet.md` (SSoT 임시 문서), 프로젝트 메모리 `project_simplebug_migration.md`
+> 맥락: 레거시 `BugData`·`BugBehaviorData`(Movement/Attack/Passive/Skill/Trigger) + `WaveManager`(SpawnGroup/Formation 기반) 시스템은 이미 `SimpleBug` 계열로 런타임 교체된 dead code 상태. 이번 작업으로 시트 연동 + 레거시 제거 일괄 진행.
+
+### Added
+- **`SpawnConfigData.cs`** (신규 SO) — Spawn/Tunnel/Area 전역 폴백값. 시트 없음, 인스펙터 직편집. `SpawnConfig.asset` × 1 생성.
+- **`SimpleWaveData.cs`** (신규 SO) — 웨이브별 파라미터 오버라이드 테이블. `KillTarget` + `-1` sentinel 5개 + `bool TunnelEnabled`. Resolve 헬퍼가 SpawnConfig 폴백 해석. `Wave_01~05.asset` × 5 생성.
+- **`SimpleWaveManager.cs`** — 킬 기반 전환 매니저. `GameEvents.OnBugScoreEarned` 구독, 누적 점수가 `KillTarget` 도달 시 다음 웨이브 `Configure()` 주입. `KillTarget<=0` = 전환 없음(마지막 웨이브는 세션 끝까지 유지).
+- **`SimpleBugSpawner.Configure(wave, cfg)`** / **`TunnelEventManager.Configure(wave, cfg)`** — 웨이브 진입 시 런타임 파라미터 주입 API.
+- **`SimpleWaveAssetSetup.cs`** (에디터 유틸) — `SpawnConfig.asset` + `Wave_01~05.asset` 자동 생성 + Game 씬에 `SimpleWaveManager` GameObject 자동 바인딩.
+- **`docs/SimpleBugSheet.md`** — 시트 스키마 + SO 정의 + 런타임 흐름 + 기획자 튜닝 워크플로우 + Phase C 이후 문서 정리 계획 (Phase E에서 기존 문서로 흡수 후 삭제 예정).
+- **`docs/_review/SimpleBugData.csv|tsv`, `WaveData.csv|tsv`, `README.md`** — 시트 초기 데이터 + 붙여넣기 가이드.
+
+### Changed
+- **`GoogleSheetsImporter.cs`** 전면 개편
+  - `ImportSimpleBugDataAsync()` 신설: SO 내부 `BugName` 필드 매칭(파일명 오타 `SimpleBug_Elit.asset` 수용), 빈 셀 기존값 보존(`GetFloatOrKeep`/`GetIntOrKeep`), `Prefab` 필드 절대 덮어쓰지 않음, `TintHex` 파싱(`ColorUtility.TryParseHtmlString`).
+  - `ImportWaveDataAsync()` 새 스키마 재작성: `WaveNumber` 매칭, `KillTarget` 포함 모든 오버라이드는 빈 셀→기존 유지, `-1` 명시 → -1 기록(런타임 Resolve에서 해석), `TunnelEnabled` bool 파싱.
+  - 레거시 제거: `SHEET_BUG_DATA`/`SHEET_WAVE_SPAWN_GROUPS` 상수, `ImportBugDataAsync`, `ImportWaveDataAsync` 레거시, 11개 Behavior 헬퍼(`EnsureBehaviorFolders`/`LoadBehaviorCache`/`CreateOrUpdateBugBehaviorData`/`FindOrCreateMovement/AttackSO`/`ParseAndCreatePassives/Skills/Triggers`/`SetSOListProperty`/`SetSerializedEnumField`), `SpawnGroupData` 내부 클래스, `using DrillCorp.Bug.Behaviors.Data`.
+  - `_previewTabNames` = `{ SimpleBugData, WaveData, MachineData, UpgradeData }`, `ImportAllData` 순서 `SimpleBug → Machine → Upgrade → Wave`.
+- **`SawWeapon.cs`** — `BugController.ApplySlow` → `SimpleBug.ApplySlow`로 타입 교체. **기존에는 SimpleBug에 톱날 Slow가 안 걸렸던 버그 자동 수정.**
+- **`DebugManager.cs`** — `KillAllBugs`가 `Bug.BugController` → `Bug.Simple.SimpleBug` 대상으로.
+- **`PerfMarkers.cs` / `PerfRecorder.cs`** — `BugController_Update` marker → `SimpleBug_Update`로 이름 변경 (런타임 영향 없음, 이름 정리).
+
+### 웨이브 전환 트리거 재설계 (시간 → 킬)
+- 초기 설계는 `WaveDuration` 기반 시간 전환이었으나, **세션 종료는 채굴 완료(승리) / 머신 HP 0(패배)로만**이라는 컨셉 확인 후 v2.html 원본 로직(`waveKills>=waveKillTarget`) 이식.
+- 웨이브는 난이도 곡선일 뿐 게임 종료와 무관. 마지막 웨이브(`KillTarget=-1`)는 세션 끝까지 파라미터 유지.
+- 시트 값: Wave 1=15, Wave 2=25, Wave 3=40, Wave 4=60, Wave 5=-1. Score는 SimpleBugData.Score 그대로 (Normal=1, Elite=5, Swift=0.5).
+
+### In Progress — Phase C (레거시 제거)
+- ✅ C-1/C-2 완료: 비-제거 파일의 레거시 참조 끊기 (SawWeapon/DebugManager/PerfMarkers/PerfRecorder + BugController.cs 선제 수정).
+- 🔜 C-3: Game 씬에서 `FormationSpawner` orphan GameObject 삭제 (사용자 수동).
+- 🔜 C-4~C-6: 레거시 런타임 코드/데이터 일괄 삭제 + 최종 컴파일·Play 재검증.
+- ⏳ Phase E: 문서 정리 (DataStructure.md/GoogleSheetsGuide.md 개편, Behavior/Formation 문서 archive 이동, SimpleBugSheet.md 흡수 후 삭제).
+
+---
+
 ## [Unreleased] - 2026-04-21 (2) — Phase 7 지누스 어빌리티 (드론 포탑 / 채굴 드론 / 드론 거미)
 
 > 근거: `docs/v2.html:1042~1053, 1057~1060, 1081~1086, 1156~1164, 1185~1214, 1296~1303, 1643~1646`

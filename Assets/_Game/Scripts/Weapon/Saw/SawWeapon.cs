@@ -1,6 +1,6 @@
 using UnityEngine;
 using DrillCorp.Aim;
-using DrillCorp.Bug;
+using DrillCorp.Bug.Simple;
 using DrillCorp.Core;
 using DrillCorp.Data;
 using DrillCorp.OutGame;
@@ -179,8 +179,8 @@ namespace DrillCorp.Weapon.Saw
 
                 DealDamage(col.transform, _effectiveDamage);
 
-                var bug = col.GetComponent<BugController>();
-                if (bug == null) bug = col.GetComponentInParent<BugController>();
+                var bug = col.GetComponent<SimpleBug>();
+                if (bug == null) bug = col.GetComponentInParent<SimpleBug>();
                 if (bug != null)
                     bug.ApplySlow(_effectiveSlowFactor, _data.SlowDuration);
             }

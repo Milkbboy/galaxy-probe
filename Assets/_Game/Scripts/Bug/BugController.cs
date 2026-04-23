@@ -189,7 +189,6 @@ namespace DrillCorp.Bug
         {
             if (_isDead) return;
 
-            using var _perf = PerfMarkers.BugController_Update.Auto();
 
             float deltaTime = Time.deltaTime;
             _aliveTime += deltaTime;

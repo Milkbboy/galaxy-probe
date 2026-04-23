@@ -9,24 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9ee43dbe552f1d4dbb0a944763030c0, type: 3}
+  m_Script: {fileID: 11500000, guid: 812b76d41e2950146af19bcd64bcd9b8, type: 3}
   m_Name: Wave_02
-  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.WaveData
-  _waveNumber: 2
-  _waveName: 'Wave 2: Mixed Assault'
-  _spawnGroups:
-  - BugData: {fileID: 11400000, guid: bef216b0fcfb72040a8953a8c85286c1, type: 2}
-    Count: 15
-    StartDelay: 0
-    SpawnInterval: 0.4
-    RandomPosition: 1
-  - BugData: {fileID: 11400000, guid: 7939781804bb73e4a9533f13d727ab1c, type: 2}
-    Count: 5
-    StartDelay: 5
-    SpawnInterval: 0.3
-    RandomPosition: 1
-  _waveDuration: 45
-  _delayBeforeNextWave: 2
-  _healthMultiplier: 1
-  _damageMultiplier: 1
-  _speedMultiplier: 1
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.SimpleWaveData
+  WaveNumber: 2
+  WaveName: "\uAC00\uC18D"
+  KillTarget: 25
+  NormalSpawnInterval: 0.1
+  EliteSpawnInterval: -1
+  MaxBugs: 70
+  TunnelEnabled: 0
+  TunnelEventInterval: -1
+  SwiftPerTunnel: -1

@@ -22,4 +22,4 @@ MonoBehaviour:
   HpPerWave: 0
   SpeedPerWave: 0
   SpeedRandom: 0
-  Tint: {r: 0.87, g: 0.87, b: 1, a: 1}
+  Tint: {r: 0.87058824, g: 0.87058824, b: 1, a: 1}

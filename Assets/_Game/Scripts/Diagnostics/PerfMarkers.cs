@@ -8,7 +8,7 @@ namespace DrillCorp.Diagnostics
     /// 사용 패턴:
     ///   private void Update()
     ///   {
-    ///       using var _ = PerfMarkers.BugController_Update.Auto();
+    ///       using var _ = PerfMarkers.SimpleBug_Update.Auto();
     ///       // ... 기존 코드
     ///   }
     ///
@@ -20,8 +20,8 @@ namespace DrillCorp.Diagnostics
     public static class PerfMarkers
     {
         // ─── Bug ───────────────────────────────────────────────────
-        public static readonly ProfilerMarker BugController_Update =
-            new(ProfilerCategory.Scripts, "DrillCorp.BugController.Update");
+        public static readonly ProfilerMarker SimpleBug_Update =
+            new(ProfilerCategory.Scripts, "DrillCorp.SimpleBug.Update");
 
         public static readonly ProfilerMarker BugLabel_LateUpdate =
             new(ProfilerCategory.Scripts, "DrillCorp.BugLabel.LateUpdate");

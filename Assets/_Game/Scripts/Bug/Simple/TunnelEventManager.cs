@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using DrillCorp.Data;
 
 namespace DrillCorp.Bug.Simple
 {
@@ -7,6 +8,7 @@ namespace DrillCorp.Bug.Simple
     /// 프로토타입(_.html)의 startTunnelEvent + spawnSwiftFromTunnel 포팅.
     /// 게임 시작 후 일정 시간이 지나면 주기적으로 땅굴을 열어
     /// 스위프트 벌레 N마리를 빠른 간격으로 스폰한다.
+    /// 웨이브별 파라미터는 SimpleWaveManager가 Configure()로 주입.
     /// </summary>
     public class TunnelEventManager : MonoBehaviour
     {
@@ -178,6 +180,31 @@ namespace DrillCorp.Bug.Simple
             _markerObjects.Clear();
             _tunnels.Clear();
             _warnings.Clear();
+        }
+
+        /// <summary>
+        /// SimpleWaveManager가 웨이브 진입 시 호출. TunnelEnabled=false면 _autoRun 꺼져 Update 스킵.
+        /// _gameTime은 리셋하지 않아 TunnelGameTimeStart 대기가 웨이브 전환에 상관없이 계속 누적된다.
+        /// </summary>
+        public void Configure(SimpleWaveData wave, SpawnConfigData cfg)
+        {
+            if (wave == null || cfg == null)
+            {
+                Debug.LogWarning("[TunnelEventManager] Configure: wave 또는 cfg가 null");
+                return;
+            }
+
+            _autoRun = wave.TunnelEnabled;
+            _eventInterval = wave.ResolveTunnelEventInterval(cfg);
+            _swiftPerTunnel = wave.ResolveSwiftPerTunnel(cfg);
+
+            _gameTimeStart = cfg.TunnelGameTimeStart;
+            _tunnelSpawnInterval = cfg.TunnelSpawnInterval;
+            _edgeMargin = cfg.EdgeMargin;
+            _spawnJitter = cfg.SpawnJitter;
+
+            // 웨이브 전환 시 이벤트 타이머도 리셋 (바로 땅굴이 터지지 않도록 새 주기만큼 대기)
+            _eventTimer = _eventInterval;
         }
 
 #if UNITY_EDITOR

@@ -62,7 +62,7 @@ namespace DrillCorp.Core
 
         private void KillAllBugs()
         {
-            var bugs = FindObjectsByType<Bug.BugController>(FindObjectsInactive.Exclude);
+            var bugs = FindObjectsByType<Bug.Simple.SimpleBug>(FindObjectsInactive.Exclude);
             foreach (var bug in bugs)
             {
                 bug.TakeDamage(99999f);

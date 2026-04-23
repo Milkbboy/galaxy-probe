@@ -19,10 +19,9 @@ MonoBehaviour:
   _maxHealth: 150
   _healthRegen: 0.5
   _armor: 20
-  _maxFuel: 45
-  _fuelConsumeRate: 1
   _miningRate: 8
   _miningBonus: 0
+  _baseMiningTarget: 100
   _attackDamage: 15
   _attackCooldown: 0.7
   _attackRange: 3

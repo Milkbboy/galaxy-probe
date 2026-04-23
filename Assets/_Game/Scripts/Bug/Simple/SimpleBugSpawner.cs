@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
+using DrillCorp.Data;
 
 namespace DrillCorp.Bug.Simple
 {
     /// <summary>
     /// 프로토타입(_.html)의 spawnBug + spawnElite 포팅.
     /// 화면 밖 원형 둘레 랜덤 스폰, 일반/엘리트 타이머 분리.
+    /// 웨이브별 파라미터는 SimpleWaveManager가 Configure()로 주입.
     /// </summary>
     public class SimpleBugSpawner : MonoBehaviour
     {
@@ -51,19 +53,52 @@ namespace DrillCorp.Bug.Simple
         {
             PruneDead();
 
-            _eliteTimer -= Time.deltaTime;
-            if (_eliteTimer <= 0f)
+            // EliteSpawnInterval=0 은 "엘리트 비활성" 의미 — 타이머 자체를 돌리지 않음
+            if (_eliteInterval > 0f)
             {
-                SpawnElite();
-                _eliteTimer = _eliteInterval;
+                _eliteTimer -= Time.deltaTime;
+                if (_eliteTimer <= 0f)
+                {
+                    SpawnElite();
+                    _eliteTimer = _eliteInterval;
+                }
             }
 
-            _spawnTimer -= Time.deltaTime;
-            if (_spawnTimer <= 0f)
+            if (_spawnInterval > 0f)
             {
-                SpawnNormal();
-                _spawnTimer = _spawnInterval;
+                _spawnTimer -= Time.deltaTime;
+                if (_spawnTimer <= 0f)
+                {
+                    SpawnNormal();
+                    _spawnTimer = _spawnInterval;
+                }
             }
+        }
+
+        /// <summary>
+        /// SimpleWaveManager가 웨이브 진입 시 호출. WaveData 오버라이드 + SpawnConfig 폴백을 해석해 런타임 파라미터 주입.
+        /// </summary>
+        public void Configure(SimpleWaveData wave, SpawnConfigData cfg)
+        {
+            if (wave == null || cfg == null)
+            {
+                Debug.LogWarning("[SimpleBugSpawner] Configure: wave 또는 cfg가 null");
+                return;
+            }
+
+            _spawnInterval = wave.ResolveNormalSpawnInterval(cfg);
+            _eliteInterval = wave.ResolveEliteSpawnInterval(cfg);
+            _maxBugs = wave.ResolveMaxBugs(cfg);
+            _wave = Mathf.Max(1, wave.WaveNumber);
+
+            _autoRadius = cfg.AutoRadius;
+            _manualRadius = cfg.ManualRadius;
+            _normalMargin = cfg.NormalMargin;
+            _eliteMargin = cfg.EliteMargin;
+
+            // 웨이브 진입 시점에 다음 스폰까지 대기를 reset
+            _spawnTimer = _spawnInterval;
+            _eliteTimer = _eliteInterval;
         }
 
         public SimpleBug SpawnNormal()

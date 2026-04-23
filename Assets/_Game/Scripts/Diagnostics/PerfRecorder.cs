@@ -113,7 +113,7 @@ namespace DrillCorp.Diagnostics
             // ─── 커스텀 마커 (PerfMarkers.cs 에서 선언) ──────────────
             // 의심 구간별 실행 시간 — CSV 에 ns → ms 로 변환돼 찍힘.
             // 마커 이름이 PerfMarkers 선언과 정확히 일치해야 함.
-            (ProfilerCategory.Scripts,  "DrillCorp.BugController.Update",     "Bug_Update"),
+            (ProfilerCategory.Scripts,  "DrillCorp.SimpleBug.Update",         "Bug_Update"),
             (ProfilerCategory.Scripts,  "DrillCorp.BugLabel.LateUpdate",      "BugLabel_Late"),
             (ProfilerCategory.Scripts,  "DrillCorp.Drone.Update",             "Drone_Update"),
             (ProfilerCategory.Scripts,  "DrillCorp.Drone.OverlapSphere",      "Drone_Overlap"),
