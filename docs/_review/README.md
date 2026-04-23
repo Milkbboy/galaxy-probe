@@ -11,34 +11,45 @@
 
 | 파일 | 대상 탭 | 스키마 섹션 |
 |---|---|---|
-| `SimpleBugData.csv` | `SimpleBugData` | [GoogleSheetsGuide.md §1](../GoogleSheetsGuide.md#1-simplebugdata-시트) |
-| `WaveData.csv`      | `WaveData`      | [GoogleSheetsGuide.md §2](../GoogleSheetsGuide.md#2-wavedata-시트) |
+| `SimpleBugData.csv` / `.tsv` | `SimpleBugData` | [GoogleSheetsGuide.md §1](../GoogleSheetsGuide.md#1-simplebugdata-시트) |
+| `WaveData.csv` / `.tsv`      | `WaveData`      | [GoogleSheetsGuide.md §2](../GoogleSheetsGuide.md#2-wavedata-시트) |
+| `MachineData.tsv`            | `MachineData`   | [GoogleSheetsGuide.md §3](../GoogleSheetsGuide.md#3-machinedata-시트) + [v2Addendum §1](../GoogleSheetsGuide_v2Addendum.md#1-machinedata-기존-1컬럼-추가) |
+| `UpgradeData.tsv`            | `UpgradeData`   | [GoogleSheetsGuide.md §4](../GoogleSheetsGuide.md#4-upgradedata-시트) + [v2Addendum §2](../GoogleSheetsGuide_v2Addendum.md#2-upgradedata-기존-확장) + [MachineDataSheetAlignment_Plan.md](../MachineDataSheetAlignment_Plan.md) |
 
-두 CSV 모두 **1행은 헤더 + 2행부터 실제 데이터**입니다. Google Sheets에 이미
-헤더 행이 만들어져 있으면 본문(2행 이후)만 붙여넣으면 됩니다.
+> `MachineData.tsv` / `UpgradeData.tsv` 는 Importer가 v2 컬럼(`BaseMiningTarget` / `BaseCostOre` / `BaseCostGem` / `OreCostSchedule` / `GemCostSchedule`) 을 파싱하도록 **Phase M-1 코드 확장이 끝난 뒤** 붙여넣기. 그 전에 Import 돌리면 신 컬럼이 무시됨. 상세 순서는 `MachineDataSheetAlignment_Plan.md` 참조.
+
+모든 파일은 **1행은 헤더 + 2행부터 실제 데이터**. Google Sheets에 이미 헤더 행이 만들어져 있으면 본문(2행 이후)만 붙여넣으면 됨.
 
 ---
 
 ## Google Sheets에 붙여넣는 방법
 
-### 방법 A — 가장 안전 (추천)
+### TSV 파일 (`.tsv` — 탭 구분, 추천)
 
-1. 이 CSV 파일을 **VS Code 등 텍스트 에디터**로 연다
-   - Excel로 열면 셀 서식이 섞여 붙여넣기 시 숫자가 문자열로 들어갈 수 있음
-2. 2행(첫 데이터 행)부터 끝까지 선택 → 복사
-3. Google Sheets 해당 탭에서 `A2` 셀 클릭
-4. `Ctrl+Shift+V` (= **서식 없이 붙여넣기**)
-5. 구글 시트가 쉼표를 보고 자동으로 셀을 나눠줌
-6. 붙여넣기 직후 나타나는 작은 메뉴에서 "텍스트를 열로 분할" 옵션이 뜨면 `쉼표` 선택
+1. `.tsv` 파일을 **VS Code 등 텍스트 에디터**로 연다
+2. 헤더 포함 전체 선택 (Ctrl+A) → Ctrl+C
+3. Google Sheets 해당 탭에서 `A1` 셀 클릭 → `Ctrl+Shift+V` (서식 없이 붙여넣기)
+4. **탭 구분이므로 자동으로 셀 분할됨** — 별도 설정 불필요. 스키마 열이 많은 `UpgradeData` (13컬럼) 에 특히 편리
+5. 숫자·불리언이 자동 서식으로 인식되는지 확인 (오른쪽 정렬 = 숫자, 가운데 정렬 = 불리언)
 
-> `Ctrl+V` 만 쓰면 한 덩어리로 들어갈 수 있으므로 `Shift` 포함 필수.
+### CSV 파일 (`.csv` — 쉼표 구분)
+
+1. 텍스트 에디터로 열어 데이터 선택 → 복사
+2. Sheets `A1` → `Ctrl+Shift+V`
+3. 붙여넣기 직후 "텍스트를 열로 분할" 메뉴 뜨면 `쉼표` 선택
 
 ### 방법 B — 파일 가져오기
 
 1. Google Sheets 상단 `파일 → 가져오기 → 업로드`
-2. CSV 파일 드래그 업로드
+2. 파일 드래그 업로드
 3. "가져오기 위치" → `현재 시트 교체` 또는 `새 시트 만들기`
-4. 구분자: `쉼표` (기본값)
+4. 구분자: TSV면 `탭`, CSV면 `쉼표`
+
+### 배열 컬럼 주의 (`OreCostSchedule`, `GemCostSchedule`)
+
+`UpgradeData.tsv` 의 스케줄 컬럼은 **파이프(`|`) 구분 문자열** 1셀:
+- 예: `60|130|230|370|540` ← 이대로 한 셀에 들어가야 함. 쉼표를 쓰지 않는 이유는 CSV 파싱과 충돌하기 때문
+- Sheets가 파이프를 보고 열 분할하지 않으니 안전. 만약 숫자만 있는 셀로 잘못 해석되면 셀 앞에 작은따옴표 추가 (`'60|130|230|370|540`)
 
 ### 숫자가 문자열로 들어갔을 때
 
@@ -62,6 +73,20 @@
 - [ ] 5행(Wave 1~5) 들어갔는지
 - [ ] 헤더가 `KillTarget`인지 (이전 `WaveDuration` 아님)
 - [ ] `TunnelEnabled` 컬럼이 `TRUE` / `FALSE` 대문자로 들어갔는지 (`참`/`거짓`이 아니라)
+
+### MachineData
+
+- [ ] 3행(Default/Heavy/Speed) 들어갔는지
+- [ ] `BaseMiningTarget` 컬럼이 마지막이 아니라 중간에 있는지 (`MiningBonus` 뒤, `AttackDamage` 앞)
+- [ ] 구 컬럼 `MaxFuel` / `FuelConsumeRate` 가 시트에 남아있다면 삭제 (Importer가 읽지 않음)
+
+### UpgradeData
+
+- [ ] 6행 (excavator_hp/armor, mine_speed/target, gem_drop/speed) 들어갔는지
+- [ ] 구 v1 11행 (max_health, max_fuel, attack_damage, crit_*, fuel_* 등) 전부 삭제됐는지
+- [ ] `UpgradeType` 컬럼에 v2 신규 타입 3종 (`MiningTarget`, `GemDropRate`, `GemCollectSpeed`) 이 철자 정확히 들어갔는지
+- [ ] `OreCostSchedule` / `GemCostSchedule` 가 `60|130|230|370|540` 처럼 **한 셀에 파이프 구분 문자열**로 들어갔는지
+- [ ] `IsPercentage` 컬럼 — gem_drop 은 **FALSE** (누적 %p 가산), gem_speed 는 **TRUE** (배율)
 - [ ] `-1` 값이 숫자로 들어갔는지 (음수 대쉬 깨짐 주의)
 - [ ] `WaveName` 한글 깨짐 없는지
 

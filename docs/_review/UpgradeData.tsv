@@ -1,0 +1,7 @@
+UpgradeId	DisplayName	Description	UpgradeType	MaxLevel	BaseValue	ValuePerLevel	IsPercentage	BaseCostOre	BaseCostGem	CostMultiplier	OreCostSchedule	GemCostSchedule
+excavator_hp	굴착기 내구도	최대 체력 +30	MaxHealth	5	0	30	FALSE	60	0	2.2	60|130|230|370|540
+excavator_armor	장갑 강화	받는 피해 -15%	Armor	3	0	0.15	TRUE	150	0	2.0	150|300|500
+mine_speed	채굴 속도 향상	초당 채굴 +2	MiningRate	5	0	2	FALSE	80	0	2.0	80|160|280|440|640
+mine_target	목표량 확장	세션 목표 채굴량 +50	MiningTarget	5	0	50	FALSE	100	0	2.0	100|200|350|550|800
+gem_drop	보석 출현 확률	보석 등장 확률 +2%p	GemDropRate	5	0	0.02	FALSE	0	15	2.0		15|30|50|75|105
+gem_speed	보석 채집 속도	채집 속도 +20%	GemCollectSpeed	5	0	0.20	TRUE	0	10	2.2		10|22|38|58|82
