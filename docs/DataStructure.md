@@ -1,25 +1,42 @@
 # 게임 데이터 구조 (Data Structure)
 
-기획자가 Google Sheets에서 설정 가능한 게임 데이터 정의서입니다.
+기획자가 Google Sheets에서 튜닝 가능한 게임 데이터 정의서. 시트 컬럼·입력 방법·Import 절차는 [GoogleSheetsGuide.md](GoogleSheetsGuide.md) 참조.
 
-> 최종 갱신: 2026-04-20
+> 최종 갱신: 2026-04-23 — SimpleBug 전면 교체 반영. 구 `BugData`/`BugBehaviorData`/`WaveData(SpawnGroup)` 체계 삭제 (`docs/archive/` 이동).
 
 ---
 
 ## 데이터 계층 구조
 
-![데이터 계층 구조](image/데이터%20계층%20구조.png)
+```
+Google Sheets                  ScriptableObject                  Scene Components
+─────────────                  ────────────────                  ────────────────
+SimpleBugData 시트   ─────▶   SimpleBug_*.asset × 3     ─────▶  SimpleBugSpawner
+                              (숫자 필드만 덮어쓰기,            TunnelEventManager
+                               Prefab·VFX는 수동 연결 유지)
 
-| 계층 | ScriptableObject | 역할 |
-|------|------------------|------|
-| **Wave** | WaveData | 하나의 게임 세션 정의 |
-| **Bug 스탯** | BugData | 체력, 공격력, 이속 + 엘리트 플래그 |
-| **Bug 행동** | BugBehaviorData | 어떻게 움직이고 공격할지 |
-| **Machine** | MachineData | 플레이어 머신 스탯 + BaseMiningTarget |
-| **Character** (v2) | CharacterData | 3 캐릭터, DefaultMachine + 어빌리티 3종 묶음 |
-| **Upgrade** | UpgradeData | 굴착기 6종 영구 강화 (이중 재화 비용) |
-| **WeaponUpgrade** (v2) | WeaponUpgradeData | 무기별 강화 항목 (Damage/Range/Cooldown/Ammo/Reload/Radius/Slow) |
-| **Ability** (v2) | AbilityData | 캐릭터 어빌리티 9종 (런타임 실행기 미구현) |
+WaveData 시트        ─────▶   Wave_NN.asset × N          ─────▶  SimpleWaveManager
+                              (SimpleWaveData 타입)              (Spawner/Tunnel에 웨이브별 주입)
+
+(시트 없음)                    SpawnConfig.asset × 1      ─────▶  SimpleWaveManager
+                              (인스펙터 직편집)                   (전역 폴백값 공급)
+
+MachineData 시트     ─────▶   Machine_*.asset
+UpgradeData 시트     ─────▶   Upgrade_*.asset              (v2 이중 재화 — 광석+보석)
+Characters/Abilities 시트 ─▶  Character_*.asset 등         (v2 — GoogleSheetsGuide_v2Addendum.md)
+WeaponUpgrades 시트  ─────▶   WeaponUpgrade_*.asset
+```
+
+| 계층 | ScriptableObject | 시트 | 역할 |
+|---|---|---|---|
+| **Bug 스탯** | `SimpleBugData` | `SimpleBugData` | HP·Speed·Size·Score·Tint + 웨이브 스케일링 |
+| **Wave 오버라이드** | `SimpleWaveData` | `WaveData` | 웨이브별 Spawner/Tunnel 파라미터 오버라이드 |
+| **Spawn 폴백** | `SpawnConfigData` | **없음** | 시트에 없는 값 + 오버라이드 디폴트 |
+| **Machine** | `MachineData` | `MachineData` | 머신 HP·채굴률·공격 스탯 + BaseMiningTarget |
+| **Upgrade** | `UpgradeData` | `UpgradeData` | 굴착기 6종 영구 강화 (이중 재화 비용) |
+| **Character** (v2) | `CharacterData` | `Characters` | 3 캐릭터 + 기본 머신 + 어빌리티 3종 묶음 |
+| **Ability** (v2) | `AbilityData` | `Abilities` | 캐릭터 어빌리티 9종 |
+| **WeaponUpgrade** (v2) | `WeaponUpgradeData` | `WeaponUpgrades` | 무기별 강화 (Damage/Range/Cooldown/Ammo/Reload/Radius/Slow) |
 
 ---
 
@@ -27,343 +44,233 @@
 
 ```
 Assets/_Game/Data/
-├── Bugs/                           # BugData (스탯)
-│   ├── Bug_Beetle.asset
-│   ├── Bug_Fly.asset
-│   └── Bug_Test_*.asset           # 테스트용
-│
-├── BugBehaviors/                   # 행동 데이터
-│   ├── BugBehavior_Beetle.asset   # 행동 조합 (Movement + Attack + ...)
-│   ├── BugBehavior_Fly.asset
-│   ├── Movement/                  # 이동 방식
-│   │   ├── Movement_Linear.asset
-│   │   ├── Movement_Hover.asset
-│   │   └── Movement_Orbit.asset
-│   ├── Attack/                    # 공격 방식
-│   │   ├── Attack_Melee.asset
-│   │   ├── Attack_Projectile.asset
-│   │   └── Attack_Cleave.asset
-│   ├── Passive/                   # 패시브 능력
-│   │   ├── Passive_Armor.asset
-│   │   └── Passive_Shield.asset
-│   ├── Skill/                     # 스킬
-│   │   ├── Skill_Nova.asset
-│   │   └── Skill_BuffAlly.asset
-│   └── Trigger/                   # 조건부 발동
-│       ├── Trigger_Enrage.asset
-│       └── Trigger_ExplodeOnDeath.asset
+├── Bugs/
+│   ├── SimpleBug_Normal.asset       # 일반 — HP 2, Speed 0.5, Size 0.4
+│   ├── SimpleBug_Elit.asset         # 엘리트 (파일명 오타 그대로 유지 — BugName 필드로 매칭)
+│   └── SimpleBug_Swift.asset        # 스위프트 — HP 1, Speed 3, 땅굴 전용
 │
 ├── Waves/
-│   ├── Wave_01.asset
-│   └── Wave_02.asset
+│   ├── Wave_01.asset ~ Wave_05.asset  # SimpleWaveData 타입
+│
+├── SpawnConfig.asset                  # 단일 인스턴스 (시트 없음)
 │
 ├── Machines/
 │   └── Machine_Default.asset
 │
-└── Upgrades/
-    └── Upgrade_*.asset
+├── Upgrades/
+│   └── Upgrade_*.asset                # excavator_hp/armor, mine_speed/target, gem_drop/speed
+│
+├── Characters/                        # v2
+├── Abilities/                         # v2
+└── WeaponUpgrades/                    # v2
 ```
 
 ---
 
-## 1. BugData (벌레 스탯)
+## 1. SimpleBugData
 
-벌레의 **기본 능력치**를 정의합니다. 행동 방식은 BugBehaviorData에서 별도 설정.
+벌레 종류별 기본 스탯 + 웨이브 스케일링. 현재 3종(Normal/Elite/Swift) 고정이지만 시트에서 행 추가로 확장 가능.
 
-### 필드 정의
+### 필드
 
-| 컬럼 | 타입 | 기본값 | 설명 | 기획 가이드 |
-|------|------|--------|------|-------------|
-| **BugId** | int | - | 고유 식별자 | 1, 2, 3... 순차적으로 부여 |
-| **BugName** | string | - | 벌레 이름 | "딱정벌레", "파리" 등 |
-| **MaxHealth** | float | 10 | 최대 체력 | 일반 5~20, 보스 100+ |
-| **MoveSpeed** | float | 2 | 이동 속도 | 1=느림, 2=보통, 4=빠름 |
-| **AttackDamage** | float | 5 | 1회 공격 데미지 | 머신 MaxHealth(100) 기준 |
-| **AttackCooldown** | float | 1 | 공격 간격 (초) | DPS = Damage / Cooldown |
-| **Scale** | float | 1 | 크기 배율 | 0.5=절반, 2=2배 |
-| **CurrencyReward** | int | 1 | 처치 보상 | 강한 적=높은 보상 |
-| **BehaviorData** | SO 참조 | - | 행동 데이터 | BugBehaviorData 연결 |
-| **IsElite** (v2) | bool | false | 엘리트 플래그 | true면 보석 100% 드랍 (일반은 5%+gem_drop 강화) |
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| `BugName` | string | 식별용. 시트 컬럼과 동일. Import 매칭 기준 (파일명 무관) |
+| `Kind` | enum | `Normal` / `Elite` / `Swift` — Spawner·Tunnel의 역할 분기 |
+| `BaseHp` | float | 웨이브 1 기준 HP |
+| `HpPerWave` | float | 웨이브당 HP 증가 (`floor(wave × HpPerWave)` 가산) |
+| `BaseSpeed` | float | 웨이브 1 기준 이동 속도 (유닛/초) |
+| `SpeedPerWave` | float | 웨이브당 속도 증가 |
+| `SpeedRandom` | float | 스폰 시 속도 +랜덤 `[0, 값)` |
+| `Size` | float | 스케일 (`localScale` 균등 배율) |
+| `Score` | float | 처치 시 `OnBugScoreEarned` 발행값 (웨이브 전환 트리거) |
+| `Tint` | Color | 미니맵 아이콘 색. 시트 `TintHex` 컬럼(`#RRGGBB`) 파싱 |
+| `Prefab` | GameObject | **시트 무관** — 인스펙터에서 수동 연결. Import가 덮어쓰지 않음 |
 
-### 밸런스 예시
+### 스케일링 헬퍼
 
-| 벌레 | 체력 | 속도 | 데미지 | 쿨다운 | DPS | 행동 |
-|------|------|------|--------|--------|-----|------|
-| Beetle | 20 | 1.5 | 8 | 1.5 | 5.3 | Linear + Melee |
-| Fly | 8 | 4 | 3 | 0.5 | 6 | Hover + Melee |
-| Spitter | 15 | 2 | 5 | 1.2 | 4.2 | Ranged + Projectile |
-| Tank | 40 | 1 | 10 | 2 | 5 | Linear + Melee + Armor |
-| Bomber | 12 | 3 | 5 | 1 | 5 | Linear + ExplodeOnDeath |
+```csharp
+public float GetHp(int wave)    => BaseHp + Mathf.Floor(wave * HpPerWave);
+public float GetSpeed(int wave) => BaseSpeed + wave * SpeedPerWave + Random.Range(0f, SpeedRandom);
+```
+
+### 현재 값
+
+| BugName | Kind | BaseHp | HpPerWave | BaseSpeed | SpeedPerWave | SpeedRandom | Size | Score | TintHex |
+|---|---|---|---|---|---|---|---|---|---|
+| Normal | Normal | 2 | 0.5 | 0.5 | 0.06 | 0.15 | 0.4 | 1 | #51CF66 |
+| Elite | Elite | 10 | 0.5 | 0.35 | 0.04 | 0.15 | 0.8 | 5 | #FFD700 |
+| Swift | Swift | 1 | 0 | 3 | 0 | 0 | 0.2 | 0.5 | #DEDEFF |
+
+> 파일명 `SimpleBug_Elit.asset` 은 오타이나 `BugName="Elite"` 필드 기준 매칭이라 Import 시 문제 없음. rename이 필요하면 meta GUID를 유지한 채 별도 작업.
 
 ---
 
-## 2. BugBehaviorData (행동 조합)
+## 2. SimpleWaveData
 
-벌레가 **어떻게 행동하는지** 정의합니다. 하나의 BugBehaviorData에 여러 행동을 조합.
+웨이브 진입 시 Spawner/Tunnel에 주입되는 파라미터 **오버라이드 테이블**. `-1` 또는 빈 필드는 `SpawnConfig` 폴백값 사용. `0` 은 "명시적 값(대개 비활성)"으로 존중.
 
-### 구조
+### 필드
 
+| 필드 | 타입 | sentinel | 설명 |
+|---|---|---|---|
+| `WaveNumber` | int | — | 웨이브 번호 (1부터) |
+| `WaveName` | string | — | 표시용 |
+| `KillTarget` | float | `-1`·`0` = 전환 없음 | 누적 처치 점수 도달 시 다음 웨이브 전환. 마지막 웨이브는 `-1` |
+| `NormalSpawnInterval` | float | `-1` = 폴백 | 일반 벌레 스폰 주기(초) |
+| `EliteSpawnInterval` | float | `-1`·`0` = 비활성 **(폴백 아님)** | 엘리트 주기(초). 초기 웨이브 엘리트 끄는 용도라 폴백 안 타게 설계 |
+| `MaxBugs` | int | `-1` = 폴백 | 동시 생존 상한 |
+| `TunnelEnabled` | bool | — | 이 웨이브부터 땅굴 이벤트 활성. `false` 면 뒤 두 필드 무시 |
+| `TunnelEventInterval` | float | `-1` = 폴백 | 땅굴 주기(초) |
+| `SwiftPerTunnel` | int | `-1` = 폴백 | 한 땅굴당 Swift 수 |
+
+### Resolve 헬퍼 (`SpawnConfig` 주입)
+
+```csharp
+ResolveNormalSpawnInterval(cfg) => NormalSpawnInterval >= 0 ? NormalSpawnInterval : cfg.DefaultNormalSpawnInterval;
+ResolveEliteSpawnInterval(cfg)  => EliteSpawnInterval  > 0 ? EliteSpawnInterval  : 0f;  // 예외: 0 리턴=비활성
+ResolveMaxBugs(cfg)             => MaxBugs             >= 0 ? MaxBugs            : cfg.DefaultMaxBugs;
+ResolveTunnelEventInterval(cfg) => TunnelEventInterval >= 0 ? TunnelEventInterval : cfg.DefaultTunnelEventInterval;
+ResolveSwiftPerTunnel(cfg)      => SwiftPerTunnel      >= 0 ? SwiftPerTunnel      : cfg.DefaultSwiftPerTunnel;
 ```
-BugBehaviorData
-├── DefaultMovement ────── 기본 이동 (1개, 필수)
-├── DefaultAttack ──────── 기본 공격 (1개, 필수)
-├── ConditionalMovements ─ 조건부 이동 전환 (0~N개)
-├── ConditionalAttacks ─── 조건부 공격 전환 (0~N개)
-├── Passives[] ─────────── 패시브 능력 (0~N개)
-├── Skills[] ───────────── 스킬 (0~N개)
-└── Triggers[] ─────────── 조건부 발동 (0~N개)
-```
 
-### 2.1 Movement (이동 방식)
+### 현재 값
 
-| Type | 동작 | Param1 | Param2 |
-|------|------|--------|--------|
-| **Linear** | 타겟으로 직진 | 옵션 (0=기본, 1=Strafe, 2=Orbit, 3=Retreat) | 옵션값 |
-| **Hover** | 부유하며 접근 + Strafe | 부유 높이 | 부유 주기 |
-| **Burst** | 대기 후 돌진 | 대기 시간 | 속도 배율 |
-| **Ranged** | 사거리 유지 + 좌우 이동 | 유지 거리 | 횡이동 배율 |
-| **Orbit** | 타겟 주위 공전 | 공전 반경 | 각속도 |
-| **Retreat** | 후퇴 | 후퇴 시간 | 속도 배율 |
-| **SlowStart** | 점진 가속 | 시작 속도비 | 도달 시간 |
-| **Teleport** | 순간이동 | 쿨다운 | 이동 거리 |
+| WaveNumber | WaveName | KillTarget | Normal | Elite | MaxBugs | Tunnel | TunnelInt | Swift |
+|---|---|---|---|---|---|---|---|---|
+| 1 | 시작 | 15 | 0.12 | -1 | 50 | FALSE | -1 | -1 |
+| 2 | 가속 | 25 | 0.1 | -1 | 70 | FALSE | -1 | -1 |
+| 3 | 땅굴 출현 | 40 | 0.083 | 15 | 90 | TRUE | 15 | 10 |
+| 4 | 러시 | 60 | 0.07 | 12 | 110 | TRUE | 12 | 12 |
+| 5 | 최종 | -1 | 0.06 | 10 | 130 | TRUE | 10 | 15 |
 
-### 2.2 Attack (공격 방식)
+**KillTarget 의미**: `Normal=1 + Elite=5 + Swift=0.5` 누적 점수. Wave 1의 15점 ≈ Normal 15마리 또는 Elite 3마리.
 
-| Type | 동작 | Param1 | Param2 | Range |
-|------|------|--------|--------|-------|
-| **Melee** | 근접 즉발 | - | - | 1.5 |
-| **Projectile** | 투사체 발사 | 투사체 속도 | - | 5 |
-| **Cleave** | 부채꼴 범위 | 각도 | - | 2 |
-| **Spread** | 다발 발사 | 발사 수 | 확산 각도 | 5 |
-| **Beam** | 지속 레이저 | 지속 시간 | 틱 간격 | 6 |
-
-### 2.3 Passive (패시브 능력)
-
-| Type | 효과 | Param1 | Param2 |
-|------|------|--------|--------|
-| **Armor** | 데미지 감소 | 감소량 (고정값) | - |
-| **Dodge** | 확률 회피 | 회피 확률 (%) | - |
-| **Shield** | 보호막 흡수 + 재생 | 최대 보호막 | 재생 속도 |
-| **Regen** | 체력 재생 | 초당 회복량 | - |
-| **PoisonAttack** | 독 공격 | 초당 데미지 | 지속 시간 |
-| **Burrow** | 땅속 숨기 | 숨는 시간 | 쿨다운 |
-
-### 2.4 Skill (스킬)
-
-| Type | 효과 | Param1 | Range | Cooldown |
-|------|------|--------|-------|----------|
-| **Nova** | 전방향 폭발 | 데미지 | 3 | 5 |
-| **Spawn** | 졸개 소환 | 소환 수 | - | 8 |
-| **BuffAlly** | 아군 강화 | 버프량 (%) | 4 | 10 |
-| **HealAlly** | 아군 회복 | 회복량 | 4 | 6 |
-
-### 2.5 Trigger (조건부 발동)
-
-| Type | 발동 조건 | Param1 | Param2 |
-|------|----------|--------|--------|
-| **Enrage** | HP ≤ N% | HP 임계값 (%) | 버프량 (%) |
-| **ExplodeOnDeath** | 사망 시 | 폭발 데미지 | 폭발 반경 |
-| **SplitOnDeath** | 사망 시 분열 | 분열 수 | HP 비율 |
-| **PanicBurrow** | HP ≤ N% + 피격 | HP 임계값 | - |
-
-### 행동 조합 예시
-
-| 프리셋 | Movement | Attack | Passive | Trigger |
-|--------|----------|--------|---------|---------|
-| **Beetle** (돌격형) | Linear | Melee | - | - |
-| **Fly** (부유형) | Hover | Melee | - | - |
-| **Tank** (방어형) | Linear | Melee | Armor | - |
-| **Spitter** (원거리) | Ranged | Projectile | - | - |
-| **Bomber** (자폭형) | Linear | Melee | - | ExplodeOnDeath |
-| **Elite** (엘리트) | Linear | Cleave | Shield | Enrage |
+**세션 종료와 무관**: 웨이브는 난이도 곡선일 뿐. 세션은 **채굴 완료(승리)** / **머신 HP 0(패배)** 로만 종료. 마지막 웨이브 `KillTarget=-1` 은 "세션 끝까지 파라미터 유지".
 
 ---
 
-## 3. WaveData (웨이브 데이터)
+## 3. SpawnConfigData
 
-각 웨이브의 난이도와 스폰 패턴을 정의합니다.
+**시트에 없는 전역 폴백값**. 인스펙터 직편집 전용 (튜닝 빈도 낮음). `SpawnConfig.asset` 단일 인스턴스.
 
-### 기본 설정
-
-| 컬럼 | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| **WaveNumber** | int | - | 웨이브 순서 |
-| **WaveName** | string | - | 웨이브 이름 |
-| **WaveDuration** | float | 60 | 웨이브 지속 시간 (초) |
-| **HealthMultiplier** | float | 1 | 체력 배율 |
-| **DamageMultiplier** | float | 1 | 공격력 배율 |
-| **SpeedMultiplier** | float | 1 | 속도 배율 |
-
-### SpawnGroup (스폰 그룹)
-
-| 컬럼 | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| **BugData** | SO 참조 | - | 스폰할 벌레 데이터 |
-| **Count** | int | 5 | 스폰 수량 |
-| **StartDelay** | float | 0 | 웨이브 시작 후 대기 (초) |
-| **SpawnInterval** | float | 1 | 스폰 간격 (초) |
-
-### 웨이브 설계 예시
-
-```
-Wave 1: 입문 (30초)
-├─ Group 1: Beetle x5, 간격 2초
-└─ 총 5마리
-
-Wave 2: 혼합 (45초)
-├─ Group 1: Beetle x5, 간격 1.5초, 시작 0초
-├─ Group 2: Fly x5, 간격 1초, 시작 10초
-└─ 총 10마리
-
-Wave 3: 원거리 (45초)
-├─ Group 1: Fly x8, 간격 0.8초
-├─ Group 2: Spitter x3, 간격 3초, 시작 5초
-└─ 총 11마리
-
-Wave 5: 보스 (60초)
-├─ Group 1: Fly x10, 간격 1초
-├─ Group 2: Beetle x5, 시작 10초
-├─ Group 3: Tank x1, 시작 30초 (미니보스)
-└─ 총 16마리
-```
+| 그룹 | 필드 | 기본값 | 설명 |
+|---|---|---|---|
+| Spawn 기본 | `DefaultNormalSpawnInterval` | 0.083 | Wave의 `-1` 대체 |
+| | `DefaultEliteSpawnInterval` | 15 | (WaveData `-1/0` 는 비활성으로 해석되므로 실질 미사용) |
+| | `DefaultMaxBugs` | 90 | |
+| Tunnel 기본 | `TunnelGameTimeStart` | 30 | **게임 시작 후 N초 지나야 땅굴 발생** (`TunnelEnabled=true` 웨이브라도 대기) |
+| | `DefaultTunnelEventInterval` | 15 | |
+| | `DefaultSwiftPerTunnel` | 10 | |
+| | `TunnelSpawnInterval` | 0.2 | 한 땅굴 내 Swift 생성 간격 |
+| 스폰 영역 | `AutoRadius` | true | 카메라 Orthographic 크기로 자동 반경 |
+| | `ManualRadius` | 15 | AutoRadius=false 시 사용 |
+| | `NormalMargin` | 0.4 | 일반 스폰 반경 추가 여유 |
+| | `EliteMargin` | 0.5 | 엘리트 스폰 반경 추가 여유 |
+| | `EdgeMargin` | 0.4 | 땅굴 위치 화면 가장자리 안쪽 여유 |
+| | `SpawnJitter` | 0.15 | 땅굴 지점 주변 Swift 랜덤 오프셋 |
 
 ---
 
-## 4. MachineData (채굴 머신 데이터)
+## 4. 런타임 흐름
 
-플레이어가 지키는 채굴 머신의 스탯입니다.
+```
+Start
+  └─ SimpleWaveManager.StartWave(0)
+       ├─ _waves[0] 읽음
+       ├─ SimpleBugSpawner.Configure(wave, spawnConfig)
+       │    └─ _spawnInterval = Resolve…, _eliteInterval, _maxBugs, _wave 갱신
+       └─ TunnelEventManager.Configure(wave, spawnConfig)
+            └─ _autoRun = TunnelEnabled, _eventInterval, _swiftPerTunnel, _gameTimeStart 갱신
 
-### 필드 정의
+Update
+  ├─ Spawner 자체 타이머 (_spawnInterval 주기로 SpawnNormal, _eliteInterval 주기로 SpawnElite)
+  └─ Tunnel 자체 타이머 (_gameTimeStart 지난 후 _eventInterval 주기로 StartTunnelEvent → Swift N마리)
 
-| 컬럼 | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| **MaxHealth** | float | 100 | 최대 체력 |
-| **Armor** | float | 0 | 방어력 (legacy `armor/(armor+100)` 곡선) |
-| **MaxFuel** | float | 60 | 최대 연료 (v2에선 세션 타임아웃 용도) |
-| **MiningRate** | float | 10 | 초당 채굴량 |
-| **BaseMiningTarget** (v2) | float | 100 | 세션 승리 목표 채굴량 (mineTarget 강화로 +50/lv) |
-| **AttackDamage** | float | 20 | 플레이어 공격력 |
-| **AttackCooldown** | float | 0.5 | 공격 쿨다운 |
-| **AttackRange** | float | 3 | 공격 사거리 |
+GameEvents.OnBugScoreEarned(score)  // SimpleBug.TakeDamage 사망 시 발행
+  └─ SimpleWaveManager._waveScoreAccum += score
+       └─ if _waveScoreAccum >= KillTarget → StartWave(index+1)
+            └─ 같은 Configure() 재호출 → Spawner._wave 증가 → SimpleBugData.GetHp/Speed 자동 스케일
+```
 
-### 머신 타입 예시
-
-| 머신 | 체력 | 방어력 | 연료 | 공격력 | 컨셉 |
-|------|------|--------|------|--------|------|
-| Default | 100 | 0 | 60 | 20 | 균형형 |
-| Heavy | 150 | 20 | 45 | 15 | 방어형 |
-| Speed | 80 | 0 | 90 | 25 | 공격형 |
+**핵심 원칙**
+- Spawner/Tunnel 은 자체 타이머·스폰 루프를 계속 돌리고, `SimpleWaveManager` 는 **파라미터 주입자** 역할만.
+- 웨이브 전환 = **Configure() 재호출**. 기존 생존 벌레는 유지되고, 새 스폰부터 새 파라미터 적용.
+- Elite/Swift 는 Spawner·Tunnel 이 내부에 `SimpleBugData` 참조를 하드코딩 (Normal/Elite 는 Spawner 인스펙터, Swift 는 TunnelEventManager 인스펙터).
 
 ---
 
-## 5. UpgradeData (업그레이드 데이터)
+## 5. MachineData
 
-영구 강화 시스템입니다. 아웃게임에서 재화로 구매.
+플레이어가 지키는 채굴 머신의 스탯. 시트 `MachineData`.
 
-### 필드 정의
+| 필드 | 타입 | 기본값 | 설명 |
+|---|---|---|---|
+| `MachineId` | int | — | 고유 ID |
+| `MachineName` | string | — | 머신 이름 (Default, Heavy, Speed 등) |
+| `MaxHealth` | float | 100 | 최대 체력 |
+| `HealthRegen` | float | 0 | 초당 체력 회복 |
+| `Armor` | float | 0 | legacy 공식 `armor/(armor+100)` |
+| `MiningRate` | float | 10 | 초당 채굴량 |
+| `MiningBonus` | float | 0 | 채굴 보너스(%) |
+| `BaseMiningTarget` (v2) | float | 100 | **세션 승리 목표 채굴량**. `mine_target` 업그레이드로 +50/lv |
+| `AttackDamage` | float | 20 | |
+| `AttackCooldown` | float | 0.5 | |
+| `AttackRange` | float | 3 | |
+| `CritChance` | float | 0 | |
+| `CritMultiplier` | float | 1.5 | |
 
-| 컬럼 | 타입 | 설명 |
-|------|------|------|
-| **UpgradeId** | string | 고유 ID (예: `mine_speed`, `excavator_hp`) |
-| **DisplayName** | string | 표시 이름 |
-| **MaxLevel** | int | 최대 레벨 |
-| **ValuePerLevel** | float | 레벨당 증가 |
-| **IsPercentage** | bool | % 적용 여부 |
-| **BaseCost** | int | 1레벨 광석 비용 (레거시 `BaseCostOre` 별칭) |
-| **BaseCostGem** (v2) | int | 1레벨 보석 비용 (gem_drop/gem_speed에 사용) |
-| **CostMultiplier** | float | 비용 증가율 |
-| **OreCostSchedule** (v2) | int[] | 레벨별 광석 비용 명시 배열 (비어있으면 multiplier 사용) |
-| **GemCostSchedule** (v2) | int[] | 레벨별 보석 비용 명시 배열 |
-
-### UpgradeType 목록 (v2 현행, 6종 활성)
-
-| Type | UpgradeId | MaxLv | ValuePerLevel | IsPercentage | 비용 schedule |
-|------|-----------|-------|----|----|----|
-| MaxHealth | excavator_hp | 5 | +30 | false | 광석 [60,130,230,370,540] |
-| Armor | excavator_armor | 3 | +0.15 (받는 피해 감소율) | true | 광석 [150,300,500] |
-| MiningRate | mine_speed | 5 | +2 (초당 채굴) | false | 광석 [80,160,280,440,640] |
-| MiningTarget (v2) | mine_target | 5 | +50 (목표량) | false | 광석 [100,200,350,550,800] |
-| GemDropRate (v2) | gem_drop | 5 | +0.02 (확률 %p) | false | **보석** [15,30,50,75,105] |
-| GemCollectSpeed (v2) | gem_speed | 5 | +0.20 (배율) | true | **보석** [10,22,38,58,82] |
-
-> 무기별 강화는 `WeaponUpgradeData` SO로 분리(15항목). Sniper/Bomb/Gun/Laser/Saw 각 3종. 상세: `WeaponUnlockUpgradeSystem.md`.
+> v2 이전의 `MaxFuel`/`FuelConsumeRate` 는 삭제됨 — v2 승리 조건이 연료 소진에서 `BaseMiningTarget` 달성으로 전환.
 
 ---
 
-## Google Sheets 시트 구조
+## 6. UpgradeData
 
-| 시트 이름 | 설명 |
-|----------|------|
-| **BugData** | 벌레 스탯 |
-| **BugBehaviors** | 행동 조합 프리셋 |
-| **MovementData** | 이동 방식 정의 |
-| **AttackData** | 공격 방식 정의 |
-| **PassiveData** | 패시브 정의 |
-| **SkillData** | 스킬 정의 |
-| **TriggerData** | 트리거 정의 |
-| **WaveData** | 웨이브 기본 설정 |
-| **WaveSpawnGroups** | 스폰 그룹 |
-| **MachineData** | 머신 스탯 |
-| **UpgradeData** | 업그레이드 설정 |
+아웃게임 영구 강화. **이중 재화** (광석 + 보석). 시트 `UpgradeData`.
 
-### 데이터 연결 관계
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| `UpgradeId` | string | `excavator_hp`, `mine_target` 등 |
+| `DisplayName` | string | |
+| `UpgradeType` | enum | `MaxHealth`/`Armor`/`MiningRate`/`MiningTarget`/`GemDropRate`/`GemCollectSpeed` |
+| `MaxLevel` | int | 3 또는 5 |
+| `BaseValue` | float | 기본 값 (보통 0) |
+| `ValuePerLevel` | float | 레벨당 증가 |
+| `IsPercentage` | bool | true면 % 적용 |
+| `BaseCost` | int | 1레벨 **광석** 비용 |
+| `BaseCostGem` (v2) | int | 1레벨 **보석** 비용 (gem_drop/speed 전용) |
+| `CostMultiplier` | float | 비용 증가율 (Schedule 비어있을 때) |
+| `OreCostSchedule` (v2) | int[] | 레벨별 광석 비용 배열 |
+| `GemCostSchedule` (v2) | int[] | 레벨별 보석 비용 배열 |
 
-```
-BugData ←─────────────────┐
-    ↑                     │
-    │ (BehaviorData 참조) │
-    │                     │
-BugBehaviorData ──────────┼── MovementData (참조)
-                          ├── AttackData (참조)
-                          ├── PassiveData[] (참조)
-                          ├── SkillData[] (참조)
-                          └── TriggerData[] (참조)
+### v2 현행 6종
 
-WaveSpawnGroups ─── BugData (참조)
-       ↑
-       │ (WaveNumber로 연결)
-WaveData
-```
+| Type | UpgradeId | MaxLv | ValuePerLevel | % | 비용 schedule |
+|---|---|---|---|---|---|
+| MaxHealth | excavator_hp | 5 | +30 | | 광석 [60,130,230,370,540] |
+| Armor | excavator_armor | 3 | +0.15 (받는 피해 감소율) | ✓ | 광석 [150,300,500] |
+| MiningRate | mine_speed | 5 | +2 (초당 채굴) | | 광석 [80,160,280,440,640] |
+| MiningTarget (v2) | mine_target | 5 | +50 (목표량) | | 광석 [100,200,350,550,800] |
+| GemDropRate (v2) | gem_drop | 5 | +0.02 (확률 %p) | | **보석** [15,30,50,75,105] |
+| GemCollectSpeed (v2) | gem_speed | 5 | +0.20 (배율) | ✓ | **보석** [10,22,38,58,82] |
+
+> 무기별 강화는 별도 `WeaponUpgradeData` (15항목, 5무기 × 3). 상세: [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md).
 
 ---
 
-## 밸런스 가이드라인
+## 7. v2 추가 데이터
 
-### DPS 계산
-```
-플레이어 DPS = AttackDamage / AttackCooldown
-적 EHP = MaxHealth × HealthMultiplier
-적 처치 시간 = 적 EHP / 플레이어 DPS
-```
+Character / Ability / WeaponUpgrade 는 별도 문서 참조:
 
-### 방어력 공식
-```
-실제 데미지 = 원본 데미지 × (1 - Armor / (Armor + 100))
-
-예시:
-- Armor 0: 100% 데미지
-- Armor 20: 83.3% 데미지
-- Armor 50: 66.7% 데미지
-```
-
-### 난이도 곡선
-
-| 웨이브 | 체력 배율 | 공격력 배율 | 총 적 수 | 난이도 |
-|--------|----------|------------|---------|--------|
-| 1 | 1.0 | 1.0 | 5 | 입문 |
-| 2 | 1.0 | 1.0 | 10 | 쉬움 |
-| 3 | 1.1 | 1.0 | 13 | 보통 |
-| 4 | 1.2 | 1.1 | 15 | 어려움 |
-| 5 | 1.3 | 1.2 | 16 | 보스 |
+- [CharacterAbilitySystem.md](CharacterAbilitySystem.md) — 캐릭터 3 · 어빌리티 9 설계
+- [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md) — 무기 해금 체인 + 강화 15항목
+- [GemMiningSystem.md](GemMiningSystem.md) — 보석 드랍·채집 + 이중 재화
+- [GoogleSheetsGuide_v2Addendum.md](GoogleSheetsGuide_v2Addendum.md) — v2 신규 시트 컬럼 + UpgradeData 확장
 
 ---
 
-## 참고 문서
+## 참고
 
-- 행동 시스템 상세: `docs/BugBehaviorSystemAnalysis.md`
-- 개발 계획: `docs/BugBehaviorDevelopmentPlan.md`
-- 아키텍처: `docs/Architecture.md`
-
----
-
-*마지막 업데이트: 2026-04-06*
+- 시트 입력·Import 절차: [GoogleSheetsGuide.md](GoogleSheetsGuide.md)
+- Bug/Wave 설계 근거 및 프로토타입 포팅 맥락: 커밋 `9b32067` (SimpleBug 전면 교체) + `docs/CHANGELOG.md` 의 2026-04-23 섹션
+- 구 BugBehavior/Formation 시스템 문서: `docs/archive/{BugBehaviorSystem,BugBehaviorPatterns,FormationSystem}.md`

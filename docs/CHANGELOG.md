@@ -6,7 +6,7 @@
 
 ---
 
-## [Unreleased] - 2026-04-23 — SimpleBug 전면 교체 Phase A~D + 레거시 코드·에셋 일괄 제거
+## [Unreleased] - 2026-04-23 — SimpleBug 전면 교체 Phase A~D + 레거시 코드·에셋·문서 일괄 정리
 
 > 상세: `docs/SimpleBugSheet.md` (SSoT 임시 문서), 프로젝트 메모리 `project_simplebug_migration.md`
 > 맥락: 레거시 `BugData`·`BugBehaviorData`(Movement/Attack/Passive/Skill/Trigger) + `WaveManager`(SpawnGroup/Formation 기반) 시스템은 이미 `SimpleBug` 계열로 런타임 교체된 dead code 상태. 이번 작업으로 시트 연동 + 레거시 제거 일괄 진행.
@@ -50,10 +50,17 @@
   - `Prefabs/Bugs/{BugProjectile.prefab, BugProjectile_Mat.mat, Bug_{Beetle,Centipede,Fly}_Mat.mat}` — Behaviors/Attack + 구 벌레 3종 머티리얼.
   - `Prefabs/UI/BugHpBar.prefab` — SimpleBug 미사용. `CLAUDE.md`의 월드 UI 참조 구현을 `MinimapIcon.cs`로 갱신.
 
-### Remaining — Phase C-4·C-5 (다음 세션)
-- 🔜 C-4: 구 `Wave_01~05.asset` 타입 확인. SimpleWaveAssetSetup 은 파일 존재 시 스킵하므로 구 `WaveData` 타입 에셋이 남아있을 가능성. 삭제 후 SimpleWaveData 타입으로 재생성 필요.
-- 🔜 C-5: Game 씬에 `SimpleWaveManager` GameObject 바인딩 (`Tools/Drill-Corp/3. 게임 초기 설정/SimpleBug/2. Game 씬에 SimpleWaveManager 바인딩` 메뉴).
-- ⏳ Phase E (문서 정리): `DataStructure.md`/`GoogleSheetsGuide.md` 개편, `BugBehaviorSystem.md`/`BugBehaviorPatterns.md`/`FormationSystem.md` → `archive/` 이동, `SimpleBugSheet.md` 흡수 후 삭제.
+### Completed — Phase E (문서 정리)
+- ✅ **DataStructure.md 전면 재작성** — 구 `BugData`/`BugBehaviorData`/`WaveData(SpawnGroup)` 섹션 전부 제거, `SimpleBugData`/`SimpleWaveData`/`SpawnConfigData` + 런타임 흐름 추가. Machine/Upgrade 섹션은 v2 현행값(6종) 보존.
+- ✅ **GoogleSheetsGuide.md 전면 재작성** — 시트 구조를 4개(`SimpleBugData`/`WaveData`/`MachineData`/`UpgradeData`)로 갱신. 구 BugBehavior/Passive/Skill/Trigger 파싱 문법 섹션 삭제. SimpleBugSheet.md §2.1·2.2·7 흡수(컬럼·sentinel·기획자 워크플로우).
+- ✅ **SimpleBugSheet.md 삭제** — 내용이 위 두 문서에 흡수됨.
+- ✅ **3개 폐기 문서 `archive/` 이동**: `BugBehaviorSystem.md`, `BugBehaviorPatterns.md`, `FormationSystem.md`.
+- ✅ **인덱스 갱신**: `docs/README.md` 에서 구 시스템 링크 제거 + SimpleBug 요약 추가. `CLAUDE.md` 의 참고 문서 목록에서 BugBehavior/Formation 제거, `GoogleSheetsGuide_v2Addendum.md` 등 신규 참조 추가.
+- ✅ `docs/_review/README.md` — SimpleBugSheet.md 링크를 GoogleSheetsGuide.md 섹션 앵커로 교체. CSV/TSV 파일은 보존(시트 초기 입력 소스).
+
+### Remaining — Phase C-4·C-5 (유저 수동)
+- 🔜 C-4 (실질 no-op): `Wave_01~05.asset` 5개 전부 이미 `SimpleWaveData` 타입 + 올바른 값. `SpawnConfig.asset` GUID 일치. 재생성 불필요 — Phase B 커밋 시점에 생성된 상태 그대로 사용.
+- 🔜 C-5 (유저 수동): Game 씬에 `SimpleWaveManager` GameObject 바인딩 — `Tools / Drill-Corp / 3. 게임 초기 설정 / SimpleBug / 2. Game 씬에 SimpleWaveManager 바인딩` 메뉴 실행 후 씬 저장.
 
 ---
 

@@ -1,6 +1,6 @@
 # Drill-Corp 문서 인덱스
 
-> 최종 갱신: 2026-04-21 (Phase 7 지누스 어빌리티: 드론 포탑 · 채굴 드론 · 드론 거미 + Hp3DBar · MiningDroneTimer3D 공용 컴포넌트 — [CHANGELOG](CHANGELOG.md))
+> 최종 갱신: 2026-04-23 — SimpleBug 전면 교체 + 레거시 문서 archive 이동 + 가이드 재작성 ([CHANGELOG](CHANGELOG.md))
 
 ## 🎯 시작점
 
@@ -32,18 +32,18 @@
 
 | 시스템 | 문서 |
 |---|---|
-| Bug 행동 (BugController + Behaviors) | [BugBehaviorSystem.md](BugBehaviorSystem.md) |
-| Bug 행동 — 기획자 가이드/예시 | [BugBehaviorPatterns.md](BugBehaviorPatterns.md) |
+| **Bug/Wave 시스템 (SimpleBug + SimpleWaveManager)** | [DataStructure.md](DataStructure.md) §1~4 |
 | 무기 시스템 (v2 5종: Sniper/Bomb/Gun/Laser/Saw, self-driven 동시 발동) | [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md) |
 | 무기 시스템 (Phase 3 아카이브 — Shotgun/BurstGun/LockOn) | [WeaponSystem.md](WeaponSystem.md) |
 | 보석 드랍/채집 + 이중 재화 + mineTarget 승리 조건 | [GemMiningSystem.md](GemMiningSystem.md) |
-| **VFX 3D 전환 계획 (Polygon Arsenal 기반)** | [VFX_3D_MigrationPlan.md](VFX_3D_MigrationPlan.md) |
-| 군집(Formation) 스폰 | [FormationSystem.md](FormationSystem.md) |
+| VFX 3D 전환 계획 (Polygon Arsenal 기반) | [VFX_3D_MigrationPlan.md](VFX_3D_MigrationPlan.md) |
 | 카메라 (Nuclear Throne 방식) | [CameraSystem.md](CameraSystem.md) |
 | 미니맵 (RenderTexture) | [MinimapSystem.md](MinimapSystem.md) |
 | 사운드 (AudioManager + 파형 편집 툴) | [SoundSystem.md](SoundSystem.md) |
-| **최적화 현황 (VFX·DamagePopup 풀링 완료)** | [Optimization_Overview.md](Optimization_Overview.md) |
+| 최적화 현황 (VFX·DamagePopup 풀링 완료) | [Optimization_Overview.md](Optimization_Overview.md) |
 | 최적화 이력 (1~4차 의사결정 연대기) | [Optimization_History.md](Optimization_History.md) |
+
+> 구 BugBehaviors/Formation 시스템(폐기): [archive/BugBehaviorSystem.md](archive/BugBehaviorSystem.md) · [archive/BugBehaviorPatterns.md](archive/BugBehaviorPatterns.md) · [archive/FormationSystem.md](archive/FormationSystem.md)
 
 ## 🧱 Phase별 구현 계획
 
@@ -87,12 +87,11 @@
 
 ---
 
-## 빠른 참조 (Bug 행동 문자열)
+## 빠른 참조 (SimpleBug 시트 컬럼)
 
-```
-Passives:  Armor:5 / Shield:20:2 / Dodge:30 / Regen:3 / PoisonAttack:3:5
-Skills:    Nova:5:10:3 / BuffAlly:10:50:4 / HealAlly:6:10:4 / Spawn:8:Beetle:2
-Triggers:  Enrage:30:50 / ExplodeOnDeath:10:2 / PanicBurrow:50:5
-```
+**SimpleBugData**: `BugName, Kind(Normal/Elite/Swift), BaseHp, HpPerWave, BaseSpeed, SpeedPerWave, SpeedRandom, Size, Score, TintHex`
+**WaveData**: `WaveNumber, WaveName, KillTarget, NormalSpawnInterval, EliteSpawnInterval, MaxBugs, TunnelEnabled, TunnelEventInterval, SwiftPerTunnel`
 
-전체 문법·타입표는 [GoogleSheetsGuide.md](GoogleSheetsGuide.md#패시브스킬트리거-파싱-문법) 참조.
+`-1`/빈 셀 = SpawnConfig 폴백. `0` = 명시적 값. 예외: `EliteSpawnInterval`·`KillTarget` 의 `-1`/`0` 은 "비활성"·"전환 없음".
+
+전체 스키마: [GoogleSheetsGuide.md](GoogleSheetsGuide.md) · 런타임 의미: [DataStructure.md](DataStructure.md).

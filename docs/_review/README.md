@@ -1,18 +1,18 @@
 # Drill-Corp 데이터 시트 입력 초안
 
 > 작성: 2026-04-23
-> 용도: Phase A(스키마 확정) 단계에서 Google Sheets `SimpleBugData` / `WaveData` 탭에
-> 붙여넣을 **초기 데이터**. 기획자 리뷰 후 Phase B(코드 변경)로 진입.
-> 라이프사이클: Phase C 완료 시점에 `docs/archive/`로 이동 또는 삭제.
+> 용도: Google Sheets `SimpleBugData` / `WaveData` 탭에 붙여넣을 **초기 데이터**.
+> 라이프사이클: 시트 입력 완료되면 폴더 삭제 또는 `docs/archive/` 이동 가능.
+> 스키마 문서: [GoogleSheetsGuide.md](../GoogleSheetsGuide.md) · [DataStructure.md](../DataStructure.md)
 
 ---
 
 ## 파일 목록
 
-| 파일 | 대상 탭 | 스키마 문서 |
+| 파일 | 대상 탭 | 스키마 섹션 |
 |---|---|---|
-| `SimpleBugData.csv` | `SimpleBugData` | [SimpleBugSheet.md](../SimpleBugSheet.md) 2.1절 |
-| `WaveData.csv`      | `WaveData`      | [SimpleBugSheet.md](../SimpleBugSheet.md) 2.2절 |
+| `SimpleBugData.csv` | `SimpleBugData` | [GoogleSheetsGuide.md §1](../GoogleSheetsGuide.md#1-simplebugdata-시트) |
+| `WaveData.csv`      | `WaveData`      | [GoogleSheetsGuide.md §2](../GoogleSheetsGuide.md#2-wavedata-시트) |
 
 두 CSV 모두 **1행은 헤더 + 2행부터 실제 데이터**입니다. Google Sheets에 이미
 헤더 행이 만들어져 있으면 본문(2행 이후)만 붙여넣으면 됩니다.
@@ -100,6 +100,5 @@
 
 1. 위 두 CSV를 Google Sheets에 붙여넣기
 2. 셀 서식 검증 (숫자/문자열/불리언)
-3. 기획자 리뷰 — 값 타당성 피드백
-4. 피드백 반영해서 CSV와 시트 양쪽 동기화
-5. Phase B 진입 — Importer 코드 수정
+3. Unity `Tools / Drill-Corp / 4. 데이터 Import / Google Sheets Importer` → `Import All Data`
+4. 값 튜닝은 시트에서 수정 후 재Import — 인스펙터 직편집 금지 (덮어쓰기 됨)
