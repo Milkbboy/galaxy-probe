@@ -85,6 +85,7 @@
 - [ ] 6행 (excavator_hp/armor, mine_speed/target, gem_drop/speed) 들어갔는지
 - [ ] 구 v1 11행 (max_health, max_fuel, attack_damage, crit_*, fuel_* 등) 전부 삭제됐는지
 - [ ] `UpgradeType` 컬럼에 v2 신규 타입 3종 (`MiningTarget`, `GemDropRate`, `GemCollectSpeed`) 이 철자 정확히 들어갔는지
+- [ ] **`CurrencyType`** 컬럼 — `Ore` / `Gem` / `Both` 중 하나. excavator_*, mine_* 는 `Ore`, gem_* 는 `Gem`. 이 값이 구매 차감의 authoritative flag (BaseCostOre/Gem 에 값이 있어도 CurrencyType 에 포함 안 된 재화는 무시)
 - [ ] `OreCostSchedule` / `GemCostSchedule` 가 `60|130|230|370|540` 처럼 **한 셀에 파이프 구분 문자열**로 들어갔는지
 - [ ] `IsPercentage` 컬럼 — gem_drop 은 **FALSE** (누적 %p 가산), gem_speed 는 **TRUE** (배율)
 - [ ] `-1` 값이 숫자로 들어갔는지 (음수 대쉬 깨짐 주의)

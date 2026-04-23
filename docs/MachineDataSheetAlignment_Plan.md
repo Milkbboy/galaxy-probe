@@ -74,20 +74,40 @@ v2.html 원본 `calcStats()` (421~454줄) 기준 6종:
 
 4단계로 나눠 각 단계 끝나면 Unity 컴파일·Play 재검증.
 
-### Phase M-1 — Importer 코드 확장 (코드 수정)
+### Phase M-1 — Importer + SO 코드 확장 (코드 수정)
 
 목적: 시트에서 v2 컬럼을 읽을 수 있게 먼저 만듦. 이 단계가 없으면 시트 업데이트해도 반영 안 됨.
 
-**수정 대상**: `Assets/_Game/Scripts/Editor/GoogleSheetsImporter.cs`
+**`Assets/_Game/Scripts/Data/UpgradeData.cs`**
+
+- `CurrencyType` enum 신설:
+  ```csharp
+  public enum CurrencyType { Ore, Gem, Both }
+  [SerializeField] private CurrencyType _currencyType = CurrencyType.Ore;
+  public CurrencyType Currency => _currencyType;
+  ```
+- `GetCostsForLevel(int currentLevel)` 로직 갱신 — `CurrencyType` 이 authoritative:
+  ```csharp
+  int ore = (_currencyType == CurrencyType.Gem) ? 0 : GetCostForLevel(currentLevel);
+  int gem = (_currencyType == CurrencyType.Ore) ? 0 : GetGemCostForLevel(currentLevel);
+  return (ore, gem);
+  ```
+
+**`Assets/_Game/Scripts/Editor/GoogleSheetsImporter.cs`**
 
 - `ImportMachineDataAsync`:
   - `_baseMiningTarget` 필드 `SetSerializedField(so, "_baseMiningTarget", GetFloatValue(row, headers, "BaseMiningTarget", 100f))` 추가
 - `ImportUpgradeDataAsync`:
+  - `_currencyType` enum 파싱 — `Enum.TryParse<UpgradeData.CurrencyType>(str, true, out var ct)` / `typeProp.enumValueIndex = (int)ct`
   - `_baseCost` 는 `BaseCostOre` 우선 → fallback `BaseCost` (하위 호환)
   - `_baseCostGem` 필드 `SetSerializedField(so, "_baseCostGem", GetIntValue(row, headers, "BaseCostGem", 0))` 추가
-  - `_oreCostSchedule` / `_gemCostSchedule` 배열 파싱 헬퍼 신설 — 셀 형식 예: `"60,130,230,370,540"` 또는 `"60|130|230|370|540"`. `SetSerializedIntArray(so, fieldName, value.Split(',|'))`.
+  - `_oreCostSchedule` / `_gemCostSchedule` 배열 파싱 헬퍼 신설 — 셀 형식: `"60|130|230|370|540"` (파이프 구분, 쉼표 회피 — CSV 파싱 충돌 방지). `SetSerializedIntArray(so, fieldName, value.Split('|'))`.
   - `UpgradeType` 파싱은 이미 `Enum.TryParse` 사용 중이라 `MiningTarget`/`GemDropRate`/`GemCollectSpeed` 자동 처리.
-- `UpgradeData.cs` 의 실제 v2 필드명 확인 후 SerializedField 이름 일치 검증.
+
+**`Assets/_Game/Scripts/OutGame/UpgradeManager.cs` 또는 `ExcavatorUpgradeUI`/`GemUpgradeUI`**
+
+- 구매 검증 로직 — `CurrencyType == Both` 일 때 광석·보석 **양쪽 모두 충분해야** 구매 가능. 한쪽만 부족해도 실패.
+- 가격 표시 로직 — `Ore` → "광석 N", `Gem` → "보석 N", `Both` → "광석 N + 보석 M".
 
 ### Phase M-2 — 시트 편집 (웹)
 
@@ -99,17 +119,20 @@ v2.html 원본 `calcStats()` (421~454줄) 기준 6종:
 - 구 11행 전부 삭제 (or `_legacy_` rename).
 - 헤더를 다음으로 교체:
   ```
-  UpgradeId, DisplayName, Description, UpgradeType, MaxLevel, BaseValue, ValuePerLevel, IsPercentage, BaseCostOre, BaseCostGem, CostMultiplier, OreCostSchedule, GemCostSchedule
+  UpgradeId, DisplayName, Description, UpgradeType, MaxLevel, BaseValue, ValuePerLevel, IsPercentage, CurrencyType, BaseCostOre, BaseCostGem, CostMultiplier, OreCostSchedule, GemCostSchedule
   ```
-- 6행 입력 (§1 표 그대로):
-  | UpgradeId | UpgradeType | MaxLv | Value/Lv | IsPct | BaseCostOre | BaseCostGem | OreCostSchedule | GemCostSchedule |
-  |---|---|---|---|---|---|---|---|---|
-  | `excavator_hp` | MaxHealth | 5 | 30 | FALSE | 60 | 0 | `60,130,230,370,540` | |
-  | `excavator_armor` | Armor | 3 | 0.15 | TRUE | 150 | 0 | `150,300,500` | |
-  | `mine_speed` | MiningRate | 5 | 2 | FALSE | 80 | 0 | `80,160,280,440,640` | |
-  | `mine_target` | MiningTarget | 5 | 50 | FALSE | 100 | 0 | `100,200,350,550,800` | |
-  | `gem_drop` | GemDropRate | 5 | 0.02 | FALSE | 0 | 15 | | `15,30,50,75,105` |
-  | `gem_speed` | GemCollectSpeed | 5 | 0.20 | TRUE | 0 | 10 | | `10,22,38,58,82` |
+- `CurrencyType` 값: `Ore` / `Gem` / `Both`. 구매 시 차감·가격 표시의 authoritative flag.
+- 6행 입력 (붙여넣기 데이터는 `docs/_review/UpgradeData.tsv` 참조):
+  | UpgradeId | UpgradeType | MaxLv | Value/Lv | IsPct | **CurrencyType** | BaseCostOre | BaseCostGem | OreCostSchedule | GemCostSchedule |
+  |---|---|---|---|---|---|---|---|---|---|
+  | `excavator_hp` | MaxHealth | 5 | 30 | FALSE | Ore | 60 | 0 | `60\|130\|230\|370\|540` | |
+  | `excavator_armor` | Armor | 3 | 0.15 | TRUE | Ore | 150 | 0 | `150\|300\|500` | |
+  | `mine_speed` | MiningRate | 5 | 2 | FALSE | Ore | 80 | 0 | `80\|160\|280\|440\|640` | |
+  | `mine_target` | MiningTarget | 5 | 50 | FALSE | Ore | 100 | 0 | `100\|200\|350\|550\|800` | |
+  | `gem_drop` | GemDropRate | 5 | 0.02 | FALSE | Gem | 0 | 15 | | `15\|30\|50\|75\|105` |
+  | `gem_speed` | GemCollectSpeed | 5 | 0.20 | TRUE | Gem | 0 | 10 | | `10\|22\|38\|58\|82` |
+
+> `Both` 예시 (가상): `CurrencyType=Both, BaseCostOre=200, BaseCostGem=50, OreCostSchedule=200|400|700, GemCostSchedule=50|100|200` — 광석과 보석을 동시에 차감. 한쪽만 부족해도 구매 실패.
 
 > 구 컬럼 `BaseCost` 이름 그대로 두고 값만 넣어도 M-1의 fallback 덕분에 동작은 하나, 혼동 방지 위해 `BaseCostOre`로 rename 권장.
 
@@ -165,11 +188,14 @@ v2.html 원본 `calcStats()` (421~454줄) 기준 6종:
 
 ## 7. 체크리스트
 
-**Phase M-1 (Importer)**
+**Phase M-1 (SO + Importer + Manager)**
 - [ ] `UpgradeData.cs` 필드 명 확인 (`_baseCost`, `_baseCostGem`, `_oreCostSchedule`, `_gemCostSchedule` — 실제 이름 grep)
+- [ ] `UpgradeData.cs` 에 `CurrencyType` enum(`Ore`/`Gem`/`Both`) + `_currencyType` 필드 신설, `GetCostsForLevel()` 이 CurrencyType 으로 Ore/Gem 게이팅
 - [ ] `ImportMachineDataAsync` 에 `_baseMiningTarget` 파싱 추가
-- [ ] `ImportUpgradeDataAsync` 에 `_baseCostGem`, `_oreCostSchedule`, `_gemCostSchedule` 파싱 추가 (+ `BaseCostOre` → `_baseCost` 우선, `BaseCost` fallback)
-- [ ] `SetSerializedIntArray` 헬퍼 신설 or 기존 헬퍼 활용
+- [ ] `ImportUpgradeDataAsync` 에 `CurrencyType` enum 파싱 + `_baseCostGem`, `_oreCostSchedule`, `_gemCostSchedule` 파싱 추가 (+ `BaseCostOre` → `_baseCost` 우선, `BaseCost` fallback)
+- [ ] `SetSerializedIntArray` 헬퍼 신설 or 기존 헬퍼 활용 (파이프 `|` 분할)
+- [ ] `UpgradeManager.TryPurchase()` (또는 구매 로직 위치) — `Both` 시 광석·보석 양쪽 모두 충분한지 검증
+- [ ] `ExcavatorUpgradeUI` / `GemUpgradeUI` 의 가격 표시 로직 — `Ore` → "광석 N", `Gem` → "보석 N", `Both` → "광석 N + 보석 M"
 - [ ] Unity 컴파일 통과
 
 **Phase M-2 (시트 웹)**
