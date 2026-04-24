@@ -114,11 +114,13 @@ Import 는 파일명을 무시하고 SO 내부 `BugName` 필드로 매칭.
 
 ## 3. MachineData 시트
 
-채굴 머신 스탯. [DataStructure.md §5](DataStructure.md#5-machinedata) 참조. 컬럼:
+채굴 머신 스탯. [DataStructure.md §5](DataStructure.md#5-machinedata) 참조. v2 는 단일 머신 (Default 1행). 컬럼:
 
-`MachineId`, `MachineName`, `Description`, `MaxHealth`, `HealthRegen`, `Armor`, `MiningRate`, `MiningBonus`, `BaseMiningTarget` (v2 — 세션 승리 목표), `AttackDamage`, `AttackCooldown`, `AttackRange`, `CritChance`, `CritMultiplier`.
+`MachineId`, `MachineName`, `Description`, `MaxHealth`, `HealthRegen`, `Armor`, `MiningRate` (v2: 5), `MiningBonus`, `BaseMiningTarget` (v2: 100), `BaseGemDropRate` (v2: 0.05).
 
-> 구 `MaxFuel`/`FuelConsumeRate` 는 v2 승리 조건 전환(연료 → mineTarget)으로 삭제됨. 시트에 남아있으면 제거.
+> 삭제된 구 컬럼 — 시트에 남아있으면 제거:
+> - `MaxFuel`, `FuelConsumeRate` (연료 → mineTarget 전환)
+> - `AttackDamage`, `AttackCooldown`, `AttackRange`, `CritChance`, `CritMultiplier` (v2 는 머신이 공격 안 함 — 무기 self-driven)
 
 ---
 
@@ -126,7 +128,7 @@ Import 는 파일명을 무시하고 SO 내부 `BugName` 필드로 매칭.
 
 영구 강화. 이중 재화(광석+보석). [DataStructure.md §6](DataStructure.md#6-upgradedata) 참조. 컬럼:
 
-`UpgradeId`, `DisplayName`, `Description`, `UpgradeType`, `MaxLevel`, `BaseValue`, `ValuePerLevel`, `IsPercentage`, `BaseCost` (광석), `BaseCostGem` (v2 — 보석), `CostMultiplier`, `OreCostSchedule` (v2 — 레벨별 배열), `GemCostSchedule` (v2).
+`UpgradeId`, `DisplayName`, `Description`, `UpgradeType`, `MaxLevel`, `BaseValue`, `ValuePerLevel`, `IsPercentage`, `CurrencyType` (v2 — Ore/Gem/Both), `BaseCostOre` (v2 — 광석, 구 `BaseCost` rename), `BaseCostGem` (v2 — 보석), `CostMultiplier`, `OreCostSchedule` (v2 — 파이프 구분 배열), `GemCostSchedule` (v2).
 
 ### v2 활성 6종
 

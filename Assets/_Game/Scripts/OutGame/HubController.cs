@@ -15,6 +15,14 @@ namespace DrillCorp.OutGame
     {
         [SerializeField] private TitleUI _titleUI;
 
+        [Header("v2 베이스값 (MachineData 동기화 필요)")]
+        [Tooltip("목표 채굴량 베이스 (v2: 100)")]
+        [SerializeField] private float _baseMiningTarget = 100f;
+
+        [Tooltip("보석 출현 확률 베이스 (v2: 0.05 = 5%)")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _baseGemDropRate = 0.05f;
+
         // ─── 자동 탐색 캐시 ───
         private TextMeshProUGUI _oreValueText;
         private TextMeshProUGUI _gemValueText;
@@ -129,7 +137,7 @@ namespace DrillCorp.OutGame
 
             // mineTarget / gem_drop / gem_speed 합산 표시 (v2 헤더 재현)
             var upgMgr = UpgradeManager.Instance;
-            float miningTarget = 100f;
+            float miningTarget = _baseMiningTarget;
             float gemDropBonus = 0f;
             float gemSpeedMult = 1f;
 
@@ -140,7 +148,7 @@ namespace DrillCorp.OutGame
                 gemSpeedMult = 1f + upgMgr.GetTotalBonus(DrillCorp.Data.UpgradeType.GemCollectSpeed);
             }
 
-            int dropPct = Mathf.RoundToInt((0.05f + gemDropBonus) * 100f);
+            int dropPct = Mathf.RoundToInt((_baseGemDropRate + gemDropBonus) * 100f);
             float collectSec = 2f / Mathf.Max(0.01f, gemSpeedMult);
 
             _targetLabel.text =

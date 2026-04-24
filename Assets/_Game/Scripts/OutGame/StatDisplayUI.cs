@@ -24,6 +24,13 @@ namespace DrillCorp.OutGame
         [Tooltip("채굴 속도 베이스 (v2: 초당 5 광석)")]
         [SerializeField] private float _baseMiningRate = 5f;
 
+        [Tooltip("목표 채굴량 베이스 (v2: 100)")]
+        [SerializeField] private float _baseMiningTarget = 100f;
+
+        [Tooltip("보석 출현 확률 베이스 (v2: 0.05 = 5%)")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _baseGemDropRate = 0.05f;
+
         // 행 캐시 — v2 표시 항목
         private Transform _content;
         private TextMeshProUGUI _valOre;
@@ -173,8 +180,8 @@ namespace DrillCorp.OutGame
             _valMaxHp.text      = $"{_baseMaxHealth + hpBonus:F0} HP";
             _valDmgReduce.text  = $"-{dmgReduce * 100f:F0}%";
             _valMineRate.text   = $"초당 {_baseMiningRate + mineRateAdd:F0} 광석";
-            _valMineTarget.text = $"{100 + mineTgtAdd:F0} 광석";
-            _valGemDrop.text    = $"{(0.05f + gemDropAdd) * 100f:F0}%";
+            _valMineTarget.text = $"{_baseMiningTarget + mineTgtAdd:F0} 광석";
+            _valGemDrop.text    = $"{(_baseGemDropRate + gemDropAdd) * 100f:F0}%";
             _valGemSpeed.text   = $"{(1f + gemSpeedAdd) * 100f:F0}%";
         }
 

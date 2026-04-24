@@ -1044,13 +1044,10 @@ namespace DrillCorp.Editor
                 SetSerializedField(so, "_maxHealth", GetFloatValue(row, headers, "MaxHealth", 100f));
                 SetSerializedField(so, "_healthRegen", GetFloatValue(row, headers, "HealthRegen", 0f));
                 SetSerializedField(so, "_armor", GetFloatValue(row, headers, "Armor", 0f));
-                SetSerializedField(so, "_miningRate", GetFloatValue(row, headers, "MiningRate", 10f));
+                SetSerializedField(so, "_miningRate", GetFloatValue(row, headers, "MiningRate", 5f));
                 SetSerializedField(so, "_miningBonus", GetFloatValue(row, headers, "MiningBonus", 0f));
-                SetSerializedField(so, "_attackDamage", GetFloatValue(row, headers, "AttackDamage", 20f));
-                SetSerializedField(so, "_attackCooldown", GetFloatValue(row, headers, "AttackCooldown", 0.5f));
-                SetSerializedField(so, "_attackRange", GetFloatValue(row, headers, "AttackRange", 3f));
-                SetSerializedField(so, "_critChance", GetFloatValue(row, headers, "CritChance", 0f));
-                SetSerializedField(so, "_critMultiplier", GetFloatValue(row, headers, "CritMultiplier", 1.5f));
+                SetSerializedField(so, "_baseMiningTarget", GetFloatValue(row, headers, "BaseMiningTarget", 100f));
+                SetSerializedField(so, "_baseGemDropRate", GetFloatValue(row, headers, "BaseGemDropRate", 0.05f));
 
                 so.ApplyModifiedPropertiesWithoutUndo();
                 EditorUtility.SetDirty(machineData);
@@ -1097,8 +1094,18 @@ namespace DrillCorp.Editor
                 SetSerializedField(so, "_baseValue", GetFloatValue(row, headers, "BaseValue", 0f));
                 SetSerializedField(so, "_valuePerLevel", GetFloatValue(row, headers, "ValuePerLevel", 1f));
                 SetSerializedField(so, "_isPercentage", GetBoolValue(row, headers, "IsPercentage", false));
-                SetSerializedField(so, "_baseCost", GetIntValue(row, headers, "BaseCost", 100));
+
+                // BaseCostOre (v2 네이밍) 우선, fallback BaseCost (레거시)
+                int baseCostOre = GetIntValue(row, headers, "BaseCostOre", int.MinValue);
+                if (baseCostOre == int.MinValue) baseCostOre = GetIntValue(row, headers, "BaseCost", 100);
+                SetSerializedField(so, "_baseCost", baseCostOre);
+
+                SetSerializedField(so, "_baseCostGem", GetIntValue(row, headers, "BaseCostGem", 0));
                 SetSerializedField(so, "_costMultiplier", GetFloatValue(row, headers, "CostMultiplier", 1.5f));
+
+                // 배열 스케줄 (파이프 구분: "60|130|230|370|540")
+                SetSerializedIntArray(so, "_oreCostSchedule", GetValue(row, headers, "OreCostSchedule", ""));
+                SetSerializedIntArray(so, "_gemCostSchedule", GetValue(row, headers, "GemCostSchedule", ""));
 
                 // UpgradeType enum
                 string typeStr = GetValue(row, headers, "UpgradeType", "MaxHealth");
@@ -1111,10 +1118,21 @@ namespace DrillCorp.Editor
                     }
                 }
 
+                // CurrencyType enum (Ore/Gem/Both, default Ore)
+                string currencyStr = GetValue(row, headers, "CurrencyType", "Ore");
+                if (Enum.TryParse<UpgradeCurrencyType>(currencyStr, true, out var currencyType))
+                {
+                    var currencyProp = so.FindProperty("_currencyType");
+                    if (currencyProp != null)
+                    {
+                        currencyProp.enumValueIndex = (int)currencyType;
+                    }
+                }
+
                 so.ApplyModifiedPropertiesWithoutUndo();
                 EditorUtility.SetDirty(upgradeData);
 
-                Debug.Log($"[GoogleSheetsImporter] Imported: {upgradeId}");
+                Debug.Log($"[GoogleSheetsImporter] Imported: {upgradeId} ({currencyStr})");
             }
 
             AssetDatabase.SaveAssets();
@@ -1181,6 +1199,29 @@ namespace DrillCorp.Editor
         {
             var prop = so.FindProperty(fieldName);
             if (prop != null) prop.intValue = value;
+        }
+
+        // 파이프 구분 문자열("60|130|230|370|540") → int[] 로 SerializedProperty 배열에 주입.
+        // 빈 문자열이면 length=0 (기존 내용 클리어).
+        private void SetSerializedIntArray(SerializedObject so, string fieldName, string piped)
+        {
+            var prop = so.FindProperty(fieldName);
+            if (prop == null || !prop.isArray) return;
+
+            if (string.IsNullOrWhiteSpace(piped))
+            {
+                prop.arraySize = 0;
+                return;
+            }
+
+            var parts = piped.Split('|');
+            prop.arraySize = parts.Length;
+            for (int i = 0; i < parts.Length; i++)
+            {
+                int v = 0;
+                int.TryParse(parts[i].Trim(), out v);
+                prop.GetArrayElementAtIndex(i).intValue = v;
+            }
         }
 
         private void SetSerializedField(SerializedObject so, string fieldName, float value)

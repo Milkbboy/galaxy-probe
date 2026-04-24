@@ -202,25 +202,23 @@ GameEvents.OnBugScoreEarned(score)  // SimpleBug.TakeDamage 사망 시 발행
 
 ## 5. MachineData
 
-플레이어가 지키는 채굴 머신의 스탯. 시트 `MachineData`.
+플레이어가 지키는 채굴 머신의 스탯. 시트 `MachineData`. v2 는 단일 머신 (`Machine_Default`) — 캐릭터 선택은 별도 `CharacterData` 에서 담당.
 
 | 필드 | 타입 | 기본값 | 설명 |
 |---|---|---|---|
-| `MachineId` | int | — | 고유 ID |
-| `MachineName` | string | — | 머신 이름 (Default, Heavy, Speed 등) |
-| `MaxHealth` | float | 100 | 최대 체력 |
+| `MachineId` | int | 1 | 고유 ID |
+| `MachineName` | string | "Default" | 머신 이름 |
+| `MaxHealth` | float | 100 | 최대 체력 (v2.html 베이스) |
 | `HealthRegen` | float | 0 | 초당 체력 회복 |
 | `Armor` | float | 0 | legacy 공식 `armor/(armor+100)` |
-| `MiningRate` | float | 10 | 초당 채굴량 |
+| `MiningRate` | float | 5 | 초당 채굴량 (v2.html `baseMineRate=5`) |
 | `MiningBonus` | float | 0 | 채굴 보너스(%) |
 | `BaseMiningTarget` (v2) | float | 100 | **세션 승리 목표 채굴량**. `mine_target` 업그레이드로 +50/lv |
-| `AttackDamage` | float | 20 | |
-| `AttackCooldown` | float | 0.5 | |
-| `AttackRange` | float | 3 | |
-| `CritChance` | float | 0 | |
-| `CritMultiplier` | float | 1.5 | |
+| `BaseGemDropRate` (v2) | float | 0.05 | 일반 벌레 기본 보석 드랍 확률. `gem_drop` 업그레이드 %p 가산 (v2.html `0.05 + gemDropBonus`) |
 
-> v2 이전의 `MaxFuel`/`FuelConsumeRate` 는 삭제됨 — v2 승리 조건이 연료 소진에서 `BaseMiningTarget` 달성으로 전환.
+> 구 필드 정리:
+> - `MaxFuel`/`FuelConsumeRate` — v2 승리 조건이 연료 소진 → `BaseMiningTarget` 달성으로 전환되며 삭제
+> - `AttackDamage`/`AttackCooldown`/`AttackRange`/`CritChance`/`CritMultiplier` — v2 에서 머신은 공격 안 함 (무기가 self-driven). 2026-04-24 일괄 삭제
 
 ---
 

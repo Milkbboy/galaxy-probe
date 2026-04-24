@@ -40,8 +40,7 @@ namespace DrillCorp.Core
         public static Action<string> OnWeaponUnlocked;         // v2 — 해금된 무기 ID
         public static Action<string> OnAbilityUnlocked;        // v2 — 해금된 어빌리티 ID
 
-        // 머신/캐릭터 선택
-        public static Action<int> OnMachineSelected;          // 선택한 머신 ID (레거시)
+        // 캐릭터 선택
         public static Action<string> OnCharacterSelected;     // v2 — 선택된 캐릭터 ID
     }
 }

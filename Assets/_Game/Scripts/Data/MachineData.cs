@@ -23,12 +23,10 @@ namespace DrillCorp.Data
         [Min(0f)]
         [SerializeField] private float _baseMiningTarget = 100f;
 
-        [Header("Weapon")]
-        [SerializeField] private float _attackDamage = 20f;
-        [SerializeField] private float _attackCooldown = 0.5f;
-        [SerializeField] private float _attackRange = 3f;
-        [SerializeField] private float _critChance = 0f;
-        [SerializeField] private float _critMultiplier = 1.5f;
+        [Header("Gem Drop")]
+        [Tooltip("v2 — 일반 벌레 처치 시 기본 보석 드랍 확률. GemDropRate 업그레이드 %p 가산 (0.05 = 5%).")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _baseGemDropRate = 0.05f;
 
         [Header("Visuals")]
         [SerializeField] private GameObject _prefab;
@@ -48,12 +46,8 @@ namespace DrillCorp.Data
         public float TotalMiningRate => _miningRate * (1f + _miningBonus);
         public float BaseMiningTarget => _baseMiningTarget;
 
-        // Properties - Weapon
-        public float AttackDamage => _attackDamage;
-        public float AttackCooldown => _attackCooldown;
-        public float AttackRange => _attackRange;
-        public float CritChance => _critChance;
-        public float CritMultiplier => _critMultiplier;
+        // Properties - Gem Drop
+        public float BaseGemDropRate => _baseGemDropRate;
 
         // Properties - Visuals
         public GameObject Prefab => _prefab;

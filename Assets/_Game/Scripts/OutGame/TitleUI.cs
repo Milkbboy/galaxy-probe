@@ -10,7 +10,6 @@ namespace DrillCorp.OutGame
         [Header("Panels")]
         [SerializeField] private GameObject _mainPanel;
         [SerializeField] private GameObject _upgradePanel;
-        [SerializeField] private GameObject _machineSelectPanel;
         [SerializeField] private GameObject _optionsPanel;
 
         [Tooltip("v2 통합 HubPanel — UPGRADE 버튼이 이걸 열도록 재활용")]
@@ -22,7 +21,6 @@ namespace DrillCorp.OutGame
         [Header("Main Panel")]
         [SerializeField] private Button _startButton;
         [SerializeField] private Button _upgradeButton;
-        [SerializeField] private Button _machineButton;
         [SerializeField] private Button _optionsButton;
         [SerializeField] private Button _quitButton;
 
@@ -56,9 +54,6 @@ namespace DrillCorp.OutGame
             if (_upgradeButton != null)
                 _upgradeButton.onClick.AddListener(OnUpgradeClicked);
 
-            if (_machineButton != null)
-                _machineButton.onClick.AddListener(OnMachineClicked);
-
             if (_optionsButton != null)
                 _optionsButton.onClick.AddListener(OnOptionsClicked);
 
@@ -77,11 +72,6 @@ namespace DrillCorp.OutGame
                 ShowHubPanel();
             else
                 ShowUpgradePanel();
-        }
-
-        private void OnMachineClicked()
-        {
-            ShowMachineSelectPanel();
         }
 
         private void OnOptionsClicked()
@@ -112,13 +102,6 @@ namespace DrillCorp.OutGame
                 _upgradePanel.SetActive(true);
         }
 
-        public void ShowMachineSelectPanel()
-        {
-            SetAllPanelsActive(false);
-            if (_machineSelectPanel != null)
-                _machineSelectPanel.SetActive(true);
-        }
-
         public void ShowOptionsPanel()
         {
             SetAllPanelsActive(false);
@@ -137,7 +120,6 @@ namespace DrillCorp.OutGame
         {
             if (_mainPanel != null) _mainPanel.SetActive(active);
             if (_upgradePanel != null) _upgradePanel.SetActive(active);
-            if (_machineSelectPanel != null) _machineSelectPanel.SetActive(active);
             if (_optionsPanel != null) _optionsPanel.SetActive(active);
             if (_hubPanel != null) _hubPanel.SetActive(active);
         }

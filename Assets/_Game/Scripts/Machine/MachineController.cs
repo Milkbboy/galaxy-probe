@@ -23,11 +23,6 @@ namespace DrillCorp.Machine
         private float _miningAccumulator;
         private float _miningTarget = 100f;  // v2: BaseMiningTarget + lv*50
 
-        [Header("Weapon")]
-        [SerializeField] private float _attackDamage = 20f;
-        [SerializeField] private float _attackCooldown = 0.5f;
-        [SerializeField] private float _attackRange = 3f;
-
         // v2 Upgrade — 받는 피해 감소율 (0~1, UpgradeManager.Armor 합산).
         // legacy _armor(MachineData)와 별도 누적.
         private float _damageReductionPct;
@@ -44,11 +39,6 @@ namespace DrillCorp.Machine
         public int TotalMined => _totalMined;
         public float MiningTarget => _miningTarget;
         public bool IsMiningTargetReached => !_debugInfiniteMiningTarget && _totalMined >= _miningTarget;
-
-        // Weapon properties for AimController
-        public float AttackDamage => _attackDamage;
-        public float AttackCooldown => _attackCooldown;
-        public float AttackRange => _attackRange;
 
         public MachineData MachineData => _machineData;
 
@@ -105,9 +95,6 @@ namespace DrillCorp.Machine
                 _maxHealth = _machineData.MaxHealth;
                 _armor = _machineData.Armor;
                 _miningRate = _machineData.TotalMiningRate;
-                _attackDamage = _machineData.AttackDamage;
-                _attackCooldown = _machineData.AttackCooldown;
-                _attackRange = _machineData.AttackRange;
                 _miningTarget = _machineData.BaseMiningTarget;
             }
         }

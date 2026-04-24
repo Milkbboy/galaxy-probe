@@ -1,0 +1,2 @@
+MachineId,MachineName,Description,MaxHealth,HealthRegen,Armor,MiningRate,MiningBonus,BaseMiningTarget,BaseGemDropRate
+1,Default,v2 기본 드릴 — 모든 캐릭터 공용 베이스 스탯,100,0,0,5,0,100,0.05

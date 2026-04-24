@@ -76,8 +76,10 @@
 
 ### MachineData
 
-- [ ] 3행(Default/Heavy/Speed) 들어갔는지
-- [ ] `BaseMiningTarget` 컬럼이 마지막이 아니라 중간에 있는지 (`MiningBonus` 뒤, `AttackDamage` 앞)
+- [ ] **1행(Default) 만** 들어갔는지 — v2 는 단일 머신 (Heavy/Speed 는 v1 레거시, 삭제)
+- [ ] `BaseMiningTarget` 컬럼이 `MiningBonus` 뒤, `BaseGemDropRate` 앞
+- [ ] **`BaseGemDropRate`** 컬럼 신규 — 0.05 (v2.html `0.05 + gemDropBonus` 베이스라인)
+- [ ] `MiningRate=5` (v2.html `baseMineRate=5` 일치). 구 10 이 아님
 - [ ] 구 컬럼 `MaxFuel` / `FuelConsumeRate` 가 시트에 남아있다면 삭제 (Importer가 읽지 않음)
 
 ### UpgradeData

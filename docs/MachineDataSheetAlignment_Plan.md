@@ -29,10 +29,10 @@ v2.html 원본 `calcStats()` (421~454줄) 기준 6종:
 
 | 층 | 상태 |
 |---|---|
-| **SO 클래스** (`MachineData.cs`) | ✅ v2 필드 반영 — `_baseMiningTarget` 존재. `_maxFuel`/`_fuelConsumeRate` 제거됨 |
-| **에셋** (`Machine_Default/Heavy/Speed.asset`) | ✅ `_baseMiningTarget` 값 들어있음 (Default=100, 나머지 확인 필요) |
-| **Importer** (`GoogleSheetsImporter.ImportMachineDataAsync`) | ❌ **`BaseMiningTarget` 컬럼 파싱 없음** — 시트에 컬럼 있어도 무시 |
-| **시트 `MachineData` 탭** | ❓ 직접 확인 필요. v2Addendum §1 권장: `BaseMiningTarget` 1컬럼 추가. `MaxFuel` 컬럼은 읽히지 않으므로 두거나 제거 무관 |
+| **SO 클래스** (`MachineData.cs`) | ⚠️ `_baseMiningTarget` 존재, `_maxFuel`/`_fuelConsumeRate` 제거됨. **`_baseGemDropRate` 미존재 — 신규 추가 필요** (v2.html `0.05 + gemDropBonus` 베이스라인) |
+| **에셋** (`Machine_Default.asset`) | ⚠️ v2 스펙 불일치 — 현재 `_miningRate: 10` 인데 v2.html 기준 **5** 가 맞음. Heavy/Speed 는 v1 레거시 (v2는 단일 머신) |
+| **Importer** (`GoogleSheetsImporter.ImportMachineDataAsync`) | ❌ **`BaseMiningTarget`·`BaseGemDropRate` 컬럼 파싱 없음** — 시트에 컬럼 있어도 무시 |
+| **시트 `MachineData` 탭** | ❓ 직접 확인 필요. 목표: 단일 `Default` 행 + v2 베이스값 (MaxHealth=100, MiningRate=5, BaseMiningTarget=100, BaseGemDropRate=0.05). 구 `MaxFuel`/`FuelConsumeRate` 컬럼은 삭제 |
 
 ### 2.2 UpgradeData
 
@@ -78,6 +78,16 @@ v2.html 원본 `calcStats()` (421~454줄) 기준 6종:
 
 목적: 시트에서 v2 컬럼을 읽을 수 있게 먼저 만듦. 이 단계가 없으면 시트 업데이트해도 반영 안 됨.
 
+**`Assets/_Game/Scripts/Data/MachineData.cs`**
+
+- `_baseGemDropRate` 필드 신설 (v2.html baseline 0.05):
+  ```csharp
+  [Header("Gem Drop")]
+  [SerializeField, Range(0f, 1f)] private float _baseGemDropRate = 0.05f;
+  public float BaseGemDropRate => _baseGemDropRate;
+  ```
+- `GemMining` 시스템에서 `dropChance = machine.BaseGemDropRate + gem_drop.ValuePerLevel * level` 로 계산하도록 경로 변경 (현재 0.05 하드코딩 있는 위치 확인 후 치환).
+
 **`Assets/_Game/Scripts/Data/UpgradeData.cs`**
 
 - `CurrencyType` enum 신설:
@@ -96,7 +106,8 @@ v2.html 원본 `calcStats()` (421~454줄) 기준 6종:
 **`Assets/_Game/Scripts/Editor/GoogleSheetsImporter.cs`**
 
 - `ImportMachineDataAsync`:
-  - `_baseMiningTarget` 필드 `SetSerializedField(so, "_baseMiningTarget", GetFloatValue(row, headers, "BaseMiningTarget", 100f))` 추가
+  - `_baseMiningTarget` 필드 파싱 추가
+  - `_baseGemDropRate` 필드 파싱 추가 (`GetFloatValue(row, headers, "BaseGemDropRate", 0.05f)`)
 - `ImportUpgradeDataAsync`:
   - `_currencyType` enum 파싱 — `Enum.TryParse<UpgradeData.CurrencyType>(str, true, out var ct)` / `typeProp.enumValueIndex = (int)ct`
   - `_baseCost` 는 `BaseCostOre` 우선 → fallback `BaseCost` (하위 호환)
@@ -112,8 +123,12 @@ v2.html 원본 `calcStats()` (421~454줄) 기준 6종:
 ### Phase M-2 — 시트 편집 (웹)
 
 **MachineData 탭**
-- 헤더 끝에 `BaseMiningTarget` 컬럼 추가 (기존 `CritMultiplier` 뒤가 자연스러움).
-- 3행 값 입력: Default=100, Heavy=80, Speed=140 (v2Addendum §1 예시).
+- 헤더 교체: 구 `MaxFuel`·`FuelConsumeRate` 컬럼 제거, `BaseMiningTarget`·`BaseGemDropRate` 2컬럼 추가.
+- v2 단일 머신으로 통합 — 기존 Heavy/Speed 행 삭제 (캐릭터별 차별화는 v2 스펙에 없음).
+- Default 1행 값 (v2.html `calcStats()` 베이스):
+  - `MaxHealth=100, Armor=0, MiningRate=5, BaseMiningTarget=100, BaseGemDropRate=0.05`
+  - 그 외 (`AttackDamage=20, AttackCooldown=0.5, AttackRange=3` 등) 은 기존 값 유지 또는 사용처 확인 후 정리.
+- 붙여넣기 데이터: `docs/_review/MachineData.csv` 참조 (CRLF, v2 스펙).
 
 **UpgradeData 탭 전면 교체**
 - 구 11행 전부 삭제 (or `_legacy_` rename).
@@ -189,9 +204,12 @@ v2.html 원본 `calcStats()` (421~454줄) 기준 6종:
 ## 7. 체크리스트
 
 **Phase M-1 (SO + Importer + Manager)**
-- [ ] `UpgradeData.cs` 필드 명 확인 (`_baseCost`, `_baseCostGem`, `_oreCostSchedule`, `_gemCostSchedule` — 실제 이름 grep)
+- [ ] `MachineData.cs` 에 `_baseGemDropRate` 필드 추가 (기본 0.05, Range[0,1]). 공개 프로퍼티 `BaseGemDropRate`
+- [ ] 보석 드랍 계산 경로에서 `0.05` 하드코딩 → `machineData.BaseGemDropRate` 참조로 교체
+- [ ] `Machine_Default.asset` 의 `_miningRate: 10 → 5` 수정 (v2.html `baseMineRate=5` 일치)
+- [ ] `Machine_Heavy.asset`, `Machine_Speed.asset` 는 v2 스펙 외 — 삭제 여부 결정 (유지 시 `_availableMachines` 씬 바인딩 확인)
 - [ ] `UpgradeData.cs` 에 `CurrencyType` enum(`Ore`/`Gem`/`Both`) + `_currencyType` 필드 신설, `GetCostsForLevel()` 이 CurrencyType 으로 Ore/Gem 게이팅
-- [ ] `ImportMachineDataAsync` 에 `_baseMiningTarget` 파싱 추가
+- [ ] `ImportMachineDataAsync` 에 `_baseMiningTarget`, `_baseGemDropRate` 파싱 추가
 - [ ] `ImportUpgradeDataAsync` 에 `CurrencyType` enum 파싱 + `_baseCostGem`, `_oreCostSchedule`, `_gemCostSchedule` 파싱 추가 (+ `BaseCostOre` → `_baseCost` 우선, `BaseCost` fallback)
 - [ ] `SetSerializedIntArray` 헬퍼 신설 or 기존 헬퍼 활용 (파이프 `|` 분할)
 - [ ] `UpgradeManager.TryPurchase()` (또는 구매 로직 위치) — `Both` 시 광석·보석 양쪽 모두 충분한지 검증

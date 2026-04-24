@@ -29,6 +29,16 @@ namespace DrillCorp.Data
         GemCollectSpeed = 11,   // 보석 채집 속도 (+20%/lv, Mul)
     }
 
+    /// <summary>
+    /// 업그레이드 구매 시 소모되는 재화 종류. Both 는 광석·보석 양쪽 모두 차감.
+    /// </summary>
+    public enum UpgradeCurrencyType
+    {
+        Ore = 0,
+        Gem = 1,
+        Both = 2,
+    }
+
     [CreateAssetMenu(fileName = "Upgrade_New", menuName = "Drill-Corp/Upgrade Data", order = 4)]
     public class UpgradeData : ScriptableObject
     {
@@ -46,6 +56,9 @@ namespace DrillCorp.Data
         [SerializeField] private bool _isPercentage = false;
 
         [Header("Cost — Ore / Gem 이중 재화 (v2)")]
+        [Tooltip("소모 재화 종류. Ore/Gem 단일 or Both 동시 차감. authoritative — BaseCostGem>0 이어도 Ore 라면 gem 차감 없음.")]
+        [SerializeField] private UpgradeCurrencyType _currencyType = UpgradeCurrencyType.Ore;
+
         [Tooltip("1레벨 광석 비용 (기존 BaseCost 대응)")]
         [SerializeField] private int _baseCost = 100;
 
@@ -75,6 +88,9 @@ namespace DrillCorp.Data
         public int BaseCostOre => _baseCost;               // v2 네이밍
         public int BaseCostGem => _baseCostGem;            // v2 신규
         public float CostMultiplier => _costMultiplier;
+        public UpgradeCurrencyType CurrencyType => _currencyType;
+        public bool UsesOre => _currencyType == UpgradeCurrencyType.Ore || _currencyType == UpgradeCurrencyType.Both;
+        public bool UsesGem => _currencyType == UpgradeCurrencyType.Gem || _currencyType == UpgradeCurrencyType.Both;
 
         /// <summary>
         /// 특정 레벨에서의 강화 값 계산
@@ -85,23 +101,26 @@ namespace DrillCorp.Data
         }
 
         /// <summary>
-        /// 다음 레벨 광석 비용. MaxLevel이면 -1.
+        /// 다음 레벨 광석 비용. MaxLevel이면 -1. CurrencyType에 Ore 미포함이면 0.
         /// schedule이 있으면 우선, 없으면 baseCost × multiplier^lv.
         /// </summary>
         public int GetCostForLevel(int currentLevel)
         {
             if (currentLevel >= _maxLevel) return -1;
+            if (!UsesOre) return 0;
             if (_oreCostSchedule != null && _oreCostSchedule.Length > currentLevel)
                 return _oreCostSchedule[currentLevel];
             return Mathf.RoundToInt(_baseCost * Mathf.Pow(_costMultiplier, currentLevel));
         }
 
         /// <summary>
-        /// 다음 레벨 보석 비용. schedule이 있으면 우선, 없고 BaseCostGem이 0이면 0.
+        /// 다음 레벨 보석 비용. CurrencyType에 Gem 미포함이면 0.
+        /// schedule이 있으면 우선, 없고 BaseCostGem이 0이면 0.
         /// </summary>
         public int GetGemCostForLevel(int currentLevel)
         {
             if (currentLevel >= _maxLevel) return -1;
+            if (!UsesGem) return 0;
             if (_gemCostSchedule != null && _gemCostSchedule.Length > currentLevel)
                 return _gemCostSchedule[currentLevel];
             if (_baseCostGem <= 0) return 0;
@@ -109,7 +128,7 @@ namespace DrillCorp.Data
         }
 
         /// <summary>
-        /// 이중 재화 비용을 한 번에 조회.
+        /// 이중 재화 비용을 한 번에 조회. CurrencyType에 따라 미사용 재화는 0.
         /// </summary>
         public (int ore, int gem) GetCostsForLevel(int currentLevel)
         {

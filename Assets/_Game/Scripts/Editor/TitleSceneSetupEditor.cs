@@ -37,25 +37,17 @@ namespace DrillCorp.Editor
             // 패널들 생성
             var mainPanel = CreateMainPanel(canvasObj.transform);
             var upgradePanel = CreateUpgradePanel(canvasObj.transform);
-            var machinePanel = CreateMachineSelectPanel(canvasObj.transform);
             var optionsPanel = CreateOptionsPanel(canvasObj.transform);
 
             // TitleUI 컴포넌트 추가 및 연결
             var titleUI = canvasObj.AddComponent<OutGame.TitleUI>();
-            ConnectTitleUI(titleUI, mainPanel, upgradePanel, machinePanel, optionsPanel, currencyText);
+            ConnectTitleUI(titleUI, mainPanel, upgradePanel, optionsPanel, currencyText);
 
             // UpgradeUI 연결
             var upgradeUI = upgradePanel.GetComponent<OutGame.UpgradeUI>();
             if (upgradeUI != null)
             {
                 ConnectUpgradeUI(upgradeUI, titleUI);
-            }
-
-            // MachineSelectUI 연결
-            var machineUI = machinePanel.GetComponent<OutGame.MachineSelectUI>();
-            if (machineUI != null)
-            {
-                ConnectMachineSelectUI(machineUI, titleUI);
             }
 
             // OptionsUI 연결
@@ -68,7 +60,6 @@ namespace DrillCorp.Editor
             // 초기 상태: MainPanel만 활성화
             mainPanel.SetActive(true);
             upgradePanel.SetActive(false);
-            machinePanel.SetActive(false);
             optionsPanel.SetActive(false);
 
             // Managers 생성
@@ -95,9 +86,6 @@ namespace DrillCorp.Editor
 
             // UpgradeItem Prefab
             CreateAndSavePrefab(prefabPath, "UpgradeItem", CreateUpgradeItemPrefab);
-
-            // MachineItem Prefab
-            CreateAndSavePrefab(prefabPath, "MachineItem", CreateMachineItemPrefab);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -150,27 +138,6 @@ namespace DrillCorp.Editor
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{prefabPath}/UpgradeItem.prefab");
                 var so = new SerializedObject(upgradeUI);
                 so.FindProperty("_upgradeItemPrefab").objectReferenceValue = prefab;
-                so.ApplyModifiedPropertiesWithoutUndo();
-            }
-
-            // MachineSelectUI에 프리팹 및 데이터 연결
-            var machineUI = Object.FindAnyObjectByType<OutGame.MachineSelectUI>();
-            if (machineUI != null)
-            {
-                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{prefabPath}/MachineItem.prefab");
-                var so = new SerializedObject(machineUI);
-                so.FindProperty("_machineItemPrefab").objectReferenceValue = prefab;
-
-                // Machine Data 연결
-                var machinesProp = so.FindProperty("_availableMachines");
-                string[] machineNames = { "Machine_Default", "Machine_Heavy", "Machine_Speed" };
-                machinesProp.arraySize = machineNames.Length;
-                for (int i = 0; i < machineNames.Length; i++)
-                {
-                    var asset = AssetDatabase.LoadAssetAtPath<Data.MachineData>($"Assets/_Game/Data/Machines/{machineNames[i]}.asset");
-                    machinesProp.GetArrayElementAtIndex(i).objectReferenceValue = asset;
-                }
-
                 so.ApplyModifiedPropertiesWithoutUndo();
             }
         }
@@ -282,87 +249,6 @@ namespace DrillCorp.Editor
             scrollRect.anchorMax = new Vector2(0.9f, 0.85f);
             scrollRect.offsetMin = Vector2.zero;
             scrollRect.offsetMax = Vector2.zero;
-
-            // Back 버튼
-            var backBtn = CreateButton(panel.transform, "BackButton", "BACK", Vector2.zero);
-            var backRect = backBtn.GetComponent<RectTransform>();
-            backRect.anchorMin = new Vector2(0.5f, 0);
-            backRect.anchorMax = new Vector2(0.5f, 0);
-            backRect.anchoredPosition = new Vector2(0, 60);
-
-            return panel;
-        }
-
-        private static GameObject CreateMachineSelectPanel(Transform parent)
-        {
-            var panel = CreatePanel(parent, "MachineSelectPanel");
-            panel.AddComponent<OutGame.MachineSelectUI>();
-
-            // 배경
-            var bg = panel.AddComponent<Image>();
-            bg.color = new Color(0.1f, 0.1f, 0.15f, 1f);
-
-            // 헤더
-            var headerText = CreateText(panel.transform, "HeaderText", "SELECT MACHINE", 48);
-            var headerRect = headerText.GetComponent<RectTransform>();
-            headerRect.anchorMin = new Vector2(0.5f, 1);
-            headerRect.anchorMax = new Vector2(0.5f, 1);
-            headerRect.anchoredPosition = new Vector2(0, -60);
-
-            // 머신 리스트 컨테이너 (왼쪽)
-            var listContainer = new GameObject("MachineListContainer");
-            listContainer.transform.SetParent(panel.transform, false);
-            var listRect = listContainer.AddComponent<RectTransform>();
-            listRect.anchorMin = new Vector2(0.05f, 0.2f);
-            listRect.anchorMax = new Vector2(0.45f, 0.85f);
-            listRect.offsetMin = Vector2.zero;
-            listRect.offsetMax = Vector2.zero;
-
-            var listLayout = listContainer.AddComponent<VerticalLayoutGroup>();
-            listLayout.spacing = 10;
-            listLayout.childAlignment = TextAnchor.UpperCenter;
-            listLayout.childControlWidth = true;
-            listLayout.childControlHeight = false;
-            listLayout.childForceExpandWidth = true;
-            listLayout.childForceExpandHeight = false;
-
-            // 선택 정보 패널 (오른쪽)
-            var infoPanel = new GameObject("SelectedInfoPanel");
-            infoPanel.transform.SetParent(panel.transform, false);
-            var infoRect = infoPanel.AddComponent<RectTransform>();
-            infoRect.anchorMin = new Vector2(0.5f, 0.2f);
-            infoRect.anchorMax = new Vector2(0.95f, 0.85f);
-            infoRect.offsetMin = Vector2.zero;
-            infoRect.offsetMax = Vector2.zero;
-
-            var infoBg = infoPanel.AddComponent<Image>();
-            infoBg.color = new Color(0.15f, 0.15f, 0.2f, 1f);
-
-            // 선택 정보 텍스트들
-            var nameText = CreateText(infoPanel.transform, "SelectedNameText", "Machine Name", 36);
-            var nameRect = nameText.GetComponent<RectTransform>();
-            nameRect.anchorMin = new Vector2(0, 1);
-            nameRect.anchorMax = new Vector2(1, 1);
-            nameRect.pivot = new Vector2(0.5f, 1);
-            nameRect.anchoredPosition = new Vector2(0, -20);
-            nameRect.sizeDelta = new Vector2(0, 50);
-
-            var descText = CreateText(infoPanel.transform, "SelectedDescText", "Description", 20);
-            var descRect = descText.GetComponent<RectTransform>();
-            descRect.anchorMin = new Vector2(0, 1);
-            descRect.anchorMax = new Vector2(1, 1);
-            descRect.pivot = new Vector2(0.5f, 1);
-            descRect.anchoredPosition = new Vector2(0, -80);
-            descRect.sizeDelta = new Vector2(-40, 40);
-            descText.color = new Color(0.7f, 0.7f, 0.7f);
-
-            var statsText = CreateText(infoPanel.transform, "SelectedStatsText", "HP: 100\nDamage: 20", 24);
-            var statsRect = statsText.GetComponent<RectTransform>();
-            statsRect.anchorMin = new Vector2(0, 0.1f);
-            statsRect.anchorMax = new Vector2(1, 0.7f);
-            statsRect.offsetMin = new Vector2(20, 0);
-            statsRect.offsetMax = new Vector2(-20, 0);
-            statsText.alignment = TextAlignmentOptions.TopLeft;
 
             // Back 버튼
             var backBtn = CreateButton(panel.transform, "BackButton", "BACK", Vector2.zero);
@@ -762,18 +648,16 @@ namespace DrillCorp.Editor
         }
 
         private static void ConnectTitleUI(OutGame.TitleUI titleUI, GameObject mainPanel,
-            GameObject upgradePanel, GameObject machinePanel, GameObject optionsPanel, TextMeshProUGUI currencyText)
+            GameObject upgradePanel, GameObject optionsPanel, TextMeshProUGUI currencyText)
         {
             var so = new SerializedObject(titleUI);
 
             so.FindProperty("_mainPanel").objectReferenceValue = mainPanel;
             so.FindProperty("_upgradePanel").objectReferenceValue = upgradePanel;
-            so.FindProperty("_machineSelectPanel").objectReferenceValue = machinePanel;
             so.FindProperty("_optionsPanel").objectReferenceValue = optionsPanel;
 
             so.FindProperty("_startButton").objectReferenceValue = mainPanel.transform.Find("StartButton")?.GetComponent<Button>();
             so.FindProperty("_upgradeButton").objectReferenceValue = mainPanel.transform.Find("UpgradeButton")?.GetComponent<Button>();
-            so.FindProperty("_machineButton").objectReferenceValue = mainPanel.transform.Find("MachineButton")?.GetComponent<Button>();
             so.FindProperty("_optionsButton").objectReferenceValue = mainPanel.transform.Find("OptionsButton")?.GetComponent<Button>();
             so.FindProperty("_quitButton").objectReferenceValue = mainPanel.transform.Find("QuitButton")?.GetComponent<Button>();
 
@@ -797,26 +681,6 @@ namespace DrillCorp.Editor
             so.FindProperty("_backButton").objectReferenceValue = panel.transform.Find("BackButton")?.GetComponent<Button>();
             so.FindProperty("_titleUI").objectReferenceValue = titleUI;
             so.FindProperty("_currencyText").objectReferenceValue = panel.transform.Find("CurrencyText")?.GetComponent<TextMeshProUGUI>();
-
-            so.ApplyModifiedPropertiesWithoutUndo();
-        }
-
-        private static void ConnectMachineSelectUI(OutGame.MachineSelectUI machineUI, OutGame.TitleUI titleUI)
-        {
-            var so = new SerializedObject(machineUI);
-            var panel = ((Component)machineUI).gameObject;
-
-            so.FindProperty("_machineListContainer").objectReferenceValue = panel.transform.Find("MachineListContainer");
-            so.FindProperty("_backButton").objectReferenceValue = panel.transform.Find("BackButton")?.GetComponent<Button>();
-            so.FindProperty("_titleUI").objectReferenceValue = titleUI;
-
-            var infoPanel = panel.transform.Find("SelectedInfoPanel");
-            if (infoPanel != null)
-            {
-                so.FindProperty("_selectedNameText").objectReferenceValue = infoPanel.Find("SelectedNameText")?.GetComponent<TextMeshProUGUI>();
-                so.FindProperty("_selectedDescText").objectReferenceValue = infoPanel.Find("SelectedDescText")?.GetComponent<TextMeshProUGUI>();
-                so.FindProperty("_selectedStatsText").objectReferenceValue = infoPanel.Find("SelectedStatsText")?.GetComponent<TextMeshProUGUI>();
-            }
 
             so.ApplyModifiedPropertiesWithoutUndo();
         }
@@ -1050,93 +914,6 @@ namespace DrillCorp.Editor
             so.FindProperty("_costText").objectReferenceValue = costText;
             so.FindProperty("_upgradeButton").objectReferenceValue = btnObj.GetComponent<Button>();
             so.FindProperty("_buttonImage").objectReferenceValue = btnImage;
-            so.ApplyModifiedPropertiesWithoutUndo();
-
-            return item;
-        }
-
-        private static GameObject CreateMachineItemPrefab()
-        {
-            var item = new GameObject("MachineItem");
-
-            var rect = item.AddComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(0, 120);
-
-            var layout = item.AddComponent<LayoutElement>();
-            layout.preferredHeight = 120;
-
-            var bg = item.AddComponent<Image>();
-            bg.color = new Color(0.2f, 0.2f, 0.25f);
-
-            var hLayout = item.AddComponent<HorizontalLayoutGroup>();
-            hLayout.spacing = 15;
-            hLayout.padding = new RectOffset(15, 15, 10, 10);
-            hLayout.childAlignment = TextAnchor.MiddleLeft;
-            hLayout.childControlWidth = false;
-            hLayout.childControlHeight = true;
-
-            // Icon
-            var iconObj = new GameObject("Icon");
-            iconObj.transform.SetParent(item.transform, false);
-            var iconRect = iconObj.AddComponent<RectTransform>();
-            iconRect.sizeDelta = new Vector2(100, 100);
-            var iconLayout = iconObj.AddComponent<LayoutElement>();
-            iconLayout.minWidth = 100;
-            iconLayout.preferredWidth = 100;
-            var iconImage = iconObj.AddComponent<Image>();
-            iconImage.color = new Color(0.4f, 0.4f, 0.5f);
-
-            // Info Container
-            var infoContainer = new GameObject("InfoContainer");
-            infoContainer.transform.SetParent(item.transform, false);
-            var infoLayout = infoContainer.AddComponent<LayoutElement>();
-            infoLayout.flexibleWidth = 1;
-            var infoVLayout = infoContainer.AddComponent<VerticalLayoutGroup>();
-            infoVLayout.childControlHeight = false;
-            infoVLayout.spacing = 5;
-
-            // Name
-            var nameObj = new GameObject("NameText");
-            nameObj.transform.SetParent(infoContainer.transform, false);
-            var nameText = nameObj.AddComponent<TextMeshProUGUI>();
-            nameText.text = "Machine Name";
-            nameText.fontSize = 28;
-            nameText.color = Color.white;
-            var nameLayout = nameObj.AddComponent<LayoutElement>();
-            nameLayout.preferredHeight = 35;
-
-            // Brief Stats
-            var statsObj = new GameObject("BriefStatsText");
-            statsObj.transform.SetParent(infoContainer.transform, false);
-            var statsText = statsObj.AddComponent<TextMeshProUGUI>();
-            statsText.text = "HP: 100  DMG: 20";
-            statsText.fontSize = 20;
-            statsText.color = new Color(0.7f, 0.7f, 0.7f);
-            var statsLayout = statsObj.AddComponent<LayoutElement>();
-            statsLayout.preferredHeight = 25;
-
-            // Selected Indicator
-            var indicatorObj = new GameObject("SelectedIndicator");
-            indicatorObj.transform.SetParent(item.transform, false);
-            var indicatorRect = indicatorObj.AddComponent<RectTransform>();
-            indicatorRect.anchorMin = new Vector2(1, 0.5f);
-            indicatorRect.anchorMax = new Vector2(1, 0.5f);
-            indicatorRect.sizeDelta = new Vector2(30, 30);
-            indicatorRect.anchoredPosition = new Vector2(-25, 0);
-            var indicatorImage = indicatorObj.AddComponent<Image>();
-            indicatorImage.color = new Color(0.3f, 0.8f, 0.3f);
-
-            // Select Button (전체 아이템)
-            var selectBtn = item.AddComponent<Button>();
-
-            // MachineItemUI 컴포넌트 추가
-            var itemUI = item.AddComponent<OutGame.MachineItemUI>();
-            var so = new SerializedObject(itemUI);
-            so.FindProperty("_iconImage").objectReferenceValue = iconImage;
-            so.FindProperty("_nameText").objectReferenceValue = nameText;
-            so.FindProperty("_briefStatsText").objectReferenceValue = statsText;
-            so.FindProperty("_selectButton").objectReferenceValue = selectBtn;
-            so.FindProperty("_selectedIndicator").objectReferenceValue = indicatorObj;
             so.ApplyModifiedPropertiesWithoutUndo();
 
             return item;

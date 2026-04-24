@@ -21,8 +21,9 @@ MonoBehaviour:
   _baseValue: 0
   _valuePerLevel: 5
   _isPercentage: 0
+  _currencyType: 0
   _baseCost: 120
   _baseCostGem: 0
   _costMultiplier: 1.5
-  _oreCostSchedule: 960000002c010000f4010000
+  _oreCostSchedule: 
   _gemCostSchedule: 

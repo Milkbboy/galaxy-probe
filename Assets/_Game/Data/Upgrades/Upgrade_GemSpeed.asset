@@ -21,6 +21,7 @@ MonoBehaviour:
   _baseValue: 0
   _valuePerLevel: 0.20
   _isPercentage: 1
+  _currencyType: 1
   _baseCost: 0
   _baseCostGem: 10
   _costMultiplier: 1.5
