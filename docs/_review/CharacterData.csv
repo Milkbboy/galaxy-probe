@@ -1,0 +1,4 @@
+CharacterId,DisplayName,Title,Description,ThemeColorHex,DefaultMachineName,Ability1Id,Ability2Id,Ability3Id
+jinus,지누스,채굴 전문가,드론 포탑·채굴 드론·드론 거미로 전장을 장악하는 자원 전문가,#51CF66,Default,jinus_drone,jinus_mining_drone,jinus_spider_drone
+sara,사라,방어 전문가,블랙홀·충격파·반중력 메테오로 전장을 제어하는 제어 전문가,#4FC3F7,Default,sara_blackhole,sara_shockwave,sara_meteor
+victor,빅터,중장비 전문가,네이팜·화염방사기·폭발지뢰로 화력을 극대화하는 전문가,#F4A423,Default,victor_napalm,victor_flame,victor_mine

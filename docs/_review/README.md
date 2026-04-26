@@ -17,6 +17,8 @@
 | `UpgradeData.tsv`            | `UpgradeData`   | [GoogleSheetsGuide.md §4](../GoogleSheetsGuide.md#4-upgradedata-시트) + [v2Addendum §2](../GoogleSheetsGuide_v2Addendum.md#2-upgradedata-기존-확장) + [MachineDataSheetAlignment_Plan.md](../MachineDataSheetAlignment_Plan.md) |
 | `WeaponData.csv`             | `WeaponData`    | [GoogleSheetsGuide.md §5](../GoogleSheetsGuide.md#5-weapondata-시트) — ExtraStats 한 셀 압축 (`key:value\|key:value`) |
 | `WeaponUpgradeData.csv`      | `WeaponUpgradeData` | [GoogleSheetsGuide.md §6](../GoogleSheetsGuide.md#6-weaponupgradedata-시트) — 무기 강화 15종 |
+| `CharacterData.csv`          | `CharacterData` | [GoogleSheetsGuide.md §7](../GoogleSheetsGuide.md#7-characterdata-시트) — 캐릭터 3종, MachineId/Ability1·2·3Id 로 SO 참조 |
+| `AbilityData.csv`            | `AbilityData`   | [GoogleSheetsGuide.md §8](../GoogleSheetsGuide.md#8-abilitydata-시트) — 어빌리티 9종, Cooldown/Damage/Range 등 밸런스 |
 
 > `MachineData.tsv` / `UpgradeData.tsv` 는 Importer가 v2 컬럼(`BaseMiningTarget` / `BaseCostOre` / `BaseCostGem` / `OreCostSchedule` / `GemCostSchedule`) 을 파싱하도록 **Phase M-1 코드 확장이 끝난 뒤** 붙여넣기. 그 전에 Import 돌리면 신 컬럼이 무시됨. 상세 순서는 `MachineDataSheetAlignment_Plan.md` 참조.
 
@@ -110,6 +112,22 @@
 - [ ] `Operation` 철자 (`Add` / `Multiply`)
 - [ ] `ValuePerLevel` — Cooldown/ReloadTime 강화는 음수 (`-0.20` = 20% 단축)
 - [ ] `ManualCostsOre` / `ManualCostsGem` 빈 칸이면 공식 자동 사용. 채우려면 둘 다 같은 길이 파이프 배열
+
+### CharacterData
+
+- [ ] 3행 (jinus / sara / victor) 들어갔는지
+- [ ] `DefaultMachineName` 이 `MachineData._machineName` 과 일치 — v2 는 모두 `Default`
+- [ ] `Ability1Id` / `Ability2Id` / `Ability3Id` 가 `AbilityData._abilityId` 와 일치 + `AbilityData._slotKey` 와 슬롯 번호 일치 (예: `Ability1Id=jinus_drone` → `jinus_drone._slotKey=1`)
+- [ ] **Import 순서** — `Import All Data` 는 자동으로 Ability → Character 순. 시트별 단독 import 시 AbilityData 가 먼저 갱신돼 있어야 캐릭터의 어빌리티 SO 참조가 정상 바인딩
+
+### AbilityData
+
+- [ ] 9행 (캐릭터 3 × 슬롯 3) 들어갔는지
+- [ ] `AbilityType` 철자 (`Napalm`/`Flame`/`Mine`/`BlackHole`/`Shockwave`/`Meteor`/`Drone`/`MiningDrone`/`SpiderDrone`)
+- [ ] `Trigger` 철자 (`Manual` / `AutoInterval`)
+- [ ] `IconEmoji` 가 한 셀에 이모지 1개 (구글 시트가 이모지 정상 렌더링)
+- [ ] `RequiredAbilityId` 가 비었거나 다른 행의 `AbilityId` 와 일치 (다른 캐릭터 어빌리티 referencing 가능하지만 권장 X)
+- [ ] `Damage`/`Range`/`Angle` 의미 — `AbilityType` 마다 다르게 해석되니 [CharacterAbilitySystem.md](../CharacterAbilitySystem.md) 참조
 
 ---
 

@@ -28,7 +28,7 @@ namespace DrillCorp.Editor
 
         // 미리보기 데이터
         private int _previewTab = 0;
-        private readonly string[] _previewTabNames = { "SimpleBugData", "WaveData", "MachineData", "UpgradeData", "WeaponData", "WeaponUpgradeData" };
+        private readonly string[] _previewTabNames = { "SimpleBugData", "WaveData", "MachineData", "UpgradeData", "WeaponData", "WeaponUpgradeData", "CharacterData", "AbilityData" };
 
         private Dictionary<string, List<List<string>>> _previewData = new Dictionary<string, List<List<string>>>();
         private Vector2 _previewScrollPosition;
@@ -41,6 +41,8 @@ namespace DrillCorp.Editor
         private const string SHEET_UPGRADE_DATA = "UpgradeData";
         private const string SHEET_WEAPON_DATA = "WeaponData";
         private const string SHEET_WEAPON_UPGRADE_DATA = "WeaponUpgradeData";
+        private const string SHEET_CHARACTER_DATA = "CharacterData";
+        private const string SHEET_ABILITY_DATA = "AbilityData";
 
         [MenuItem("Tools/Drill-Corp/4. 데이터 Import/Google Sheets Importer")]
         public static void ShowWindow()
@@ -329,7 +331,7 @@ namespace DrillCorp.Editor
 
             try
             {
-                string[] sheetNames = { SHEET_SIMPLE_BUG_DATA, SHEET_WAVE_DATA, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA, SHEET_WEAPON_DATA, SHEET_WEAPON_UPGRADE_DATA };
+                string[] sheetNames = { SHEET_SIMPLE_BUG_DATA, SHEET_WAVE_DATA, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA, SHEET_WEAPON_DATA, SHEET_WEAPON_UPGRADE_DATA, SHEET_CHARACTER_DATA, SHEET_ABILITY_DATA };
 
                 foreach (var sheetName in sheetNames)
                 {
@@ -402,6 +404,17 @@ namespace DrillCorp.Editor
             if (GUILayout.Button("WeaponUpgradeData"))
             {
                 ImportWeaponUpgradeData();
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("CharacterData"))
+            {
+                ImportCharacterData();
+            }
+            if (GUILayout.Button("AbilityData"))
+            {
+                ImportAbilityData();
             }
             EditorGUILayout.EndHorizontal();
 
@@ -666,6 +679,9 @@ namespace DrillCorp.Editor
                 await ImportWaveDataAsync();
                 await ImportWeaponDataAsync();
                 await ImportWeaponUpgradeDataAsync();
+                // Ability 가 Character 보다 먼저 — Character 의 Ability1/2/3 lookup 이 가능해짐
+                await ImportAbilityDataAsync();
+                await ImportCharacterDataAsync();
 
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
@@ -760,6 +776,34 @@ namespace DrillCorp.Editor
             catch (Exception e)
             {
                 SetStatus($"WeaponUpgradeData 오류: {e.Message}", MessageType.Error);
+            }
+        }
+
+        private async void ImportCharacterData()
+        {
+            SetStatus("CharacterData 가져오는 중...", MessageType.Info);
+            try
+            {
+                await ImportCharacterDataAsync();
+                SetStatus("CharacterData 가져오기 완료!", MessageType.Info);
+            }
+            catch (Exception e)
+            {
+                SetStatus($"CharacterData 오류: {e.Message}", MessageType.Error);
+            }
+        }
+
+        private async void ImportAbilityData()
+        {
+            SetStatus("AbilityData 가져오는 중...", MessageType.Info);
+            try
+            {
+                await ImportAbilityDataAsync();
+                SetStatus("AbilityData 가져오기 완료!", MessageType.Info);
+            }
+            catch (Exception e)
+            {
+                SetStatus($"AbilityData 오류: {e.Message}", MessageType.Error);
             }
         }
 
@@ -1491,6 +1535,265 @@ namespace DrillCorp.Editor
                 if (oreField != null && int.TryParse(oreParts[i].Trim(), out var oVal)) oreField.intValue = oVal;
                 if (gemField != null && int.TryParse(gemParts[i].Trim(), out var gVal)) gemField.intValue = gVal;
             }
+        }
+
+        // ═══════════════════════════════════════════════════
+        // Ability / Character
+        // ═══════════════════════════════════════════════════
+        private async Task ImportAbilityDataAsync()
+        {
+            var rows = await ReadSheetAsync(SHEET_ABILITY_DATA);
+            if (rows.Count < 2) return;
+
+            var headers = rows[0];
+            string savePath = "Assets/_Game/Data/Abilities";
+            if (!AssetDatabase.IsValidFolder(savePath))
+                AssetDatabase.CreateFolder("Assets/_Game/Data", "Abilities");
+
+            // 기존 AbilityData SO 전부 로드 후 AbilityId 기준 인덱싱.
+            var cache = new Dictionary<string, AbilityData>(StringComparer.OrdinalIgnoreCase);
+            foreach (var guid in AssetDatabase.FindAssets("t:AbilityData"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var so0 = AssetDatabase.LoadAssetAtPath<AbilityData>(path);
+                if (so0 != null && !string.IsNullOrEmpty(so0.AbilityId))
+                    cache[so0.AbilityId] = so0;
+            }
+
+            // Pass 1 — 공통 필드
+            for (int i = 1; i < rows.Count; i++)
+            {
+                var row = rows[i];
+                if (row.Count == 0 || string.IsNullOrEmpty(row[0])) continue;
+
+                string abilityId = GetValue(row, headers, "AbilityId", "");
+                if (string.IsNullOrEmpty(abilityId)) continue;
+
+                AbilityData ability;
+                if (!cache.TryGetValue(abilityId, out ability))
+                {
+                    ability = ScriptableObject.CreateInstance<AbilityData>();
+                    // jinus_mining_drone → Jinus_MiningDrone (기존 파일명 컨벤션 유지)
+                    var parts = abilityId.Split('_');
+                    string fileSuffix = parts.Length > 0
+                        ? char.ToUpper(parts[0][0]) + parts[0].Substring(1).ToLower() + "_"
+                        : "New";
+                    for (int p = 1; p < parts.Length; p++)
+                        if (parts[p].Length > 0) fileSuffix += char.ToUpper(parts[p][0]) + parts[p].Substring(1).ToLower();
+                    string newPath = $"{savePath}/Ability_{fileSuffix}.asset";
+                    AssetDatabase.CreateAsset(ability, newPath);
+                    cache[abilityId] = ability;
+                    Debug.Log($"[GoogleSheetsImporter] 신규 생성: {newPath}");
+                }
+
+                var so = new SerializedObject(ability);
+                SetSerializedField(so, "_abilityId",      abilityId);
+                SetSerializedField(so, "_characterId",    GetValue(row, headers, "CharacterId", ""));
+                SetSerializedField(so, "_displayName",    GetValue(row, headers, "DisplayName", ""));
+                SetSerializedField(so, "_description",    GetValue(row, headers, "Description", ""));
+                SetSerializedField(so, "_iconEmoji",      GetValue(row, headers, "IconEmoji", "✦"));
+                SetSerializedField(so, "_slotKey",        GetIntValue(row, headers, "SlotKey", 1));
+                SetSerializedField(so, "_cooldownSec",    GetFloatValue(row, headers, "CooldownSec", 20f));
+                SetSerializedField(so, "_durationSec",    GetFloatValue(row, headers, "DurationSec", 0f));
+                SetSerializedField(so, "_autoIntervalSec",GetFloatValue(row, headers, "AutoIntervalSec", 0f));
+                SetSerializedField(so, "_damage",         GetFloatValue(row, headers, "Damage", 0f));
+                SetSerializedField(so, "_range",          GetFloatValue(row, headers, "Range", 0f));
+                SetSerializedField(so, "_angle",          GetFloatValue(row, headers, "Angle", 0f));
+                SetSerializedField(so, "_maxInstances",   GetIntValue(row, headers, "MaxInstances", 1));
+                SetSerializedField(so, "_unlockGemCost",  GetIntValue(row, headers, "UnlockGemCost", 30));
+                SetSerializedField(so, "_vfxScale",       GetFloatValue(row, headers, "VfxScale", 1f));
+
+                // ThemeColorHex
+                string colorHex = GetValue(row, headers, "ThemeColorHex", "");
+                if (!string.IsNullOrEmpty(colorHex) && TryParseHexColor(colorHex, out var color))
+                {
+                    var p = so.FindProperty("_themeColor");
+                    if (p != null) p.colorValue = color;
+                }
+
+                // AbilityType enum
+                string typeStr = GetValue(row, headers, "AbilityType", "Drone");
+                if (Enum.TryParse<AbilityType>(typeStr, true, out var aType))
+                {
+                    var p = so.FindProperty("_abilityType");
+                    if (p != null) p.enumValueIndex = (int)aType;
+                }
+                else Debug.LogWarning($"[AbilityData] {abilityId}: AbilityType='{typeStr}' 파싱 실패");
+
+                // Trigger enum
+                string trigStr = GetValue(row, headers, "Trigger", "Manual");
+                if (Enum.TryParse<AbilityTrigger>(trigStr, true, out var trig))
+                {
+                    var p = so.FindProperty("_trigger");
+                    if (p != null) p.enumValueIndex = (int)trig;
+                }
+                else Debug.LogWarning($"[AbilityData] {abilityId}: Trigger='{trigStr}' 파싱 실패");
+
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(ability);
+            }
+
+            // Pass 2 — RequiredAbilityId → SO 참조 재해석 (Pass 1 후 캐시 완성 보장)
+            for (int i = 1; i < rows.Count; i++)
+            {
+                var row = rows[i];
+                if (row.Count == 0 || string.IsNullOrEmpty(row[0])) continue;
+
+                string abilityId = GetValue(row, headers, "AbilityId", "");
+                if (!cache.TryGetValue(abilityId, out var ability)) continue;
+
+                var so = new SerializedObject(ability);
+                var reqProp = so.FindProperty("_requiredAbility");
+                if (reqProp == null) continue;
+
+                string reqId = GetValue(row, headers, "RequiredAbilityId", "");
+                if (string.IsNullOrEmpty(reqId))
+                {
+                    reqProp.objectReferenceValue = null;
+                }
+                else if (cache.TryGetValue(reqId, out var reqAbility))
+                {
+                    reqProp.objectReferenceValue = reqAbility;
+                }
+                else
+                {
+                    Debug.LogWarning($"[AbilityData] {abilityId}: RequiredAbilityId='{reqId}' 인 SO 없음 — null 처리");
+                    reqProp.objectReferenceValue = null;
+                }
+
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(ability);
+
+                Debug.Log($"[GoogleSheetsImporter] Imported Ability: {abilityId}");
+            }
+
+            AssetDatabase.SaveAssets();
+        }
+
+        private async Task ImportCharacterDataAsync()
+        {
+            var rows = await ReadSheetAsync(SHEET_CHARACTER_DATA);
+            if (rows.Count < 2) return;
+
+            var headers = rows[0];
+            string savePath = "Assets/_Game/Data/Characters";
+            if (!AssetDatabase.IsValidFolder(savePath))
+                AssetDatabase.CreateFolder("Assets/_Game/Data", "Characters");
+
+            // 기존 CharacterData / MachineData / AbilityData SO 인덱싱.
+            // 임포트 순서 보장: ImportAllData 가 Ability → Character 순으로 호출 → AbilityData 캐시가 채워진 상태.
+            var charCache = new Dictionary<string, CharacterData>(StringComparer.OrdinalIgnoreCase);
+            foreach (var guid in AssetDatabase.FindAssets("t:CharacterData"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var so0 = AssetDatabase.LoadAssetAtPath<CharacterData>(path);
+                if (so0 != null && !string.IsNullOrEmpty(so0.CharacterId))
+                    charCache[so0.CharacterId] = so0;
+            }
+
+            var machineCache = new Dictionary<string, MachineData>(StringComparer.OrdinalIgnoreCase);
+            foreach (var guid in AssetDatabase.FindAssets("t:MachineData"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var so0 = AssetDatabase.LoadAssetAtPath<MachineData>(path);
+                if (so0 != null && !string.IsNullOrEmpty(so0.MachineName))
+                    machineCache[so0.MachineName] = so0;
+            }
+
+            var abilityCache = new Dictionary<string, AbilityData>(StringComparer.OrdinalIgnoreCase);
+            foreach (var guid in AssetDatabase.FindAssets("t:AbilityData"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var so0 = AssetDatabase.LoadAssetAtPath<AbilityData>(path);
+                if (so0 != null && !string.IsNullOrEmpty(so0.AbilityId))
+                    abilityCache[so0.AbilityId] = so0;
+            }
+
+            for (int i = 1; i < rows.Count; i++)
+            {
+                var row = rows[i];
+                if (row.Count == 0 || string.IsNullOrEmpty(row[0])) continue;
+
+                string characterId = GetValue(row, headers, "CharacterId", "");
+                if (string.IsNullOrEmpty(characterId)) continue;
+
+                CharacterData character;
+                if (!charCache.TryGetValue(characterId, out character))
+                {
+                    character = ScriptableObject.CreateInstance<CharacterData>();
+                    string fileSuffix = char.ToUpper(characterId[0]) + characterId.Substring(1);
+                    string newPath = $"{savePath}/Character_{fileSuffix}.asset";
+                    AssetDatabase.CreateAsset(character, newPath);
+                    charCache[characterId] = character;
+                    Debug.Log($"[GoogleSheetsImporter] 신규 생성: {newPath}");
+                }
+
+                var so = new SerializedObject(character);
+                SetSerializedField(so, "_characterId", characterId);
+                SetSerializedField(so, "_displayName", GetValue(row, headers, "DisplayName", ""));
+                SetSerializedField(so, "_title",       GetValue(row, headers, "Title", ""));
+                SetSerializedField(so, "_description", GetValue(row, headers, "Description", ""));
+
+                // ThemeColorHex
+                string colorHex = GetValue(row, headers, "ThemeColorHex", "");
+                if (!string.IsNullOrEmpty(colorHex) && TryParseHexColor(colorHex, out var color))
+                {
+                    var p = so.FindProperty("_themeColor");
+                    if (p != null) p.colorValue = color;
+                }
+
+                // DefaultMachineName → MachineData SO 참조
+                string machineName = GetValue(row, headers, "DefaultMachineName", "");
+                var machineProp = so.FindProperty("_defaultMachine");
+                if (machineProp != null)
+                {
+                    if (string.IsNullOrEmpty(machineName))
+                    {
+                        machineProp.objectReferenceValue = null;
+                    }
+                    else if (machineCache.TryGetValue(machineName, out var machine))
+                    {
+                        machineProp.objectReferenceValue = machine;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[CharacterData] {characterId}: DefaultMachineName='{machineName}' 인 MachineData 없음");
+                        machineProp.objectReferenceValue = null;
+                    }
+                }
+
+                // Ability1Id / Ability2Id / Ability3Id → AbilityData[3]
+                var abilitiesProp = so.FindProperty("_abilities");
+                if (abilitiesProp != null && abilitiesProp.isArray)
+                {
+                    abilitiesProp.arraySize = 3;
+                    for (int slot = 0; slot < 3; slot++)
+                    {
+                        string abilityId = GetValue(row, headers, $"Ability{slot + 1}Id", "");
+                        var elem = abilitiesProp.GetArrayElementAtIndex(slot);
+                        if (string.IsNullOrEmpty(abilityId))
+                        {
+                            elem.objectReferenceValue = null;
+                        }
+                        else if (abilityCache.TryGetValue(abilityId, out var ability))
+                        {
+                            elem.objectReferenceValue = ability;
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[CharacterData] {characterId}: Ability{slot + 1}Id='{abilityId}' 인 AbilityData 없음 (Ability 시트 import 가 먼저 실행됐는지 확인)");
+                            elem.objectReferenceValue = null;
+                        }
+                    }
+                }
+
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(character);
+
+                Debug.Log($"[GoogleSheetsImporter] Imported Character: {characterId}");
+            }
+
+            AssetDatabase.SaveAssets();
         }
 
         #endregion

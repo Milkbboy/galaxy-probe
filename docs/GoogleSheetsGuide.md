@@ -224,7 +224,76 @@ ManualCostsGem =  2| 5| 10| 18| 30
 
 ---
 
-## 7. Unity 에서 Import
+## 7. CharacterData 시트
+
+플레이어 캐릭터 3종. v2 시스템: [CharacterAbilitySystem.md](CharacterAbilitySystem.md). 컬럼:
+
+`CharacterId`, `DisplayName`, `Title`, `Description`, `ThemeColorHex`, `DefaultMachineName`, `Ability1Id`, `Ability2Id`, `Ability3Id`.
+
+### 시트화 안 되는 필드
+
+`Portrait` (Sprite ref) 만 Unity 직접 바인딩.
+
+### 외부 SO 참조 — 문자열로 표현
+
+| 시트 컬럼 | 타겟 | 임포터 동작 |
+|---|---|---|
+| `DefaultMachineName` | `MachineData._machineName` | 매칭되는 `MachineData` SO 를 `_defaultMachine` 에 바인딩 |
+| `Ability1Id` ~ `Ability3Id` | `AbilityData._abilityId` | 슬롯 1~3 에 순서대로 바인딩 |
+
+> **임포트 순서 주의** — `Import All Data` 는 `AbilityData → CharacterData` 순으로 호출해 어빌리티 cache 가 캐릭터 임포트 시점엔 이미 채워져 있도록 보장. 시트별 버튼으로 `CharacterData` 만 단독 import 할 때 어빌리티가 누락되어 있으면 경고 로그 출력 + null 처리.
+
+### 캐릭터 3종 (현재 값)
+
+| CharacterId | DisplayName | Title | Color | DefaultMachine | Ability 슬롯 1·2·3 |
+|---|---|---|---|---|---|
+| `jinus` | 지누스 | 채굴 전문가 | #51CF66 | Default | drone / mining_drone / spider_drone |
+| `sara` | 사라 | 방어 전문가 | #4FC3F7 | Default | blackhole / shockwave / meteor |
+| `victor` | 빅터 | 중장비 전문가 | #F4A423 | Default | napalm / flame / mine |
+
+---
+
+## 8. AbilityData 시트
+
+캐릭터 어빌리티 9종 (캐릭터 3 × 슬롯 3). 모두 `AbilityData` 단일 클래스. 컬럼:
+
+`AbilityId`, `CharacterId`, `DisplayName`, `Description`, `IconEmoji`, `ThemeColorHex`, `SlotKey`, `AbilityType`, `Trigger`, `CooldownSec`, `DurationSec`, `AutoIntervalSec`, `Damage`, `Range`, `Angle`, `MaxInstances`, `UnlockGemCost`, `RequiredAbilityId`, `VfxScale`.
+
+### Enum 값
+
+- `AbilityType`: `Napalm` / `Flame` / `Mine` / `BlackHole` / `Shockwave` / `Meteor` / `Drone` / `MiningDrone` / `SpiderDrone`
+- `Trigger`: `Manual` (키 1/2/3) / `AutoInterval` (`AutoIntervalSec` 마다 자동 발동)
+
+### 필드 의미
+
+- `CooldownSec` — Manual 트리거 발동 후 쿨다운
+- `DurationSec` — 지속 효과 길이 (블랙홀 10초, 메테오 15초). 0 이면 즉발
+- `AutoIntervalSec` — `AutoInterval` 트리거에서 다음 발동까지 간격
+- `Damage`/`Range`/`Angle` — 어빌리티 타입별 해석 다름 (Damage=틱 또는 1회, Angle=부채꼴 라디안 반각)
+- `MaxInstances` — 동시 배치 최대 (지뢰 5, 거미드론 3, 메테오 999)
+- `RequiredAbilityId` — 선행 해금 어빌리티. 빈 칸이면 즉시 해금 가능
+
+### 시트화 안 되는 필드
+
+`_icon` (Sprite), `_vfxPrefab`, `_useSfx` 만 Unity 직접 바인딩.
+
+### 어빌리티 9종 (현재 값)
+
+| AbilityId | Char | Slot | Type | Trigger | CD | Dur | Auto | Dmg | Range | Max | Required |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| `jinus_drone` | jinus | 1 | Drone | Manual | 2 | 0 | 0 | 0.8 | 10 | 5 | |
+| `jinus_mining_drone` | jinus | 2 | MiningDrone | Manual | 2 | 10 | 0 | 0 | 0 | 1 | jinus_drone |
+| `jinus_spider_drone` | jinus | 3 | SpiderDrone | AutoInterval | 0 | 0 | 3 | 0 | 12 | 3 | jinus_mining_drone |
+| `sara_blackhole` | sara | 1 | BlackHole | Manual | 30 | 10 | 0 | 0 | 15 | 1 | |
+| `sara_shockwave` | sara | 2 | Shockwave | Manual | 1 | 0 | 0 | 0 | 36 | 1 | sara_blackhole |
+| `sara_meteor` | sara | 3 | Meteor | AutoInterval | 0 | 15 | 10 | 0.5 | 5.5 | 999 | sara_shockwave |
+| `victor_napalm` | victor | 1 | Napalm | Manual | 40 | 20 | 0 | 0.5 | 4 | 1 | |
+| `victor_flame` | victor | 2 | Flame | Manual | 20 | 5 | 0 | 10.8 | 18 | 1 | victor_napalm |
+| `victor_mine` | victor | 3 | Mine | Manual | 10 | 0 | 0 | 0 | 0 | 5 | victor_napalm |
+
+---
+
+## 9. Unity 에서 Import
 
 ### 열기
 
@@ -240,8 +309,8 @@ ManualCostsGem =  2| 5| 10| 18| 30
 
 ### Import 실행
 
-- `Import All Data` — 6개 시트 순서대로 (SimpleBug → Machine → Upgrade → Wave → Weapon → WeaponUpgrade)
-- 시트별 버튼 — `SimpleBugData`, `WaveData`, `MachineData`, `UpgradeData`, `WeaponData`, `WeaponUpgradeData`
+- `Import All Data` — 8개 시트 순서대로 (SimpleBug → Machine → Upgrade → Wave → Weapon → WeaponUpgrade → Ability → Character)
+- 시트별 버튼 — `SimpleBugData`, `WaveData`, `MachineData`, `UpgradeData`, `WeaponData`, `WeaponUpgradeData`, `CharacterData`, `AbilityData`
 
 ### 결과 경로
 
