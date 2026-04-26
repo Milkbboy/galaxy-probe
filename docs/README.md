@@ -24,7 +24,7 @@
 | 캐릭터 고유 장비 v2.html 원본 분석 (수치 타이 브레이커) | [CharacterAbility_v2Reference.md](CharacterAbility_v2Reference.md) |
 | 무기 해금 체인 · 무기별 강화 · 회전톱날 | [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md) |
 | 보석 드랍·채집 · 이중 재화 · mineTarget 승리 | [GemMiningSystem.md](GemMiningSystem.md) |
-| 신규 4개 시트 스키마 · UpgradeData 확장 | [GoogleSheetsGuide_v2Addendum.md](GoogleSheetsGuide_v2Addendum.md) |
+| 시트 스키마 (전체 8 탭) | [GoogleSheetsGuide.md](GoogleSheetsGuide.md) — 통합 (구 v2Addendum 흡수) |
 | Hub UI 구현 트러블슈팅 (CSF 캐스케이드·patch-pattern·컬럼 폭 누수) | [V2HubUI_Troubleshooting.md](V2HubUI_Troubleshooting.md) |
 | 프로토타입 원본 (HTML) | [v2.html](v2.html) |
 
@@ -60,8 +60,8 @@
 
 | 목적 | 문서 |
 |---|---|
-| 시트 컬럼 정의 + 행동 파싱 문법 + Import 규칙 | [GoogleSheetsGuide.md](GoogleSheetsGuide.md) |
-| v2 신규 시트 (Character/Weapon/WeaponUpgrade/Ability) + UpgradeData 확장 | [GoogleSheetsGuide_v2Addendum.md](GoogleSheetsGuide_v2Addendum.md) |
+| 시트 컬럼 정의 + Import 규칙 (전체 8 탭) | [GoogleSheetsGuide.md](GoogleSheetsGuide.md) |
+| **기획자 전달용** 워크플로우 + 시나리오별 가이드 | [PlannerSheetGuide.md](PlannerSheetGuide.md) |
 
 스프레드시트: https://docs.google.com/spreadsheets/d/1hwgQ4IF-gQqVSX4xS_uqeKIPWUDy2NR4bC-OWmZQO_E/edit
 

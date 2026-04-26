@@ -414,7 +414,7 @@ if (DataManager.PlayerData.HasUnconsumedResult)
 
 ## 7. 보석 채집 업그레이드 (UpgradeData 추가)
 
-[GoogleSheetsGuide_v2Addendum.md §2](GoogleSheetsGuide_v2Addendum.md) 참조.
+[GoogleSheetsGuide.md §4](GoogleSheetsGuide.md#4-upgradedata-시트) 참조.
 
 ### 7.1 UpgradeData 2개 추가
 
@@ -478,7 +478,7 @@ public class UpgradeData : ScriptableObject
 
 - [V2_IntegrationPlan.md](V2_IntegrationPlan.md) — 총론
 - [CharacterAbilitySystem.md](CharacterAbilitySystem.md) — 채굴 드론(jinus_mining_drone)이 보석 드랍에 관여
-- [GoogleSheetsGuide_v2Addendum.md](GoogleSheetsGuide_v2Addendum.md) — UpgradeData 이중 재화 스키마
+- [GoogleSheetsGuide.md §4](GoogleSheetsGuide.md#4-upgradedata-시트) — UpgradeData 이중 재화 스키마
 - `docs/v2.html` 926~944줄 — `killBug()` 드랍 로직
 - `docs/v2.html` 1341~1371줄 — gem 호버 채집 로직
 - `CLAUDE.md` 좌표계 섹션 — XZ 평면 거리 계산

@@ -746,7 +746,8 @@ void OnReloadUpgraded()
 - [V2_IntegrationPlan.md](V2_IntegrationPlan.md) — 총론·우선순위
 - [WeaponSystem.md](WeaponSystem.md) — 기존 무기 아키텍처 (WeaponBase, AimController)
 - [CharacterAbilitySystem.md](CharacterAbilitySystem.md) — 폭탄 강화가 지뢰 어빌리티에 파급
-- [GoogleSheetsGuide_v2Addendum.md](GoogleSheetsGuide_v2Addendum.md) — WeaponData/WeaponUpgrade 시트 스키마
+- [GoogleSheetsGuide.md §5~§6](GoogleSheetsGuide.md#5-weapondata-시트) — WeaponData/WeaponUpgradeData 시트 스키마
+- [PlannerSheetGuide.md](PlannerSheetGuide.md) — 기획자 전달용 압축 가이드
 
 ---
 

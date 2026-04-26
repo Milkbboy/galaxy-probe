@@ -1,22 +1,27 @@
 # Google Sheets 데이터 관리 가이드
 
-게임 데이터(벌레, 웨이브, 머신, 업그레이드)는 Google Sheets에서 관리하고, Unity Editor 메뉴 `Tools / Drill-Corp / 4. 데이터 Import / Google Sheets Importer` 로 가져와 ScriptableObject 로 변환합니다.
+게임 데이터(벌레·웨이브·머신·업그레이드·무기·무기강화·캐릭터·어빌리티)는 Google Sheets 에서 관리하고, Unity Editor 메뉴 `Tools / Drill-Corp / 4. 데이터 Import / Google Sheets Importer` 로 가져와 ScriptableObject 로 변환합니다.
 
 **스프레드시트 URL**: https://docs.google.com/spreadsheets/d/1hwgQ4IF-gQqVSX4xS_uqeKIPWUDy2NR4bC-OWmZQO_E/edit
 
-> 최종 갱신: 2026-04-23 — SimpleBug 전면 교체 반영. v2 신규 시트(Character/Ability/Weapon/WeaponUpgrade) 는 [GoogleSheetsGuide_v2Addendum.md](GoogleSheetsGuide_v2Addendum.md) 참조.
+> 최종 갱신: 2026-04-26 — Weapon/WeaponUpgrade/Character/Ability 4탭 통합 완료. 구 `GoogleSheetsGuide_v2Addendum.md` 흡수.
+>
+> **기획자 전달용 압축 가이드**: [PlannerSheetGuide.md](PlannerSheetGuide.md)
 
 ---
 
-## 시트 구조
+## 시트 구조 (전체 8탭)
 
-| 시트 이름 | 설명 | 대응 SO |
-|---|---|---|
-| `SimpleBugData` | 벌레 종류별 스탯 | `SimpleBugData` (Normal/Elite/Swift) |
-| `WaveData` | 웨이브별 Spawner/Tunnel 오버라이드 | `SimpleWaveData` (Wave_01~N) |
-| `MachineData` | 채굴 머신 스탯 | `MachineData` |
-| `UpgradeData` | 굴착기 영구 강화 6종 (이중 재화) | `UpgradeData` |
-| `Characters` / `Abilities` / `Weapons` / `WeaponUpgrades` (v2) | — | [v2Addendum](GoogleSheetsGuide_v2Addendum.md) |
+| § | 시트 이름 | 행 수 | 설명 | 대응 SO |
+|---|---|---|---|---|
+| §1 | `SimpleBugData` | 3 | 벌레 종류별 스탯 | `SimpleBugData` (Normal/Elite/Swift) |
+| §2 | `WaveData` | 5 | 웨이브별 Spawner/Tunnel 오버라이드 | `SimpleWaveData` (Wave_01~05) |
+| §3 | `MachineData` | 1 | 채굴 머신 스탯 | `MachineData` (Default) |
+| §4 | `UpgradeData` | 6 | 굴착기 영구 강화 (이중 재화) | `UpgradeData` |
+| §5 | `WeaponData` | 5 | 무기 5종 베이스 스탯 (ExtraStats 한 셀 압축) | `WeaponData` 서브타입 |
+| §6 | `WeaponUpgradeData` | 15 | 무기별 강화 (Damage/Range/Cooldown 등) | `WeaponUpgradeData` |
+| §7 | `CharacterData` | 3 | 캐릭터 3종 + 머신·어빌리티 묶음 | `CharacterData` |
+| §8 | `AbilityData` | 9 | 캐릭터 어빌리티 (cooldown/damage/range) | `AbilityData` |
 
 > 구 시트 `BugData`, `WaveSpawnGroups`, `BugBehaviors`, `MovementData`, `AttackData`, `PassiveData`, `SkillData`, `TriggerData` 는 2026-04-23 SimpleBug 전면 교체로 **삭제**. Importer 도 참조하지 않음. 시트에 남아있으면 `_legacy_` prefix 로 rename 하거나 삭제.
 

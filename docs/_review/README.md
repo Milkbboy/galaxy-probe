@@ -13,14 +13,14 @@
 |---|---|---|
 | `SimpleBugData.csv` / `.tsv` | `SimpleBugData` | [GoogleSheetsGuide.md §1](../GoogleSheetsGuide.md#1-simplebugdata-시트) |
 | `WaveData.csv` / `.tsv`      | `WaveData`      | [GoogleSheetsGuide.md §2](../GoogleSheetsGuide.md#2-wavedata-시트) |
-| `MachineData.tsv`            | `MachineData`   | [GoogleSheetsGuide.md §3](../GoogleSheetsGuide.md#3-machinedata-시트) + [v2Addendum §1](../GoogleSheetsGuide_v2Addendum.md#1-machinedata-기존-1컬럼-추가) |
-| `UpgradeData.tsv`            | `UpgradeData`   | [GoogleSheetsGuide.md §4](../GoogleSheetsGuide.md#4-upgradedata-시트) + [v2Addendum §2](../GoogleSheetsGuide_v2Addendum.md#2-upgradedata-기존-확장) + [MachineDataSheetAlignment_Plan.md](../MachineDataSheetAlignment_Plan.md) |
+| `MachineData.tsv`            | `MachineData`   | [GoogleSheetsGuide.md §3](../GoogleSheetsGuide.md#3-machinedata-시트) |
+| `UpgradeData.tsv`            | `UpgradeData`   | [GoogleSheetsGuide.md §4](../GoogleSheetsGuide.md#4-upgradedata-시트) |
 | `WeaponData.csv`             | `WeaponData`    | [GoogleSheetsGuide.md §5](../GoogleSheetsGuide.md#5-weapondata-시트) — ExtraStats 한 셀 압축 (`key:value\|key:value`) |
 | `WeaponUpgradeData.csv`      | `WeaponUpgradeData` | [GoogleSheetsGuide.md §6](../GoogleSheetsGuide.md#6-weaponupgradedata-시트) — 무기 강화 15종 |
 | `CharacterData.csv`          | `CharacterData` | [GoogleSheetsGuide.md §7](../GoogleSheetsGuide.md#7-characterdata-시트) — 캐릭터 3종, MachineId/Ability1·2·3Id 로 SO 참조 |
 | `AbilityData.csv`            | `AbilityData`   | [GoogleSheetsGuide.md §8](../GoogleSheetsGuide.md#8-abilitydata-시트) — 어빌리티 9종, Cooldown/Damage/Range 등 밸런스 |
 
-> `MachineData.tsv` / `UpgradeData.tsv` 는 Importer가 v2 컬럼(`BaseMiningTarget` / `BaseCostOre` / `BaseCostGem` / `OreCostSchedule` / `GemCostSchedule`) 을 파싱하도록 **Phase M-1 코드 확장이 끝난 뒤** 붙여넣기. 그 전에 Import 돌리면 신 컬럼이 무시됨. 상세 순서는 `MachineDataSheetAlignment_Plan.md` 참조.
+> 모든 v2 컬럼(`BaseMiningTarget` / `BaseCostOre` / `BaseCostGem` / `OreCostSchedule` / `GemCostSchedule` / `WeaponData.ExtraStats` / `Character/Ability` 신규 등) Importer 파싱 완료 (커밋 `e26b3ef` 까지). 시트에 붙여넣고 Import 누르면 됨. 과거 정렬 계획은 `docs/archive/MachineDataSheetAlignment_Plan.md` 참조.
 
 모든 파일은 **1행은 헤더 + 2행부터 실제 데이터**. Google Sheets에 이미 헤더 행이 만들어져 있으면 본문(2행 이후)만 붙여넣으면 됨.
 
