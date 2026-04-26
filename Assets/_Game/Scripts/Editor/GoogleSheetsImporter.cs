@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UnityEngine.Networking;
 using DrillCorp.Data;
 using DrillCorp.Bug.Simple;
+using DrillCorp.Weapon;
 
 namespace DrillCorp.Editor
 {
@@ -27,7 +28,7 @@ namespace DrillCorp.Editor
 
         // 미리보기 데이터
         private int _previewTab = 0;
-        private readonly string[] _previewTabNames = { "SimpleBugData", "WaveData", "MachineData", "UpgradeData" };
+        private readonly string[] _previewTabNames = { "SimpleBugData", "WaveData", "MachineData", "UpgradeData", "WeaponData", "WeaponUpgradeData" };
 
         private Dictionary<string, List<List<string>>> _previewData = new Dictionary<string, List<List<string>>>();
         private Vector2 _previewScrollPosition;
@@ -38,6 +39,8 @@ namespace DrillCorp.Editor
         private const string SHEET_WAVE_DATA = "WaveData";
         private const string SHEET_MACHINE_DATA = "MachineData";
         private const string SHEET_UPGRADE_DATA = "UpgradeData";
+        private const string SHEET_WEAPON_DATA = "WeaponData";
+        private const string SHEET_WEAPON_UPGRADE_DATA = "WeaponUpgradeData";
 
         [MenuItem("Tools/Drill-Corp/4. 데이터 Import/Google Sheets Importer")]
         public static void ShowWindow()
@@ -326,7 +329,7 @@ namespace DrillCorp.Editor
 
             try
             {
-                string[] sheetNames = { SHEET_SIMPLE_BUG_DATA, SHEET_WAVE_DATA, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA };
+                string[] sheetNames = { SHEET_SIMPLE_BUG_DATA, SHEET_WAVE_DATA, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA, SHEET_WEAPON_DATA, SHEET_WEAPON_UPGRADE_DATA };
 
                 foreach (var sheetName in sheetNames)
                 {
@@ -388,6 +391,17 @@ namespace DrillCorp.Editor
             if (GUILayout.Button("UpgradeData"))
             {
                 ImportUpgradeData();
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("WeaponData"))
+            {
+                ImportWeaponData();
+            }
+            if (GUILayout.Button("WeaponUpgradeData"))
+            {
+                ImportWeaponUpgradeData();
             }
             EditorGUILayout.EndHorizontal();
 
@@ -650,6 +664,8 @@ namespace DrillCorp.Editor
                 await ImportMachineDataAsync();
                 await ImportUpgradeDataAsync();
                 await ImportWaveDataAsync();
+                await ImportWeaponDataAsync();
+                await ImportWeaponUpgradeDataAsync();
 
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
@@ -716,6 +732,34 @@ namespace DrillCorp.Editor
             catch (Exception e)
             {
                 SetStatus($"UpgradeData 오류: {e.Message}", MessageType.Error);
+            }
+        }
+
+        private async void ImportWeaponData()
+        {
+            SetStatus("WeaponData 가져오는 중...", MessageType.Info);
+            try
+            {
+                await ImportWeaponDataAsync();
+                SetStatus("WeaponData 가져오기 완료!", MessageType.Info);
+            }
+            catch (Exception e)
+            {
+                SetStatus($"WeaponData 오류: {e.Message}", MessageType.Error);
+            }
+        }
+
+        private async void ImportWeaponUpgradeData()
+        {
+            SetStatus("WeaponUpgradeData 가져오는 중...", MessageType.Info);
+            try
+            {
+                await ImportWeaponUpgradeDataAsync();
+                SetStatus("WeaponUpgradeData 가져오기 완료!", MessageType.Info);
+            }
+            catch (Exception e)
+            {
+                SetStatus($"WeaponUpgradeData 오류: {e.Message}", MessageType.Error);
             }
         }
 
@@ -1149,6 +1193,304 @@ namespace DrillCorp.Editor
             }
 
             AssetDatabase.SaveAssets();
+        }
+
+        // 무기별 ExtraStats 허용 키 — 코드 = 명세 (살아있는 문서).
+        // SO 클래스(서브타입)에 새 필드 추가 시 여기에도 추가해야 임포트가 통과됨.
+        private static readonly Dictionary<string, HashSet<string>> _allowedExtraKeys = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["sniper"] = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+                "useAimRadius", "customRange" },
+            ["bomb"]   = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+                "explosionRadius", "instant", "projectileSpeed", "projectileLifetime", "explosionVfxLifetime" },
+            ["gun"]    = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+                "maxAmmo", "reloadDuration", "lowAmmoThreshold", "bulletSpeed", "bulletLifetime", "bulletHitRadius", "spreadAngle" },
+            ["laser"]  = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+                "cooldown", "beamDuration", "beamSpeed", "stopDistance", "beamRadius", "tickInterval",
+                "scorchScaleMultiplier", "scorchStopAfter", "scorchTotalLifetime" },
+            ["saw"]    = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+                "orbitRadius", "bladeRadius", "spinSpeed", "damageTickInterval", "slowFactor", "slowDuration" },
+        };
+
+        private async Task ImportWeaponDataAsync()
+        {
+            var rows = await ReadSheetAsync(SHEET_WEAPON_DATA);
+            if (rows.Count < 2) return;
+
+            var headers = rows[0];
+
+            // 기존 WeaponData SO 전부 로드 후 WeaponId 기준 인덱싱.
+            // 무기는 5종이고 각자 다른 서브클래스라 신규 생성은 지원 안 함 — 기존만 update-in-place.
+            var cache = new Dictionary<string, DrillCorp.Weapon.WeaponData>(StringComparer.OrdinalIgnoreCase);
+            foreach (var guid in AssetDatabase.FindAssets("t:WeaponData"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var so0 = AssetDatabase.LoadAssetAtPath<DrillCorp.Weapon.WeaponData>(path);
+                if (so0 != null && !string.IsNullOrEmpty(so0.WeaponId))
+                    cache[so0.WeaponId] = so0;
+            }
+
+            // Pass 1 — 공통 필드 + ExtraStats
+            for (int i = 1; i < rows.Count; i++)
+            {
+                var row = rows[i];
+                if (row.Count == 0 || string.IsNullOrEmpty(row[0])) continue;
+
+                string weaponId = GetValue(row, headers, "WeaponId", "");
+                if (string.IsNullOrEmpty(weaponId)) continue;
+
+                if (!cache.TryGetValue(weaponId, out var weapon))
+                {
+                    Debug.LogError($"[WeaponData] 시트의 WeaponId='{weaponId}' 에 해당하는 SO가 없음. " +
+                                   "신규 무기는 Unity 에서 SO 생성(서브클래스 선택) 후 import 하세요.");
+                    continue;
+                }
+
+                var so = new SerializedObject(weapon);
+
+                SetSerializedField(so, "_displayName", GetValue(row, headers, "DisplayName", ""));
+                SetSerializedField(so, "_description", GetValue(row, headers, "Description", ""));
+
+                // ThemeColorHex
+                string colorHex = GetValue(row, headers, "ThemeColorHex", "");
+                if (!string.IsNullOrEmpty(colorHex) && TryParseHexColor(colorHex, out var color))
+                {
+                    var prop = so.FindProperty("_themeColor");
+                    if (prop != null) prop.colorValue = color;
+                }
+
+                SetSerializedField(so, "_unlockedByDefault", GetBoolValue(row, headers, "UnlockedByDefault", false));
+                SetSerializedField(so, "_unlockGemCost",     GetIntValue(row, headers, "UnlockGemCost", 0));
+                SetSerializedField(so, "_fireDelay",         GetFloatValue(row, headers, "FireDelay", 0.5f));
+                SetSerializedField(so, "_damage",            GetFloatValue(row, headers, "Damage", 1f));
+                SetSerializedField(so, "_hitVfxLifetime",    GetFloatValue(row, headers, "HitVfxLifetime", 1.5f));
+
+                // ExtraStats — 무기별 고유 필드 (key:value|key:value)
+                ApplyExtraStats(so, weaponId, GetValue(row, headers, "ExtraStats", ""));
+
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(weapon);
+            }
+
+            // Pass 2 — RequiredWeaponId → SO 참조 재해석 (Pass 1 후 캐시 완성 보장)
+            for (int i = 1; i < rows.Count; i++)
+            {
+                var row = rows[i];
+                if (row.Count == 0 || string.IsNullOrEmpty(row[0])) continue;
+
+                string weaponId = GetValue(row, headers, "WeaponId", "");
+                if (!cache.TryGetValue(weaponId, out var weapon)) continue;
+
+                var so = new SerializedObject(weapon);
+                var reqProp = so.FindProperty("_requiredWeapon");
+                if (reqProp == null) continue;
+
+                string reqId = GetValue(row, headers, "RequiredWeaponId", "");
+                if (string.IsNullOrEmpty(reqId))
+                {
+                    reqProp.objectReferenceValue = null;
+                }
+                else if (cache.TryGetValue(reqId, out var reqWeapon))
+                {
+                    reqProp.objectReferenceValue = reqWeapon;
+                }
+                else
+                {
+                    Debug.LogWarning($"[WeaponData] {weaponId}: RequiredWeaponId='{reqId}' 인 SO 없음 — null 처리");
+                    reqProp.objectReferenceValue = null;
+                }
+
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(weapon);
+
+                Debug.Log($"[GoogleSheetsImporter] Imported Weapon: {weaponId}");
+            }
+
+            AssetDatabase.SaveAssets();
+        }
+
+        // ExtraStats 셀 ("explosionRadius:3|instant:false|...") 파싱 + 화이트리스트 검증 후 SO 필드에 반영.
+        private void ApplyExtraStats(SerializedObject so, string weaponId, string extraStats)
+        {
+            if (string.IsNullOrWhiteSpace(extraStats)) return;
+
+            if (!_allowedExtraKeys.TryGetValue(weaponId, out var allowed))
+            {
+                Debug.LogError($"[WeaponData] '{weaponId}' 등록되지 않은 무기 ID — _allowedExtraKeys 누락");
+                return;
+            }
+
+            foreach (var pair in extraStats.Split('|'))
+            {
+                if (string.IsNullOrWhiteSpace(pair)) continue;
+
+                int idx = pair.IndexOf(':');
+                if (idx < 0)
+                {
+                    Debug.LogWarning($"[WeaponData] {weaponId}: ':' 없는 항목 '{pair}' 무시");
+                    continue;
+                }
+
+                string key = pair.Substring(0, idx).Trim();
+                string val = pair.Substring(idx + 1).Trim();
+
+                if (!allowed.Contains(key))
+                {
+                    string ownerHint = FindOwnerWeapon(key);
+                    Debug.LogError(string.IsNullOrEmpty(ownerHint)
+                        ? $"[WeaponData] {weaponId}: 허용되지 않은 키 '{key}'"
+                        : $"[WeaponData] {weaponId}: 허용되지 않은 키 '{key}' ('{ownerHint}' 무기 전용 — 행 잘못 입력?)");
+                    continue;
+                }
+
+                var prop = so.FindProperty("_" + key);
+                if (prop == null)
+                {
+                    Debug.LogError($"[WeaponData] {weaponId}: 키 '{key}' 가 화이트리스트에 있지만 SO 필드 '_{key}' 없음 — 클래스/매핑 불일치");
+                    continue;
+                }
+
+                switch (prop.propertyType)
+                {
+                    case SerializedPropertyType.Float:
+                        if (float.TryParse(val, out var f)) prop.floatValue = f;
+                        else Debug.LogWarning($"[WeaponData] {weaponId}.{key}: '{val}' 를 float 으로 파싱 실패");
+                        break;
+                    case SerializedPropertyType.Integer:
+                        if (int.TryParse(val, out var iv)) prop.intValue = iv;
+                        else Debug.LogWarning($"[WeaponData] {weaponId}.{key}: '{val}' 를 int 으로 파싱 실패");
+                        break;
+                    case SerializedPropertyType.Boolean:
+                        if (bool.TryParse(val, out var b)) prop.boolValue = b;
+                        else Debug.LogWarning($"[WeaponData] {weaponId}.{key}: '{val}' 를 bool 로 파싱 실패");
+                        break;
+                    default:
+                        Debug.LogWarning($"[WeaponData] {weaponId}.{key}: 미지원 타입 {prop.propertyType}");
+                        break;
+                }
+            }
+        }
+
+        private string FindOwnerWeapon(string key)
+        {
+            foreach (var kvp in _allowedExtraKeys)
+                if (kvp.Value.Contains(key)) return kvp.Key;
+            return null;
+        }
+
+        private async Task ImportWeaponUpgradeDataAsync()
+        {
+            var rows = await ReadSheetAsync(SHEET_WEAPON_UPGRADE_DATA);
+            if (rows.Count < 2) return;
+
+            var headers = rows[0];
+            string savePath = "Assets/_Game/Data/WeaponUpgrades";
+            if (!AssetDatabase.IsValidFolder(savePath))
+                AssetDatabase.CreateFolder("Assets/_Game/Data", "WeaponUpgrades");
+
+            // 기존 WeaponUpgradeData SO 전부 로드 후 UpgradeId 기준 인덱싱.
+            var cache = new Dictionary<string, WeaponUpgradeData>(StringComparer.OrdinalIgnoreCase);
+            foreach (var guid in AssetDatabase.FindAssets("t:WeaponUpgradeData"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var so0 = AssetDatabase.LoadAssetAtPath<WeaponUpgradeData>(path);
+                if (so0 != null && !string.IsNullOrEmpty(so0.UpgradeId))
+                    cache[so0.UpgradeId] = so0;
+            }
+
+            for (int i = 1; i < rows.Count; i++)
+            {
+                var row = rows[i];
+                if (row.Count == 0 || string.IsNullOrEmpty(row[0])) continue;
+
+                string upgradeId = GetValue(row, headers, "UpgradeId", "");
+                if (string.IsNullOrEmpty(upgradeId)) continue;
+
+                WeaponUpgradeData upgrade;
+                if (!cache.TryGetValue(upgradeId, out upgrade))
+                {
+                    upgrade = ScriptableObject.CreateInstance<WeaponUpgradeData>();
+                    string newPath = $"{savePath}/WeaponUpgrade_{upgradeId}.asset";
+                    AssetDatabase.CreateAsset(upgrade, newPath);
+                    cache[upgradeId] = upgrade;
+                    Debug.Log($"[GoogleSheetsImporter] 신규 생성: {newPath}");
+                }
+
+                var so = new SerializedObject(upgrade);
+                SetSerializedField(so, "_upgradeId",         upgradeId);
+                SetSerializedField(so, "_weaponId",          GetValue(row, headers, "WeaponId", ""));
+                SetSerializedField(so, "_displayName",       GetValue(row, headers, "DisplayName", ""));
+                SetSerializedField(so, "_maxLevel",          GetIntValue(row, headers, "MaxLevel", 5));
+                SetSerializedField(so, "_valuePerLevel",     GetFloatValue(row, headers, "ValuePerLevel", 0.25f));
+                SetSerializedField(so, "_isPercentage",      GetBoolValue(row, headers, "IsPercentage", true));
+                SetSerializedField(so, "_baseCostOre",       GetIntValue(row, headers, "BaseCostOre", 40));
+                SetSerializedField(so, "_baseCostGem",       GetIntValue(row, headers, "BaseCostGem", 2));
+                SetSerializedField(so, "_oreCostMultiplier", GetFloatValue(row, headers, "OreCostMultiplier", 2f));
+                SetSerializedField(so, "_gemCostMultiplier", GetFloatValue(row, headers, "GemCostMultiplier", 2f));
+
+                // TargetStat enum
+                string targetStr = GetValue(row, headers, "TargetStat", "Damage");
+                if (Enum.TryParse<WeaponUpgradeStat>(targetStr, true, out var stat))
+                {
+                    var p = so.FindProperty("_targetStat");
+                    if (p != null) p.enumValueIndex = (int)stat;
+                }
+                else Debug.LogWarning($"[WeaponUpgradeData] {upgradeId}: TargetStat='{targetStr}' 파싱 실패");
+
+                // Operation enum
+                string opStr = GetValue(row, headers, "Operation", "Multiply");
+                if (Enum.TryParse<WeaponUpgradeOp>(opStr, true, out var op))
+                {
+                    var p = so.FindProperty("_operation");
+                    if (p != null) p.enumValueIndex = (int)op;
+                }
+                else Debug.LogWarning($"[WeaponUpgradeData] {upgradeId}: Operation='{opStr}' 파싱 실패");
+
+                // ManualCosts — 평행 배열 (둘 길이 같아야)
+                SetManualCosts(so,
+                    GetValue(row, headers, "ManualCostsOre", ""),
+                    GetValue(row, headers, "ManualCostsGem", ""));
+
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(upgrade);
+
+                Debug.Log($"[GoogleSheetsImporter] Imported: {upgradeId} ({stat}, {op})");
+            }
+
+            AssetDatabase.SaveAssets();
+        }
+
+        // ManualCostsOre/Gem 파이프 배열 → List<WeaponUpgradeCostTuple>.
+        // 둘 다 비면 list clear (BaseCost × Multiplier^level 공식 사용).
+        // 길이 다르면 짧은 쪽 기준 + 경고.
+        private void SetManualCosts(SerializedObject so, string oreCsv, string gemCsv)
+        {
+            var prop = so.FindProperty("_manualCosts");
+            if (prop == null || !prop.isArray) return;
+
+            bool oreEmpty = string.IsNullOrWhiteSpace(oreCsv);
+            bool gemEmpty = string.IsNullOrWhiteSpace(gemCsv);
+            if (oreEmpty && gemEmpty)
+            {
+                prop.arraySize = 0;
+                return;
+            }
+
+            var oreParts = oreEmpty ? new string[0] : oreCsv.Split('|');
+            var gemParts = gemEmpty ? new string[0] : gemCsv.Split('|');
+            int len = Mathf.Min(oreParts.Length, gemParts.Length);
+            if (oreParts.Length != gemParts.Length)
+                Debug.LogWarning($"[WeaponUpgradeData] ManualCostsOre/Gem 길이 불일치 ({oreParts.Length} vs {gemParts.Length}) — 짧은 쪽({len}) 기준");
+
+            prop.arraySize = len;
+            for (int i = 0; i < len; i++)
+            {
+                var elem = prop.GetArrayElementAtIndex(i);
+                var oreField = elem.FindPropertyRelative("Ore");
+                var gemField = elem.FindPropertyRelative("Gem");
+                if (oreField != null && int.TryParse(oreParts[i].Trim(), out var oVal)) oreField.intValue = oVal;
+                if (gemField != null && int.TryParse(gemParts[i].Trim(), out var gVal)) gemField.intValue = gVal;
+            }
         }
 
         #endregion

@@ -15,6 +15,8 @@
 | `WaveData.csv` / `.tsv`      | `WaveData`      | [GoogleSheetsGuide.md §2](../GoogleSheetsGuide.md#2-wavedata-시트) |
 | `MachineData.tsv`            | `MachineData`   | [GoogleSheetsGuide.md §3](../GoogleSheetsGuide.md#3-machinedata-시트) + [v2Addendum §1](../GoogleSheetsGuide_v2Addendum.md#1-machinedata-기존-1컬럼-추가) |
 | `UpgradeData.tsv`            | `UpgradeData`   | [GoogleSheetsGuide.md §4](../GoogleSheetsGuide.md#4-upgradedata-시트) + [v2Addendum §2](../GoogleSheetsGuide_v2Addendum.md#2-upgradedata-기존-확장) + [MachineDataSheetAlignment_Plan.md](../MachineDataSheetAlignment_Plan.md) |
+| `WeaponData.csv`             | `WeaponData`    | [GoogleSheetsGuide.md §5](../GoogleSheetsGuide.md#5-weapondata-시트) — ExtraStats 한 셀 압축 (`key:value\|key:value`) |
+| `WeaponUpgradeData.csv`      | `WeaponUpgradeData` | [GoogleSheetsGuide.md §6](../GoogleSheetsGuide.md#6-weaponupgradedata-시트) — 무기 강화 15종 |
 
 > `MachineData.tsv` / `UpgradeData.tsv` 는 Importer가 v2 컬럼(`BaseMiningTarget` / `BaseCostOre` / `BaseCostGem` / `OreCostSchedule` / `GemCostSchedule`) 을 파싱하도록 **Phase M-1 코드 확장이 끝난 뒤** 붙여넣기. 그 전에 Import 돌리면 신 컬럼이 무시됨. 상세 순서는 `MachineDataSheetAlignment_Plan.md` 참조.
 
@@ -92,6 +94,22 @@
 - [ ] `IsPercentage` 컬럼 — gem_drop 은 **FALSE** (누적 %p 가산), gem_speed 는 **TRUE** (배율)
 - [ ] `-1` 값이 숫자로 들어갔는지 (음수 대쉬 깨짐 주의)
 - [ ] `WaveName` 한글 깨짐 없는지
+
+### WeaponData
+
+- [ ] 5행 (sniper / bomb / gun / laser / saw) 들어갔는지
+- [ ] `ThemeColorHex` 가 `#RRGGBB` 형태 — Sheets 가 `#` 을 수식 시작으로 오해하면 셀 앞에 `'` 추가
+- [ ] `RequiredWeaponId` 가 다른 행의 `WeaponId` 값과 일치 (현재는 saw → gun 만 사용)
+- [ ] `ExtraStats` 셀이 한 컬럼에 `key:value|key:value` 형식으로 들어갔는지 — 절대 분할되지 않게
+- [ ] `UnlockedByDefault` 가 `TRUE`/`FALSE` 대문자
+
+### WeaponUpgradeData
+
+- [ ] 15행 (gun/sniper/bomb/laser/saw 각 3종) 들어갔는지
+- [ ] `TargetStat` 철자 (`Damage`/`Range`/`Cooldown`/`AmmoBonus`/`ReloadTime`/`Radius`/`SlowBonus`)
+- [ ] `Operation` 철자 (`Add` / `Multiply`)
+- [ ] `ValuePerLevel` — Cooldown/ReloadTime 강화는 음수 (`-0.20` = 20% 단축)
+- [ ] `ManualCostsOre` / `ManualCostsGem` 빈 칸이면 공식 자동 사용. 채우려면 둘 다 같은 길이 파이프 배열
 
 ---
 

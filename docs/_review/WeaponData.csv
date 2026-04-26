@@ -1,0 +1,6 @@
+WeaponId,DisplayName,Description,ThemeColorHex,UnlockedByDefault,UnlockGemCost,RequiredWeaponId,FireDelay,Damage,HitVfxLifetime,ExtraStats
+sniper,저격총,에임 범위 내 모든 적에게 동시 피격,#E040FA,TRUE,0,,0.5,1,1.5,useAimRadius:true|customRange:0.4
+bomb,폭탄,수동 클릭 발사. 도달 위치 폭발 AoE.,#F4A423,FALSE,0,,5,3,1.5,explosionRadius:3|instant:false|projectileSpeed:10|projectileLifetime:5|explosionVfxLifetime:1.5
+gun,기관총,자동 연사 + 산포. 40발 탄창 / 5초 리로딩.,#4CC3F7,FALSE,0,,0.14,0.5,1.5,maxAmmo:40|reloadDuration:5|lowAmmoThreshold:8|bulletSpeed:9|bulletLifetime:3|bulletHitRadius:0.15|spreadAngle:0.06
+laser,레이저,쿨다운 자동발사. 마우스 추적 6초 + 5초 쿨.,#FF1744,FALSE,0,,0,0.8,0.5,cooldown:5|beamDuration:10|beamSpeed:1.725|stopDistance:0.033|beamRadius:1|tickInterval:0.1|scorchScaleMultiplier:1|scorchStopAfter:6|scorchTotalLifetime:8
+saw,회전톱날,,#E040FA,FALSE,40,gun,0,0.15,1.5,orbitRadius:7.2|bladeRadius:1.8|spinSpeed:4.8|damageTickInterval:0.1|slowFactor:0.3|slowDuration:2

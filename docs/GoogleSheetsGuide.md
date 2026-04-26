@@ -143,7 +143,88 @@ Import 는 파일명을 무시하고 SO 내부 `BugName` 필드로 매칭.
 
 ---
 
-## 5. Unity 에서 Import
+## 5. WeaponData 시트
+
+무기 5종의 베이스 스탯. v2 무기 시스템: [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md). 컬럼:
+
+`WeaponId`, `DisplayName`, `Description`, `ThemeColorHex`, `UnlockedByDefault`, `UnlockGemCost`, `RequiredWeaponId`, `FireDelay`, `Damage`, `HitVfxLifetime`, `ExtraStats`.
+
+### `ExtraStats` — 무기별 고유 스탯 한 셀에 압축
+
+5개 무기가 각자 다른 서브클래스(SniperWeaponData/BombData/...)를 갖고 있어 고유 필드가 다름. 시트 컬럼 폭증을 막기 위해 **한 셀에 `key:value|key:value` 형식**으로 묶음.
+
+```
+sniper  → useAimRadius:true|customRange:0.4
+bomb    → explosionRadius:3|instant:false|projectileSpeed:10|...
+gun     → maxAmmo:40|reloadDuration:5|spreadAngle:0.06|...
+laser   → cooldown:5|beamDuration:10|beamRadius:1|tickInterval:0.1|...
+saw     → orbitRadius:7.2|bladeRadius:1.8|spinSpeed:4.8|slowFactor:0.3|slowDuration:2
+```
+
+임포터(`GoogleSheetsImporter._allowedExtraKeys`) 에 무기별 허용 키 화이트리스트가 박혀 있어 **타 무기 키나 오타는 LogError**. 새 필드 추가 시 SO 클래스 + 화이트리스트 둘 다 갱신 필요.
+
+### 시트화 안 되는 필드
+
+prefab/sprite/SO 참조 (`_icon`, `_hitVfxPrefab`, `_bulletPrefab`, `_landingMarkerPrefab`, ...) 는 Unity 에서 직접 바인딩. `RequiredWeapon` 만 예외 — 시트에 `RequiredWeaponId` (문자열) 로 표현, 임포터가 SO 참조로 재해석.
+
+### 무기 5종 (현재 값)
+
+| WeaponId | UnlockedByDefault | UnlockGemCost | RequiredWeaponId | FireDelay | Damage |
+|---|---|---|---|---|---|
+| `sniper` | TRUE | 0 | | 0.5 | 1 |
+| `bomb` | FALSE | 0 | | 5 | 3 |
+| `gun` | FALSE | 0 | | 0.14 | 0.5 |
+| `laser` | FALSE | 0 | | 0 | 0.8 |
+| `saw` | FALSE | 40 | gun | 0 | 0.15 |
+
+> 신규 무기는 시트만으로 추가 불가 — Unity 에서 SO 인스턴스(서브클래스 선택)를 먼저 만든 뒤 시트 import 로 값 갱신.
+
+---
+
+## 6. WeaponUpgradeData 시트
+
+무기별 강화 15종. 모두 `WeaponUpgradeData` 단일 클래스. 컬럼:
+
+`UpgradeId`, `WeaponId`, `DisplayName`, `TargetStat`, `MaxLevel`, `ValuePerLevel`, `IsPercentage`, `Operation`, `BaseCostOre`, `BaseCostGem`, `OreCostMultiplier`, `GemCostMultiplier`, `ManualCostsOre`, `ManualCostsGem`.
+
+### Enum 값
+
+- `TargetStat`: `Damage` / `Range` / `Cooldown` / `AmmoBonus` / `ReloadTime` / `Radius` / `SlowBonus`
+- `Operation`: `Add` (덧셈) / `Multiply` (곱셈, ValuePerLevel 음수 = 감소)
+
+### 비용 — 공식 vs 수동
+
+기본은 공식 — `BaseCost × Multiplier^level`. 레벨별로 정확한 비용을 명시하려면 `ManualCostsOre` / `ManualCostsGem` 에 파이프 배열 입력 (둘 다 같은 길이). 빈 칸이면 공식 사용.
+
+```
+ManualCostsOre = 40|90|180|360|720
+ManualCostsGem =  2| 5| 10| 18| 30
+→ 1렙 (40, 2), 2렙 (90, 5), ...
+```
+
+### 무기별 강화 3종씩 (현재 값)
+
+| 무기 | 강화 ID | TargetStat | MaxLv | Δ/lv | Operation | BaseCost (Ore, Gem) |
+|---|---|---|---|---|---|---|
+| sniper | `sniper_dmg` | Damage | 5 | +25% | Multiply | 40 / 2 |
+| sniper | `sniper_range` | Range | 3 | +20% | Multiply | 55 / 3 |
+| sniper | `sniper_cd` | Cooldown | 4 | -20% | Multiply | 45 / 2 |
+| bomb | `bomb_dmg` | Damage | 4 | +30% | Multiply | 60 / 4 |
+| bomb | `bomb_radius` | Radius | 4 | +20% | Multiply | 55 / 3 |
+| bomb | `bomb_cd` | Cooldown | 4 | -15% | Multiply | 45 / 3 |
+| gun | `gun_dmg` | Damage | 5 | +25% | Multiply | 70 / 5 |
+| gun | `gun_ammo` | AmmoBonus | 4 | +10 | Add | 55 / 4 |
+| gun | `gun_reload` | ReloadTime | 4 | -20% | Multiply | 50 / 3 |
+| laser | `laser_dmg` | Damage | 5 | +25% | Multiply | 85 / 6 |
+| laser | `laser_range` | Range | 4 | +20% | Multiply | 70 / 5 |
+| laser | `laser_cd` | Cooldown | 4 | -15% | Multiply | 60 / 4 |
+| saw | `saw_dmg` | Damage | 5 | +20% | Multiply | 85 / 7 |
+| saw | `saw_radius` | Radius | 4 | +25% | Multiply | 80 / 6 |
+| saw | `saw_slow` | SlowBonus | 3 | +0.2 | Add | 95 / 8 |
+
+---
+
+## 7. Unity 에서 Import
 
 ### 열기
 
@@ -159,8 +240,8 @@ Import 는 파일명을 무시하고 SO 내부 `BugName` 필드로 매칭.
 
 ### Import 실행
 
-- `Import All Data` — 4개 시트 순서대로 (SimpleBug → Machine → Upgrade → Wave)
-- 시트별 버튼 — `SimpleBugData`, `WaveData`, `MachineData`, `UpgradeData`
+- `Import All Data` — 6개 시트 순서대로 (SimpleBug → Machine → Upgrade → Wave → Weapon → WeaponUpgrade)
+- 시트별 버튼 — `SimpleBugData`, `WaveData`, `MachineData`, `UpgradeData`, `WeaponData`, `WeaponUpgradeData`
 
 ### 결과 경로
 
