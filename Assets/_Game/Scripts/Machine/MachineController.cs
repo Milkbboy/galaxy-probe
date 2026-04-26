@@ -27,6 +27,18 @@ namespace DrillCorp.Machine
         // legacy _armor(MachineData)와 별도 누적.
         private float _damageReductionPct;
 
+        [Header("HP 3D Bar (월드 표시)")]
+        [Tooltip("끄면 3D HP바·라벨 생성 안 함 (TopBarHud 텍스트만 사용)")]
+        [SerializeField] private bool _showHpBar = true;
+
+        [Tooltip("머신 위치 기준 HP바 오프셋. Z- = 탑뷰 '아래쪽' (머신 하단). 콜라이더 밖으로 띄울 것")]
+        [SerializeField] private Vector3 _hpBarOffset = new Vector3(0f, 0.2f, -1.8f);
+
+        [Tooltip("HP바 크기 (가로·높이·깊이). 탑뷰에서 size.z = 화면 세로 두께, size.x = 가로 길이")]
+        [SerializeField] private Vector3 _hpBarSize = new Vector3(3.5f, 0.35f, 0.8f);
+
+        private Hp3DBar _hpBar;
+
         [Header("Debug")]
         [Tooltip("ON 이면 채굴 목표량을 무한으로 간주 — 세션이 채굴 성공으로 끝나지 않음. " +
                  "어빌리티/HUD 디버깅 용도. 영구 데이터 영향 없음.")]
@@ -86,6 +98,19 @@ namespace DrillCorp.Machine
         {
             InitializeSession();
             MinimapIcon.Create(transform, new Color(0.3f, 0.8f, 1f), 2f, MinimapIcon.IconShape.Square);
+
+            if (_showHpBar)
+            {
+                _hpBar = Hp3DBar.Create(transform, _hpBarOffset, _hpBarSize, showLabel: true);
+                _hpBar.SetHealth(_currentHealth, _maxHealth);
+            }
+        }
+
+        private void LateUpdate()
+        {
+            // Hp3DBar 는 자체 LateUpdate 로 위치 추적하지만 수치는 여기서 갱신.
+            // Update 보다 LateUpdate 에서 하면 Mining/Ability 가 체력을 바꾼 뒤 반영됨.
+            if (_hpBar != null) _hpBar.SetHealth(_currentHealth, _maxHealth);
         }
 
         private void ApplyMachineData()
