@@ -1071,19 +1071,32 @@ namespace DrillCorp.Editor
                 AssetDatabase.CreateFolder("Assets/_Game/Data", "Upgrades");
             }
 
+            // 기존 UpgradeData SO 전부 로드 후 UpgradeId 로 인덱싱.
+            // 파일명이 아니라 _upgradeId 필드 기준으로 매칭해야 씬 바인딩(GUID) 보존됨.
+            var cache = new Dictionary<string, UpgradeData>(StringComparer.OrdinalIgnoreCase);
+            foreach (var guid in AssetDatabase.FindAssets("t:UpgradeData"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var so0 = AssetDatabase.LoadAssetAtPath<UpgradeData>(path);
+                if (so0 != null && !string.IsNullOrEmpty(so0.UpgradeId))
+                    cache[so0.UpgradeId] = so0;
+            }
+
             for (int i = 1; i < rows.Count; i++)
             {
                 var row = rows[i];
                 if (row.Count == 0 || string.IsNullOrEmpty(row[0])) continue;
 
                 string upgradeId = GetValue(row, headers, "UpgradeId", $"upgrade_{i}");
-                string assetPath = $"{savePath}/Upgrade_{upgradeId}.asset";
 
-                UpgradeData upgradeData = AssetDatabase.LoadAssetAtPath<UpgradeData>(assetPath);
-                if (upgradeData == null)
+                UpgradeData upgradeData;
+                if (!cache.TryGetValue(upgradeId, out upgradeData))
                 {
                     upgradeData = ScriptableObject.CreateInstance<UpgradeData>();
-                    AssetDatabase.CreateAsset(upgradeData, assetPath);
+                    string newPath = $"{savePath}/Upgrade_{upgradeId}.asset";
+                    AssetDatabase.CreateAsset(upgradeData, newPath);
+                    cache[upgradeId] = upgradeData;
+                    Debug.Log($"[GoogleSheetsImporter] 신규 생성: {newPath}");
                 }
 
                 var so = new SerializedObject(upgradeData);

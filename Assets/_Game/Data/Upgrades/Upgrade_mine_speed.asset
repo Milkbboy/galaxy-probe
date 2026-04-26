@@ -10,20 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 15450dabafaec2142b028d59d9acb95a, type: 3}
-  m_Name: Upgrade_attack_range
+  m_Name: Upgrade_mine_speed
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.UpgradeData
-  _upgradeId: attack_range
-  _displayName: AttackRange
-  _description: "\uD50C\uB808\uC774\uC5B4 \uACF5\uACA9 \uC0AC\uAC70\uB9AC\uB97C \uC99D\uAC00\uC2DC\uD0B5\uB2C8\uB2E4."
+  _upgradeId: mine_speed
+  _displayName: "\uCC44\uAD74 \uC18D\uB3C4 \uD5A5\uC0C1"
+  _description: "\uCD08\uB2F9 \uCC44\uAD74 +2"
   _icon: {fileID: 0}
-  _upgradeType: 6
+  _upgradeType: 3
   _maxLevel: 5
   _baseValue: 0
-  _valuePerLevel: 0.5
+  _valuePerLevel: 2
   _isPercentage: 0
   _currencyType: 0
-  _baseCost: 180
+  _baseCost: 80
   _baseCostGem: 0
-  _costMultiplier: 1.6
-  _oreCostSchedule: 
+  _costMultiplier: 2
+  _oreCostSchedule: 50000000a000000018010000b801000080020000
   _gemCostSchedule: 
