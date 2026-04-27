@@ -47,9 +47,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15fa7a699d67570439d2c453f345712a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Boss.SpiderBoss
-  _maxHp: 100
+  _maxHp: 350
   _contactDamagePerSecond: 30
   _contactRange: 1.2
+  _walkDuration: 1.5
+  _walkRadius: 2.5
+  _walkSpeed: 2
+  _idleDuration: 2
+  _perchJitter: 1.5
   _machine: {fileID: 0}
   _childBugData: {fileID: 11400000, guid: 98c22bbcd407e9f47bd1a4048e5cb2c4, type: 2}
   _childCountPerLanding: 4

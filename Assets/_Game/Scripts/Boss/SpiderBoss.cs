@@ -23,11 +23,10 @@ namespace DrillCorp.Boss
         // ─── v2 상수 (V2-prototype.html line 715~717) ───
         private const int PERCH_COUNT = 6;
         private const float PERCH_RADIUS = 15f;          // v2 BOSS_PERCH_R=200 (px) → Unity 8m
-        private const float JUMP_DURATION = 0.667f;     // v2 jumpT += 0.025 → 1.0 takes 40 frames
         private const float JUMP_HEIGHT = 3.6f;         // v2 sin*90 (px) → Unity 3.6m
 
-        // 상태 머신 — 점프 → 짧은 walk → 정지 → 다음 점프 의 자연스러운 흐름.
-        private enum BossState { Walking, Idle, Jumping }
+        // 상태 머신 — 점프 → 공격(소환) → 짧은 walk → 정지 → 다음 점프.
+        private enum BossState { Walking, Idle, Jumping, Attacking }
 
         [Header("Stats")]
         [SerializeField] private float _maxHp = 500f;
@@ -50,6 +49,22 @@ namespace DrillCorp.Boss
         [Tooltip("perch 도착 위치에 추가되는 랜덤 jitter 반경. 0 이면 정확히 perch 자리.")]
         [Min(0f)]
         [SerializeField] private float _perchJitter = 1.5f;
+        [Tooltip("점프 한 번의 최소 비행 시간(초). 매 점프마다 [Min, Max] 사이 랜덤. v2 기본은 0.667초.")]
+        [Min(0.1f)]
+        [SerializeField] private float _jumpDurationMin = 0.5f;
+        [Tooltip("점프 한 번의 최대 비행 시간(초). Min 보다 작거나 같으면 고정값.")]
+        [Min(0.1f)]
+        [SerializeField] private float _jumpDurationMax = 1.0f;
+
+        [Header("Attack (착지 후 새끼 소환)")]
+        [Tooltip("공격 모션 전체 시간(초). 클립 길이에 맞추기 — 너무 짧으면 모션 잘림. " +
+                 "Animator Attack state 의 default speed=1 기준.")]
+        [Min(0.1f)]
+        [SerializeField] private float _attackDuration = 2.0f;
+        [Tooltip("공격 모션 중 어느 시점에 새끼를 소환할지 (0=시작 직후, 0.5=중간, 1=거의 끝). " +
+                 "찌르기 임팩트 프레임에 맞추는 게 game-feel 가장 좋음.")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _attackSpawnFraction = 0.5f;
 
         [Header("References")]
         [SerializeField] private Transform _machine;
@@ -104,8 +119,12 @@ namespace DrillCorp.Boss
 
         // 점프 보간 상태
         private float _jumpT;
+        private float _jumpDuration;            // 이번 점프의 비행 시간 (Min~Max 랜덤)
         private Vector3 _jumpFrom;
         private Vector3 _jumpTo;
+
+        // 공격 상태 — 모션 중간에 1회 소환하기 위한 플래그·타이머
+        private bool _attackSpawnedThisCycle;
 
         // 외부에서 점프 중인지 알아야 하는 곳(접촉 피해 등) 호환성용
         private bool IsJumping => _state == BossState.Jumping;
@@ -163,9 +182,10 @@ namespace DrillCorp.Boss
 
             switch (_state)
             {
-                case BossState.Walking: UpdateWalking(); break;
-                case BossState.Idle:    UpdateIdle();    break;
-                case BossState.Jumping: UpdateJump();    break;
+                case BossState.Walking:   UpdateWalking();   break;
+                case BossState.Idle:      UpdateIdle();      break;
+                case BossState.Jumping:   UpdateJump();      break;
+                case BossState.Attacking: UpdateAttacking(); break;
             }
 
             UpdateContactDamage();
@@ -207,9 +227,27 @@ namespace DrillCorp.Boss
             _jumpTo = _perchAnchor;
             _perchIdx = next;
             _jumpT = 0f;
+            // 매 점프마다 비행 시간 랜덤 — 단조로운 패턴 깨기
+            float minD = Mathf.Max(0.1f, _jumpDurationMin);
+            float maxD = Mathf.Max(minD, _jumpDurationMax);
+            _jumpDuration = Random.Range(minD, maxD);
 
             _state = BossState.Jumping;
             if (_animator != null) _animator.SetFloat(_speedParam, 1f);
+        }
+
+        // 착지 직후 진입 — 공격 모션 재생 + 모션 중간에 새끼 소환.
+        // 공격 끝나야 비로소 walk 로 전환되어 다음 점프 사이클 시작.
+        private void EnterAttacking()
+        {
+            _state = BossState.Attacking;
+            _stateTimer = _attackDuration;
+            _attackSpawnedThisCycle = false;
+            if (_animator != null)
+            {
+                _animator.SetFloat(_speedParam, 0f);  // Walk 트랜지션 막기
+                _animator.SetTrigger(_attackTrigger);
+            }
         }
 
         // ─── 상태 업데이트 ────────────────────────────────────────
@@ -248,7 +286,7 @@ namespace DrillCorp.Boss
 
         private void UpdateJump()
         {
-            _jumpT = Mathf.Min(1f, _jumpT + Time.deltaTime / JUMP_DURATION);
+            _jumpT = Mathf.Min(1f, _jumpT + Time.deltaTime / _jumpDuration);
 
             // XZ 평면 보간
             Vector3 flat = Vector3.Lerp(_jumpFrom, _jumpTo, _jumpT);
@@ -261,8 +299,34 @@ namespace DrillCorp.Boss
             if (_jumpT >= 1f)
             {
                 transform.position = _jumpTo;
+                EnterAttacking();   // 공격 모션 → (중간에 소환) → walk 로 전환
+            }
+        }
+
+        // 공격 모션 진행 중 — 정해진 시점(_attackSpawnFraction)에 새끼 1회 소환.
+        // 모션 끝나면 EnterWalking 으로 walk 전환 (Speed=1 → Animator 가 Attack→Walk 트랜지션).
+        private void UpdateAttacking()
+        {
+            _stateTimer -= Time.deltaTime;
+            FaceMachine();
+
+            // 경과 비율 — 0 (방금 시작) ~ 1 (다 끝남)
+            float elapsedFraction = 1f - Mathf.Clamp01(_stateTimer / _attackDuration);
+            if (!_attackSpawnedThisCycle && elapsedFraction >= _attackSpawnFraction)
+            {
                 SpawnChildren();
-                EnterWalking();   // 착지 후 짧은 walk
+                _attackSpawnedThisCycle = true;
+            }
+
+            if (_stateTimer <= 0f)
+            {
+                // 미처 소환 안 됐으면 안전망으로 1회 호출 (fraction 1.0 케이스 등)
+                if (!_attackSpawnedThisCycle)
+                {
+                    SpawnChildren();
+                    _attackSpawnedThisCycle = true;
+                }
+                EnterWalking();
             }
         }
 
