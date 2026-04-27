@@ -55,6 +55,7 @@ namespace DrillCorp.Machine
         public MachineData MachineData => _machineData;
 
         private bool _isSessionActive;
+        private bool _bossKilled;            // v2 — 거미 보스 처치 = 즉시 게임 클리어
         private int _sessionGemsCollected;
         private int _sessionBugsKilled;
 
@@ -152,6 +153,7 @@ namespace DrillCorp.Machine
             _sessionGemsCollected = 0;
             _sessionBugsKilled = 0;
             _sessionOre = 0f;
+            _bossKilled = false;
             _isSessionActive = true;
             GameEvents.OnSessionOreChanged?.Invoke(0);
             GameEvents.OnSessionGemsChanged?.Invoke(0);
@@ -162,6 +164,7 @@ namespace DrillCorp.Machine
             GameEvents.OnGemCollected   += OnGemCollected;
             GameEvents.OnBugKilled      += OnBugKilled;
             GameEvents.OnBugScoreEarned += OnBugScoreEarned;
+            GameEvents.OnBossKilled     += OnBossKilled;
         }
 
         private void OnDisable()
@@ -169,6 +172,7 @@ namespace DrillCorp.Machine
             GameEvents.OnGemCollected   -= OnGemCollected;
             GameEvents.OnBugKilled      -= OnBugKilled;
             GameEvents.OnBugScoreEarned -= OnBugScoreEarned;
+            GameEvents.OnBossKilled     -= OnBossKilled;
         }
 
         private void OnGemCollected(int amount)
@@ -183,6 +187,13 @@ namespace DrillCorp.Machine
         {
             _sessionOre += score * 0.5f;
             GameEvents.OnSessionOreChanged?.Invoke(SessionOre);
+        }
+
+        // v2 — 거미 보스 처치 = 즉시 클리어 (mineTarget 미달이어도 승리).
+        // CheckSessionEnd 가 다음 프레임에 IsBossKilled 체크해서 SessionSuccess 호출.
+        private void OnBossKilled()
+        {
+            _bossKilled = true;
         }
 
         private void Mining()
@@ -220,10 +231,10 @@ namespace DrillCorp.Machine
                 DataManager.Instance?.StoreSessionResult(false, oreReward, gemReward, _sessionBugsKilled);
                 GameManager.Instance?.SessionFailed();
             }
-            else if (IsMiningTargetReached)
+            else if (IsMiningTargetReached || _bossKilled)
             {
                 _isSessionActive = false;
-                // v2 승리 정산 — 세션 광석·보석 전액 적립.
+                // v2 승리 정산 — 세션 광석·보석 전액 적립. (mineTarget 도달 또는 보스 처치)
                 int oreReward = SessionOre;
                 int gemReward = _sessionGemsCollected;
                 DataManager.Instance?.AddOre(oreReward);

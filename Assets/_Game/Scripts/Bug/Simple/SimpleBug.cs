@@ -289,8 +289,13 @@ namespace DrillCorp.Bug.Simple
                 PlayDeathVfx();   // 치명타 — 사망 VFX만
                 GameEvents.OnBugKilled?.Invoke(_data != null ? (int)_data.Kind : 0);
                 GameEvents.OnBugScoreEarned?.Invoke(_score);   // v2 — sessionOre += score*0.5
-                bool isElite = _data != null && _data.Kind == SimpleBugData.BugKind.Elite;
-                GameEvents.OnBugDied?.Invoke(transform.position, isElite);
+                // v2 — 새끼 거미는 보석 드랍 안 함 (dropChance bossChild?0:...).
+                // OnBugDied 발행 자체를 스킵해 GemDropSpawner 가 분기 진입을 못 함.
+                if (_data == null || !_data.IsBossChild)
+                {
+                    bool isElite = _data != null && _data.Kind == SimpleBugData.BugKind.Elite;
+                    GameEvents.OnBugDied?.Invoke(transform.position, isElite);
+                }
                 Destroy(gameObject);
             }
             else

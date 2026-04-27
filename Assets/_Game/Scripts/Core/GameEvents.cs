@@ -42,5 +42,9 @@ namespace DrillCorp.Core
 
         // 캐릭터 선택
         public static Action<string> OnCharacterSelected;     // v2 — 선택된 캐릭터 ID
+
+        // 보스 (v2 거미 보스)
+        public static Action<Vector3> OnBossSpawned;          // 보스 등장 (위치)
+        public static Action OnBossKilled;                    // 보스 처치 → 게임 클리어
     }
 }

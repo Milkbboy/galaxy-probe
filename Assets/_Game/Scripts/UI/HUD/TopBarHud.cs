@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using DrillCorp.Ability;
+using DrillCorp.Boss;
 using DrillCorp.Core;
 using DrillCorp.Diagnostics;
 using DrillCorp.Machine;
@@ -34,6 +35,12 @@ namespace DrillCorp.UI.HUD
         [Header("Exit Button")]
         [SerializeField] private Button _exitButton;
 
+        [Header("Boss Summon (디버그)")]
+        [Tooltip("클릭 시 BossSpawnManager.ForceSpawn() 호출. 디버그/테스트 용.")]
+        [SerializeField] private Button _summonBossButton;
+        [Tooltip("비우면 FindAnyObjectByType<BossSpawnManager>() 자동 탐색.")]
+        [SerializeField] private BossSpawnManager _bossSpawnManager;
+
         [Header("References")]
         [SerializeField] private MachineController _machine;
         [Tooltip("비우면 FindAnyObjectByType<AbilitySlotController>() 자동 탐색. 캐릭터 이름·테마컬러 소스.")]
@@ -47,6 +54,7 @@ namespace DrillCorp.UI.HUD
         {
             if (_machine == null) _machine = FindAnyObjectByType<MachineController>();
             if (_exitButton != null) _exitButton.onClick.AddListener(OnExitClicked);
+            if (_summonBossButton != null) _summonBossButton.onClick.AddListener(OnSummonBossClicked);
         }
 
         private void Start()
@@ -176,6 +184,20 @@ namespace DrillCorp.UI.HUD
         private void OnExitClicked()
         {
             GameManager.Instance?.LoadTitleScene();
+        }
+
+        // ───────────── 보스 소환 (디버그) ─────────────
+        private void OnSummonBossClicked()
+        {
+            if (_bossSpawnManager == null)
+                _bossSpawnManager = FindAnyObjectByType<BossSpawnManager>();
+
+            if (_bossSpawnManager == null)
+            {
+                Debug.LogWarning("[TopBarHud] BossSpawnManager 못 찾음 — 씬에 추가됐는지 확인");
+                return;
+            }
+            _bossSpawnManager.ForceSpawn();
         }
     }
 }

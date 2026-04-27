@@ -26,6 +26,10 @@ namespace DrillCorp.Bug.Simple
         [Header("Visual")]
         public Color Tint = Color.white;
 
+        [Header("Boss Child (v2 새끼 거미)")]
+        [Tooltip("거미 보스의 새끼 거미일 때 true. 보석 드랍 안 함 (v2 dropChance bossChild?0:...).")]
+        public bool IsBossChild = false;
+
         public float GetHp(int wave) => BaseHp + Mathf.Floor(wave * HpPerWave);
         public float GetSpeed(int wave) => BaseSpeed + wave * SpeedPerWave + Random.Range(0f, SpeedRandom);
     }
