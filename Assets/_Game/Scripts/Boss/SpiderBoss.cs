@@ -12,20 +12,44 @@ namespace DrillCorp.Boss
     /// v2 거미 보스 — 6각 perch 자리에서 점프하며 머신을 압박.
     /// 근거: docs/V2-prototype.html spawnBoss/tickBoss/damageBoss
     /// 좌표계: 탑다운 — perch는 머신 중심 XZ 평면에 배치, Y(높이)는 점프 시에만 변동.
+    ///
+    /// 행동 사이클: Jumping(0.67s) → Walking(_walkDuration) → Idle(_idleDuration) → Jumping ...
+    /// - perch 도착 위치에 _perchJitter 만큼 랜덤 오프셋 (매번 같은 자리 X)
+    /// - Walking: perch 중심 _walkRadius 반경 안에서 랜덤 목표 어슬렁
+    /// - Idle: 머신 응시·정지
     /// </summary>
     public class SpiderBoss : MonoBehaviour, IDamageable
     {
         // ─── v2 상수 (V2-prototype.html line 715~717) ───
         private const int PERCH_COUNT = 6;
         private const float PERCH_RADIUS = 15f;          // v2 BOSS_PERCH_R=200 (px) → Unity 8m
-        private const float JUMP_INTERVAL = 5f;         // v2 BOSS_JUMP_INTERVAL=300 frames @ 60fps
         private const float JUMP_DURATION = 0.667f;     // v2 jumpT += 0.025 → 1.0 takes 40 frames
         private const float JUMP_HEIGHT = 3.6f;         // v2 sin*90 (px) → Unity 3.6m
+
+        // 상태 머신 — 점프 → 짧은 walk → 정지 → 다음 점프 의 자연스러운 흐름.
+        private enum BossState { Walking, Idle, Jumping }
 
         [Header("Stats")]
         [SerializeField] private float _maxHp = 500f;
         [SerializeField] private float _contactDamagePerSecond = 30f;
         [SerializeField] private float _contactRange = 1.2f;
+
+        [Header("Movement (자연스러운 행동)")]
+        [Tooltip("perch 도달 후 주위를 어슬렁거리는 시간(초). 0 이면 바로 정지.")]
+        [Min(0f)]
+        [SerializeField] private float _walkDuration = 1.5f;
+        [Tooltip("perch 중심에서 walk 가능한 최대 반경. 너무 크면 perch 패턴 흐려짐.")]
+        [Min(0f)]
+        [SerializeField] private float _walkRadius = 2.5f;
+        [Tooltip("walk 속도 (유닛/초). 빠르면 부산해 보임.")]
+        [Min(0f)]
+        [SerializeField] private float _walkSpeed = 2.0f;
+        [Tooltip("walk 끝난 후 다음 점프까지 대기 시간(초). v2 = 5 frame ≈ 5초.")]
+        [Min(0f)]
+        [SerializeField] private float _idleDuration = 2.0f;
+        [Tooltip("perch 도착 위치에 추가되는 랜덤 jitter 반경. 0 이면 정확히 perch 자리.")]
+        [Min(0f)]
+        [SerializeField] private float _perchJitter = 1.5f;
 
         [Header("References")]
         [SerializeField] private Transform _machine;
@@ -71,13 +95,20 @@ namespace DrillCorp.Boss
         private Hp3DBar _hpBar;
         private float _hitVfxNextAllowedTime;
 
-        // 점프 상태
+        // 행동 상태
+        private BossState _state;
+        private float _stateTimer;             // 현재 상태 남은 시간 (Walk/Idle 용)
         private int _perchIdx;
-        private float _jumpTimer;
-        private bool _isJumping;
+        private Vector3 _perchAnchor;          // 현재 perch 중심 (jitter 후 실제 도착 자리)
+        private Vector3 _walkTarget;           // walk 목표 좌표
+
+        // 점프 보간 상태
         private float _jumpT;
         private Vector3 _jumpFrom;
         private Vector3 _jumpTo;
+
+        // 외부에서 점프 중인지 알아야 하는 곳(접촉 피해 등) 호환성용
+        private bool IsJumping => _state == BossState.Jumping;
 
         public float CurrentHealth => _hp;
         public float MaxHealth => _maxHp;
@@ -99,11 +130,11 @@ namespace DrillCorp.Boss
             _hp = _maxHp;
             _isDead = false;
 
-            // 가장 가까운 perch 인덱스부터 시작
+            // 가장 가까운 perch 인덱스부터 시작 — 등장 직후엔 idle 부터 (점프 즉시 X)
             _perchIdx = Random.Range(0, PERCH_COUNT);
-            transform.position = GetPerchPosition(_perchIdx);
-            _jumpTimer = JUMP_INTERVAL;
-            _isJumping = false;
+            _perchAnchor = GetPerchPosition(_perchIdx);
+            transform.position = _perchAnchor;
+            EnterIdle();
 
             FaceMachine();   // 등장 즉시 머신 바라봄
 
@@ -130,37 +161,89 @@ namespace DrillCorp.Boss
         {
             if (_isDead || _machine == null) return;
 
-            if (_isJumping) UpdateJump();
-            else UpdateIdle();
+            switch (_state)
+            {
+                case BossState.Walking: UpdateWalking(); break;
+                case BossState.Idle:    UpdateIdle();    break;
+                case BossState.Jumping: UpdateJump();    break;
+            }
 
             UpdateContactDamage();
         }
 
-        private void UpdateIdle()
+        // ─── 상태 진입 ────────────────────────────────────────────
+
+        // perch 도착 직후 — 짧게 주변 어슬렁 후 Idle 로 전환.
+        // _walkDuration 0 이면 즉시 Idle.
+        private void EnterWalking()
         {
-            // Animator: 정지 상태 = Walk 클립이 다리 idle 모션 담당 (Speed=0)
-            if (_animator != null) _animator.SetFloat(_speedParam, 0f);
+            if (_walkDuration <= 0f || _walkRadius <= 0f)
+            {
+                EnterIdle();
+                return;
+            }
 
-            // perch 대기 중에도 머신을 계속 바라봄 (머신이 움직일 일은 없지만 안전)
-            FaceMachine();
-
-            _jumpTimer -= Time.deltaTime;
-            if (_jumpTimer <= 0f) StartJump();
+            _state = BossState.Walking;
+            _stateTimer = _walkDuration;
+            PickNewWalkTarget();
+            if (_animator != null) _animator.SetFloat(_speedParam, 1f);
         }
 
-        private void StartJump()
+        private void EnterIdle()
+        {
+            _state = BossState.Idle;
+            _stateTimer = _idleDuration;
+            if (_animator != null) _animator.SetFloat(_speedParam, 0f);
+        }
+
+        private void EnterJumping()
         {
             int next = _perchIdx;
             while (next == _perchIdx) next = Random.Range(0, PERCH_COUNT);
 
             _jumpFrom = transform.position;
-            _jumpTo = GetPerchPosition(next);
+            // perch 위치에 약간의 jitter 적용 — 매번 같은 자리 안 오게
+            _perchAnchor = GetPerchPosition(next) + RandomXzInsideRadius(_perchJitter);
+            _jumpTo = _perchAnchor;
             _perchIdx = next;
-            _isJumping = true;
             _jumpT = 0f;
 
-            // 점프 중 다리 모션 = Walk 클립 재생
+            _state = BossState.Jumping;
             if (_animator != null) _animator.SetFloat(_speedParam, 1f);
+        }
+
+        // ─── 상태 업데이트 ────────────────────────────────────────
+
+        private void UpdateWalking()
+        {
+            _stateTimer -= Time.deltaTime;
+
+            // 목표 방향으로 이동 (XZ 평면)
+            Vector3 toTarget = _walkTarget - transform.position;
+            toTarget.y = 0f;
+            float dist = toTarget.magnitude;
+            if (dist < 0.1f)
+            {
+                PickNewWalkTarget();
+            }
+            else
+            {
+                Vector3 dir = toTarget / dist;
+                float step = Mathf.Min(dist, _walkSpeed * Time.deltaTime);
+                transform.position += dir * step;
+            }
+
+            FaceMachine();
+
+            if (_stateTimer <= 0f) EnterIdle();
+        }
+
+        private void UpdateIdle()
+        {
+            FaceMachine();
+
+            _stateTimer -= Time.deltaTime;
+            if (_stateTimer <= 0f) EnterJumping();
         }
 
         private void UpdateJump()
@@ -173,22 +256,35 @@ namespace DrillCorp.Boss
             float hop = Mathf.Sin(_jumpT * Mathf.PI) * JUMP_HEIGHT;
             transform.position = new Vector3(flat.x, _jumpFrom.y + hop, flat.z);
 
-            // 머신 방향으로 회전 (다리 진행 방향)
             FaceMachine();
 
             if (_jumpT >= 1f)
             {
                 transform.position = _jumpTo;
-                _isJumping = false;
-                _jumpTimer = JUMP_INTERVAL;
                 SpawnChildren();
+                EnterWalking();   // 착지 후 짧은 walk
             }
+        }
+
+        // ─── walk 헬퍼 ────────────────────────────────────────────
+
+        private void PickNewWalkTarget()
+        {
+            _walkTarget = _perchAnchor + RandomXzInsideRadius(_walkRadius);
+        }
+
+        // XZ 평면 반경 r 안의 랜덤 오프셋 (Y=0).
+        private static Vector3 RandomXzInsideRadius(float r)
+        {
+            if (r <= 0f) return Vector3.zero;
+            Vector2 p = Random.insideUnitCircle * r;
+            return new Vector3(p.x, 0f, p.y);
         }
 
         private void UpdateContactDamage()
         {
-            // perch에서 대기 중일 때만 머신에 접촉 피해 (점프 중엔 공중)
-            if (_isJumping) return;
+            // 점프 중엔 공중이라 접촉 피해 없음. Walk/Idle 상태에서만.
+            if (IsJumping) return;
 
             Vector3 toMachine = _machine.position - transform.position;
             toMachine.y = 0f;
@@ -316,9 +412,8 @@ namespace DrillCorp.Boss
 #if UNITY_EDITOR
         private void OnDrawGizmosSelected()
         {
-            // ─── Perch 6자리 (보라) ───
+            // ─── Perch 6자리 (보라) + jitter 반경 (옅은) ───
             Vector3 center = _machine != null ? _machine.position : transform.position;
-            Gizmos.color = new Color(0.7f, 0.3f, 1f, 0.6f);
             for (int i = 0; i < PERCH_COUNT; i++)
             {
                 float angle = (60f + i * 60f) * Mathf.Deg2Rad;
@@ -326,7 +421,21 @@ namespace DrillCorp.Boss
                     center.x + Mathf.Cos(angle) * PERCH_RADIUS,
                     0f,
                     center.z + Mathf.Sin(angle) * PERCH_RADIUS);
+                // 정확한 perch 점
+                Gizmos.color = new Color(0.7f, 0.3f, 1f, 0.6f);
                 Gizmos.DrawWireSphere(p, 0.5f);
+                // jitter 반경 (착지 가능 범위)
+                if (_perchJitter > 0f)
+                {
+                    Gizmos.color = new Color(0.7f, 0.3f, 1f, 0.18f);
+                    Gizmos.DrawWireSphere(p, _perchJitter);
+                }
+                // walk 반경 (어슬렁거리는 범위)
+                if (_walkRadius > 0f && _walkDuration > 0f)
+                {
+                    Gizmos.color = new Color(1f, 0.6f, 0.2f, 0.25f);
+                    Gizmos.DrawWireSphere(p, _walkRadius);
+                }
             }
 
             // ─── VFX Socket 시각화 ───

@@ -6,6 +6,54 @@
 
 ---
 
+## [Unreleased] - 2026-04-27 — v2 거미 보스 풀 포팅
+
+> 상세: [Sys-Boss.md](Sys-Boss.md), 근거 [V2-prototype.html](V2-prototype.html) line 715~880
+> 맥락: v2 원본의 BOSS_KILL_THRESHOLD=700 도달 시 등장하는 거미 보스를 Unity 6 탑다운 좌표계로 풀 포팅. 외부 SpiderAnimation.fbx (110본 + Walk/Attack/Death 3 take) 활용, 자체 행동 사이클은 자연스럽게 점프→walk→idle 순환.
+
+### Added — 신규 시스템
+
+- **`Boss/SpiderBoss.cs`** — 본체. 6 perch 점프(0.67초 포물선) + 착지 jitter + walk 1.5초 + idle 2초 사이클. `BossState` enum (Idle/Walking/Jumping) 상태 머신. HP 500, 머신 접촉 30 dps. `IDamageable` 구현 (Bug 레이어 + Trigger Collider 로 모든 무기에 피격 가능).
+- **`Boss/BossSpawnManager.cs`** — 누적 처치 점수가 임계값(기본 250) 도달 시 자동 등장. `ForceSpawn()` 으로 디버그 즉시 소환. 세션당 1회 등장 (`_spawned` 플래그).
+- **`UI/HUD/BossWarningUI.cs`** — 화면 중앙 페이드 인/아웃 경고 패널 ("보스 등장!"). `GameEvents.OnBossSpawned` 구독, 0.3s fade in / 2.5s hold / 0.5s fade out.
+- **`Editor/BossWarningSetupEditor.cs`** — `Drill-Corp/HUD/Build Boss Warning` 메뉴. Canvas 자식 자동 생성 + CanvasGroup + 검보라 박스 배경 + 보라 테두리 + D2Coding 한글 폰트 + BossWarningUI 컴포넌트 자동 바인딩.
+
+### Added — 신규 에셋
+
+- **`Models/SpiderAnimation.fbx`** + meta (Scale Factor 100, Avatar 정의됨, Spider:Root 본 계층 110개)
+- **`Models/M_SpiderBoss.mat`** + Diffuse texture
+- **`Animations/SpiderBoss.controller`** — Idle / Walk / Attack / Death 4 state. Speed float / TriggerAttack / TriggerDeath 파라미터.
+- **`Prefabs/Boss/SpiderBoss.prefab`** — 루트(Bug 레이어 + SphereCollider trigger + SpiderBoss + FxSocket 자식) + SpiderAnimation 자식(Animator + Avatar)
+- **`Data/Bugs/SimpleBug_BossChild.asset`** + `Prefabs/Bugs/Simple/SimpleBug_BossChild.prefab` — Swift 베이스 + IsBossChild=true. 보스 착지 시 3마리 소환.
+
+### Added — 이벤트 / 데이터
+
+- **`GameEvents.OnBossSpawned`** (Action&lt;Vector3&gt;) — 보스 등장. BossWarningUI 구독.
+- **`GameEvents.OnBossKilled`** (Action) — 보스 처치. MachineController 구독해 `_bossKilled = true` → 다음 프레임 SessionSuccess.
+- **`SimpleBugData.IsBossChild`** (bool) — true 시 SimpleBug.TakeDamage 가 OnBugDied 발행 자체를 스킵 → GemDropSpawner 분기 진입 못 함 → 보석 드랍 0%. v2 `dropChance bossChild?0:...` 동등 동작.
+
+### Added — UI
+
+- TopBarHud 에 **"🕷 보스 소환" 디버그 버튼** 추가 (나가기 버튼 옆). 클릭 → `BossSpawnManager.ForceSpawn()`.
+
+### Changed
+
+- **`MachineController.CheckSessionEnd`** — 승리 분기에 `|| _bossKilled` 추가. mineTarget 미달이어도 보스 처치 시 즉시 `SessionSuccess`.
+- **`SimpleBug.TakeDamage`** — IsBossChild 분기로 OnBugDied 발행 조건부 스킵.
+
+### v2 원본 차이
+
+| 항목 | v2 원본 | Unity 포팅 | 이유 |
+|---|---|---|---|
+| KillThreshold | 700 | 250 | 시트 KillTarget 합계 비례 |
+| 점프 perch jitter | 없음 | 1.5m 랜덤 | 자연스러움 ↑ |
+| 착지 후 walk | 없음 | 1.5초 어슬렁 | 거미스러운 행동 추가 |
+| 보스 데미지 배율 | 무기마다 1~3× | 1× 일괄 | 통합 우선, 밸런스 후속 |
+| 새끼 거미 type | type:4 (전용) | SimpleBug + IsBossChild 플래그 | 시스템 재활용 |
+| 처치 후 endGame | setTimeout(2000ms) | OnBossKilled 즉시, 본체 4초 후 Destroy | Unity 이벤트 흐름 |
+
+---
+
 ## [Unreleased] - 2026-04-23 — SimpleBug 전면 교체 Phase A~D + 레거시 코드·에셋·문서 일괄 정리
 
 > 상세: `docs/SimpleBugSheet.md` (SSoT 임시 문서), 프로젝트 메모리 `project_simplebug_migration.md`

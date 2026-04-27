@@ -1,6 +1,6 @@
 # 아키텍처 패턴
 
-> 최종 갱신: 2026-04-20
+> 최종 갱신: 2026-04-27 — 거미 보스 시스템 추가 (Boss 계층 + OnBossSpawned/Killed 이벤트)
 
 ## 전체 구조
 
@@ -20,10 +20,13 @@ InGame ── MachineController / WaveManager / AimController
        │           Sniper / Bomb / MachineGun / Laser / Saw  (v2 5종, 미해금은 SetActive(false))
        │           (legacy: Shotgun / BurstGun / LockOn — 비활성)
        ├─ Pickup  : Gem (월드 보석, 호버 채집) + GemDropSpawner (싱글턴, OnBugDied 구독)
+       ├─ Boss    : SpiderBoss (6 perch 점프 + walk + 새끼 소환 + HP 바 + Hit/Death VFX)
+       │           BossSpawnManager (누적 처치 점수 임계 도달 시 자동 등장)
        ├─ Camera  : DynamicCamera + CameraSettingsData
        └─ UI      : Minimap (MinimapCamera/UI/Icon), HPBar, FuelBar
                     MiningUI / GemCounterUI (CurrencyHud — 우상단 광석/보석 카운터)
                     SessionResultUI (세션 보석 누적 표시)
+                    BossWarningUI (보스 등장 화면 중앙 페이드 경고)
                     Sniper/Bomb/MachineGun/Laser AimRingBinder (미해금 시 호 자동 숨김)
 Data (SO)  BugData (+ _isElite) / BugBehaviorData / WaveData / FormationData
            WeaponData (+ Sniper/Bomb/MachineGun/Laser/Saw Data) + WeaponUpgradeData
@@ -49,11 +52,14 @@ public static class GameEvents {
     public static Action<int> OnMiningGained, OnGemCollected;  // 세션 누적 HUD
     public static Action<string> OnWeaponUnlocked, OnAbilityUnlocked, OnCharacterSelected;
     public static Action<string> OnWeaponUpgraded;    // (upgradeId) — 무기 RefreshEffectiveStats 트리거
+    public static Action<Vector3> OnBossSpawned;      // 보스 등장 (위치) — BossWarningUI 구독
+    public static Action OnBossKilled;                // 보스 처치 → MachineController._bossKilled = true → 클리어
 }
 ```
 흐름 예 1 — 데미지: 벌레 공격 → `OnMachineDamaged` → MachineController HP↓ / UI 갱신 / GameManager 종료 체크.
 흐름 예 2 — 보석 드랍: BugController.Die → `OnBugDied(pos, isElite)` → GemDropSpawner 확률 롤 → Gem.Create(pos) → 호버 채집 → `OnGemCollected` → HUD/SessionResult 누적.
 흐름 예 3 — 무기 강화: WeaponUpgradeManager.TryBuy → `OnWeaponUpgraded(upgradeId)` → 해당 무기의 RefreshEffectiveStats() 자동 호출.
+흐름 예 4 — 보스 처치: SpiderBoss.TakeDamage HP 0 → `OnBossKilled` → MachineController.CheckSessionEnd 다음 프레임 → `SessionSuccess` (mineTarget 미달 무시).
 
 ## 3. ScriptableObject (데이터 주도)
 코드 수정 없이 인스펙터에서 튜닝. 시트 Import로 자동 생성(→ `Data-SheetsGuide.md`).

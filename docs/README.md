@@ -6,9 +6,10 @@
 
 - **장르** — 탑다운 로그라이트 디펜스 슈팅 서바이벌 (Unity 6 URP, Steam PC, 1920×1080)
 - **컨셉** — 중앙 **채굴 머신**을 600~1,000 마리 벌레 떼로부터 방어. 플레이어는 이동 없이 마우스로만 조준·사격
-- **승리/패배** — 채굴 목표량(`mineTarget`) 달성 = 승리 / 머신 HP 0 = 패배 (1세션 약 1분)
+- **승리/패배** — 채굴 목표량(`mineTarget`) 달성 OR **거미 보스 처치** = 승리 / 머신 HP 0 = 패배 (1세션 약 1분)
 - **캐릭터 × 어빌리티** — 3 캐릭터 (지누스/사라/빅터) × 슬롯 3 = **어빌리티 9종**, 보석 해금 + req 체인
 - **무기 5종** — 저격(기본 해금) → 폭탄 → 기관총 → 레이저 → 회전톱날, **동시 발동** (슬롯 전환 없음)
+- **거미 보스** — 누적 처치 ≥ 250 시 등장. 6각 perch 점프 + 새끼 거미 소환. 처치 = 즉시 클리어
 - **이중 재화** — 🪨 광석 (채굴+처치) / 💎 보석 (벌레 드랍 호버 채집)
 - **데이터 주도** — Google Sheets 8 탭 → ScriptableObject Import (기획자 직접 튜닝)
 
@@ -56,6 +57,7 @@
 | 무기 시스템 (v2 5종: Sniper/Bomb/Gun/Laser/Saw, self-driven 동시 발동) | [Sys-Weapon.md](Sys-Weapon.md) |
 | 무기 시스템 (Phase 3 아카이브 — Shotgun/BurstGun/LockOn) | [archive/WeaponSystem.md](archive/WeaponSystem.md) |
 | 보석 드랍/채집 + 이중 재화 + mineTarget 승리 조건 | [Sys-Gem.md](Sys-Gem.md) |
+| **거미 보스 (6 perch 점프 + 새끼 소환 + 처치 = 클리어)** | [Sys-Boss.md](Sys-Boss.md) |
 | VFX 3D 전환 (Polygon Arsenal 기반, 1차 완료) | [archive/VFX_3D_MigrationPlan.md](archive/VFX_3D_MigrationPlan.md) |
 | 카메라 (Nuclear Throne 방식) | [Sys-Camera.md](Sys-Camera.md) |
 | 미니맵 (RenderTexture) | [Sys-Minimap.md](Sys-Minimap.md) |
