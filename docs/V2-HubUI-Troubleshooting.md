@@ -2,7 +2,7 @@
 
 > 작성: 2026-04-18
 > 범위: v2.html 프로토타입 → Unity Hub Canvas 이식 (Title 씬 HubPanel)
-> 관련: [V2_IntegrationPlan.md](V2_IntegrationPlan.md), [v2.html](v2.html)
+> 관련: [V2-IntegrationPlan.md](V2-IntegrationPlan.md), [v2.html](V2-prototype.html)
 
 uGUI 다단 레이아웃을 동적으로 빌드하면서 만난 문제와 해결책을 시간순으로 정리. 같은 패턴이 다른 패널에서 재발할 가능성이 높아 재사용 가능한 규칙 형태로 정리한다.
 

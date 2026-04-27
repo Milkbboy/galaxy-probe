@@ -224,7 +224,7 @@ vfx.transform.localScale = Vector3.Scale(vfx.transform.localScale,
 
 ## 참고 문서
 
-- [Optimization_Overview.md](Optimization_Overview.md) — 1+2차 통합 문서 (초심자용 설명 포함)
+- [Sys-Optimization.md](Sys-Optimization.md) — 1+2차 통합 문서 (초심자용 설명 포함)
 - [Optimization_01.md](Optimization_01.md) — 1차 원본
 - [Optimization_02_PlannerPCAnalysis.md](Optimization_02_PlannerPCAnalysis.md) — 2차 (기획자 PC CSV 분석)
 - [Optimization_03_ActiveCodePath.md](Optimization_03_ActiveCodePath.md) — 3차 (현재 씬 핫패스 재조사)

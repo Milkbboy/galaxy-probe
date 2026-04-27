@@ -1,9 +1,8 @@
-# Drill-Corp 데이터 시트 입력 초안
+# Drill-Corp 데이터 시트 입력 초안 (아카이브)
 
-> 작성: 2026-04-23
-> 용도: Google Sheets `SimpleBugData` / `WaveData` 탭에 붙여넣을 **초기 데이터**.
-> 라이프사이클: 시트 입력 완료되면 폴더 삭제 또는 `docs/archive/` 이동 가능.
-> 스키마 문서: [GoogleSheetsGuide.md](../GoogleSheetsGuide.md) · [DataStructure.md](../DataStructure.md)
+> 작성: 2026-04-23 · 아카이브 이동: 2026-04-27 (시트 통합 완료 후)
+> 용도: Google Sheets 8 탭에 붙여넣은 **초기 데이터** 보존본. 시트가 SSoT 가 된 후 참고용.
+> 스키마 문서: [Data-SheetsGuide.md](../../Data-SheetsGuide.md) · [Overview-DataStructure.md](../../Overview-DataStructure.md)
 
 ---
 
@@ -11,14 +10,14 @@
 
 | 파일 | 대상 탭 | 스키마 섹션 |
 |---|---|---|
-| `SimpleBugData.csv` / `.tsv` | `SimpleBugData` | [GoogleSheetsGuide.md §1](../GoogleSheetsGuide.md#1-simplebugdata-시트) |
-| `WaveData.csv` / `.tsv`      | `WaveData`      | [GoogleSheetsGuide.md §2](../GoogleSheetsGuide.md#2-wavedata-시트) |
-| `MachineData.tsv`            | `MachineData`   | [GoogleSheetsGuide.md §3](../GoogleSheetsGuide.md#3-machinedata-시트) |
-| `UpgradeData.tsv`            | `UpgradeData`   | [GoogleSheetsGuide.md §4](../GoogleSheetsGuide.md#4-upgradedata-시트) |
-| `WeaponData.csv`             | `WeaponData`    | [GoogleSheetsGuide.md §5](../GoogleSheetsGuide.md#5-weapondata-시트) — ExtraStats 한 셀 압축 (`key:value\|key:value`) |
-| `WeaponUpgradeData.csv`      | `WeaponUpgradeData` | [GoogleSheetsGuide.md §6](../GoogleSheetsGuide.md#6-weaponupgradedata-시트) — 무기 강화 15종 |
-| `CharacterData.csv`          | `CharacterData` | [GoogleSheetsGuide.md §7](../GoogleSheetsGuide.md#7-characterdata-시트) — 캐릭터 3종, MachineId/Ability1·2·3Id 로 SO 참조 |
-| `AbilityData.csv`            | `AbilityData`   | [GoogleSheetsGuide.md §8](../GoogleSheetsGuide.md#8-abilitydata-시트) — 어빌리티 9종, Cooldown/Damage/Range 등 밸런스 |
+| `SimpleBugData.csv` / `.tsv` | `SimpleBugData` | [Data-SheetsGuide.md §1](../../Data-SheetsGuide.md#1-simplebugdata-시트) |
+| `WaveData.csv` / `.tsv`      | `WaveData`      | [Data-SheetsGuide.md §2](../../Data-SheetsGuide.md#2-wavedata-시트) |
+| `MachineData.tsv`            | `MachineData`   | [Data-SheetsGuide.md §3](../../Data-SheetsGuide.md#3-machinedata-시트) |
+| `UpgradeData.tsv`            | `UpgradeData`   | [Data-SheetsGuide.md §4](../../Data-SheetsGuide.md#4-upgradedata-시트) |
+| `WeaponData.csv`             | `WeaponData`    | [Data-SheetsGuide.md §5](../../Data-SheetsGuide.md#5-weapondata-시트) — ExtraStats 한 셀 압축 (`key:value\|key:value`) |
+| `WeaponUpgradeData.csv`      | `WeaponUpgradeData` | [Data-SheetsGuide.md §6](../../Data-SheetsGuide.md#6-weaponupgradedata-시트) — 무기 강화 15종 |
+| `CharacterData.csv`          | `CharacterData` | [Data-SheetsGuide.md §7](../../Data-SheetsGuide.md#7-characterdata-시트) — 캐릭터 3종, MachineId/Ability1·2·3Id 로 SO 참조 |
+| `AbilityData.csv`            | `AbilityData`   | [Data-SheetsGuide.md §8](../../Data-SheetsGuide.md#8-abilitydata-시트) — 어빌리티 9종, Cooldown/Damage/Range 등 밸런스 |
 
 > 모든 v2 컬럼(`BaseMiningTarget` / `BaseCostOre` / `BaseCostGem` / `OreCostSchedule` / `GemCostSchedule` / `WeaponData.ExtraStats` / `Character/Ability` 신규 등) Importer 파싱 완료 (커밋 `e26b3ef` 까지). 시트에 붙여넣고 Import 누르면 됨. 과거 정렬 계획은 `docs/archive/MachineDataSheetAlignment_Plan.md` 참조.
 
@@ -127,7 +126,7 @@
 - [ ] `Trigger` 철자 (`Manual` / `AutoInterval`)
 - [ ] `IconEmoji` 가 한 셀에 이모지 1개 (구글 시트가 이모지 정상 렌더링)
 - [ ] `RequiredAbilityId` 가 비었거나 다른 행의 `AbilityId` 와 일치 (다른 캐릭터 어빌리티 referencing 가능하지만 권장 X)
-- [ ] `Damage`/`Range`/`Angle` 의미 — `AbilityType` 마다 다르게 해석되니 [CharacterAbilitySystem.md](../CharacterAbilitySystem.md) 참조
+- [ ] `Damage`/`Range`/`Angle` 의미 — `AbilityType` 마다 다르게 해석되니 [Sys-Character.md](../../Sys-Character.md) 참조
 
 ---
 

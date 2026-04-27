@@ -15,7 +15,7 @@
 //   • Assets/_Game/Materials/SawBlade_*.mat                  (3종)
 //   • Weapon_Saw.asset 가 있으면 _bladeVisualPrefab 자동 바인딩
 //
-// 참고: docs/WeaponUnlockUpgradeSystem.md §7, docs/v2.html 1530~1546줄
+// 참고: docs/Sys-Weapon.md §7, docs/v2.html 1530~1546줄
 // ─────────────────────────────────────────────────────────────
 
 using UnityEditor;

@@ -5,7 +5,7 @@ namespace DrillCorp.Data
     /// <summary>
     /// 플레이어 캐릭터 정의.
     /// 3캐릭터 시스템 — 각자 테마 컬러 + 기본 머신 + 고유 어빌리티 3종.
-    /// v2 통합 가이드: docs/CharacterAbilitySystem.md
+    /// v2 통합 가이드: docs/Sys-Character.md
     /// </summary>
     [CreateAssetMenu(fileName = "Character_New", menuName = "Drill-Corp/Character Data", order = 5)]
     public class CharacterData : ScriptableObject

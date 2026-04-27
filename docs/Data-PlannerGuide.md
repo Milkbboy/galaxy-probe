@@ -357,8 +357,8 @@ Import 시 Unity `Console` 창 (메뉴 `Window → General → Console`) 에 로
 
 ## 부록 — 참고 문서 (개발자용)
 
-- 시트 컬럼 풀 정의 + Import 동작 상세: [GoogleSheetsGuide.md](GoogleSheetsGuide.md)
-- 데이터 계층 구조 (시트 ↔ ScriptableObject ↔ 런타임): [DataStructure.md](DataStructure.md)
-- 무기 시스템 설계: [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md)
-- 캐릭터·어빌리티 설계: [CharacterAbilitySystem.md](CharacterAbilitySystem.md)
-- 보석 드랍·이중 재화: [GemMiningSystem.md](GemMiningSystem.md)
+- 시트 컬럼 풀 정의 + Import 동작 상세: [Data-SheetsGuide.md](Data-SheetsGuide.md)
+- 데이터 계층 구조 (시트 ↔ ScriptableObject ↔ 런타임): [Overview-DataStructure.md](Overview-DataStructure.md)
+- 무기 시스템 설계: [Sys-Weapon.md](Sys-Weapon.md)
+- 캐릭터·어빌리티 설계: [Sys-Character.md](Sys-Character.md)
+- 보석 드랍·이중 재화: [Sys-Gem.md](Sys-Gem.md)

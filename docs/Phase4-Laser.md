@@ -1,8 +1,8 @@
 # Phase 4 — 레이저 무기 구현
 
-> 상위 문서: `WEAPON_IMPLEMENTATION_PLAN.md` §7
-> **상태**: ✅ 구현 완료 (2026-04-16) — 폴리싱 단계 진입
-> **원본 기준**: `docs/_.html` L166·L188·L269·L281·L293·L294·L307·L313 — `fireLaser` / `laserBeams` / `updateWeaponUI` / `drawCrosshair` / `drawLasers`
+> 상위 문서: [archive/WEAPON_IMPLEMENTATION_PLAN.md](archive/WEAPON_IMPLEMENTATION_PLAN.md) §7
+> **상태**: ✅ **구현 완료 / 머지됨** (2026-04-16) — 폴리싱 단계 진입. 현행 시스템: [Sys-Weapon.md](Sys-Weapon.md)
+> **원본 기준**: `docs/archive/_v1prototype.html` L166·L188·L269·L281·L293·L294·L307·L313 — `fireLaser` / `laserBeams` / `updateWeaponUI` / `drawCrosshair` / `drawLasers`
 
 ## 🎉 구현 결과 (2026-04-16)
 

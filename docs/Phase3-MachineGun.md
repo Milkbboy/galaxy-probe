@@ -1,7 +1,7 @@
 # Phase 3 — 기관총 무기 구현
 
-> 상위 문서: `WEAPON_IMPLEMENTATION_PLAN.md` §6
-> **상태**: ✅ **구현 완료** (2026-04-16) — Phase 3.5(탄창 pip 행) 포함
+> 상위 문서: [archive/WEAPON_IMPLEMENTATION_PLAN.md](archive/WEAPON_IMPLEMENTATION_PLAN.md) §6
+> **상태**: ✅ **구현 완료 / 머지됨** (2026-04-16) — Phase 3.5(탄창 pip 행) 포함. 현행 시스템: [Sys-Weapon.md](Sys-Weapon.md)
 
 ## 0. 구현 결과 요약
 

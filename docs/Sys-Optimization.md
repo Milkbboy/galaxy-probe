@@ -1,6 +1,6 @@
 # Drill-Corp 최적화 현황
 
-> 최종 갱신 2026-04-23 · 이전 이력은 [Optimization_History.md](Optimization_History.md) 참조
+> 최종 갱신 2026-04-23 · 이전 이력은 [Sys-Optimization-History.md](Sys-Optimization-History.md) 참조
 > 이 문서는 **"지금 이 순간의 최적화 상태"** 만 다룹니다. 왜 그 결정을 했는지·폐기된 접근·측정 원본은 History 문서로.
 
 ## 한 줄 요약
@@ -229,7 +229,7 @@
 
 ## 관련 문서
 
-- [Optimization_History.md](Optimization_History.md) — 1차~4차 의사결정 연대기 + 원본 측정
+- [Sys-Optimization-History.md](Sys-Optimization-History.md) — 1차~4차 의사결정 연대기 + 원본 측정
 - [archive/2026-04_optimization/](archive/2026-04_optimization/) — 원본 세부 문서 (FrameDrop / Optimization 01~04 / 구 Overview)
 
 ## 관련 메모리

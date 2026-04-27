@@ -13,7 +13,7 @@ namespace DrillCorp.Weapon.Saw
     /// WeaponUpgradeManager의 Damage/Radius/SlowBonus 보너스를 캐시로 반영.
     ///
     /// v2 포팅 후 자체 구동 (폭탄·기관총·레이저·저격총과 동일 패턴) — AimController 장착 경로 없음.
-    /// v2 가이드: docs/WeaponUnlockUpgradeSystem.md §7
+    /// v2 가이드: docs/Sys-Weapon.md §7
     /// </summary>
     public class SawWeapon : WeaponBase
     {

@@ -2,7 +2,7 @@
 
 > 최종 갱신: 2026-04-20 (2) (보석 2종 v2 규격 + 세션 정산 정책 전환 — §11 참조)
 > 근거 프로토타입: `docs/v2.html`
-> 상위 문서: [V2_IntegrationPlan.md](V2_IntegrationPlan.md)
+> 상위 문서: [V2-IntegrationPlan.md](V2-IntegrationPlan.md)
 
 > ⚠️ §2~§7의 예시 코드는 **초안 설계**. 실제 구현 파일·차이점은 **§10 구현 현황**을 먼저 확인.
 
@@ -414,7 +414,7 @@ if (DataManager.PlayerData.HasUnconsumedResult)
 
 ## 7. 보석 채집 업그레이드 (UpgradeData 추가)
 
-[GoogleSheetsGuide.md §4](GoogleSheetsGuide.md#4-upgradedata-시트) 참조.
+[Data-SheetsGuide.md §4](Data-SheetsGuide.md#4-upgradedata-시트) 참조.
 
 ### 7.1 UpgradeData 2개 추가
 
@@ -476,9 +476,9 @@ public class UpgradeData : ScriptableObject
 
 ## 9. 참고 문서
 
-- [V2_IntegrationPlan.md](V2_IntegrationPlan.md) — 총론
-- [CharacterAbilitySystem.md](CharacterAbilitySystem.md) — 채굴 드론(jinus_mining_drone)이 보석 드랍에 관여
-- [GoogleSheetsGuide.md §4](GoogleSheetsGuide.md#4-upgradedata-시트) — UpgradeData 이중 재화 스키마
+- [V2-IntegrationPlan.md](V2-IntegrationPlan.md) — 총론
+- [Sys-Character.md](Sys-Character.md) — 채굴 드론(jinus_mining_drone)이 보석 드랍에 관여
+- [Data-SheetsGuide.md §4](Data-SheetsGuide.md#4-upgradedata-시트) — UpgradeData 이중 재화 스키마
 - `docs/v2.html` 926~944줄 — `killBug()` 드랍 로직
 - `docs/v2.html` 1341~1371줄 — gem 호버 채집 로직
 - `CLAUDE.md` 좌표계 섹션 — XZ 평면 거리 계산

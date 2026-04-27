@@ -2,8 +2,8 @@
 
 > 최종 갱신: 2026-04-20 (2) (저격총·레이저 Range 업그레이드 v2 포팅 완료, §12 참조)
 > 근거 프로토타입: `docs/v2.html`
-> 상위 문서: [V2_IntegrationPlan.md](V2_IntegrationPlan.md)
-> 관련 문서: [WeaponSystem.md](WeaponSystem.md) (기존 무기 아키텍처)
+> 상위 문서: [V2-IntegrationPlan.md](V2-IntegrationPlan.md)
+> 관련 문서: [WeaponSystem.md](archive/WeaponSystem.md) (기존 무기 아키텍처)
 
 > ⚠️ §3~§8의 코드 예시는 **초안 설계**. 실제 구현 매핑·차이점은 **§11 인게임 적용 현황**부터 확인.
 
@@ -74,7 +74,7 @@ public abstract class WeaponData : ScriptableObject
 
 ### 3.2 PlayerData 해금 상태
 
-[CharacterAbilitySystem.md §2](CharacterAbilitySystem.md#playerdata-확장)에 명시된 대로:
+[Sys-Character.md §2](Sys-Character.md#playerdata-확장)에 명시된 대로:
 
 ```csharp
 public HashSet<string> UnlockedWeapons = new() { "sniper" };  // 초기값
@@ -743,11 +743,11 @@ void OnReloadUpgraded()
 
 ## 10. 참고 문서
 
-- [V2_IntegrationPlan.md](V2_IntegrationPlan.md) — 총론·우선순위
-- [WeaponSystem.md](WeaponSystem.md) — 기존 무기 아키텍처 (WeaponBase, AimController)
-- [CharacterAbilitySystem.md](CharacterAbilitySystem.md) — 폭탄 강화가 지뢰 어빌리티에 파급
-- [GoogleSheetsGuide.md §5~§6](GoogleSheetsGuide.md#5-weapondata-시트) — WeaponData/WeaponUpgradeData 시트 스키마
-- [PlannerSheetGuide.md](PlannerSheetGuide.md) — 기획자 전달용 압축 가이드
+- [V2-IntegrationPlan.md](V2-IntegrationPlan.md) — 총론·우선순위
+- [WeaponSystem.md](archive/WeaponSystem.md) — 기존 무기 아키텍처 (WeaponBase, AimController)
+- [Sys-Character.md](Sys-Character.md) — 폭탄 강화가 지뢰 어빌리티에 파급
+- [Data-SheetsGuide.md §5~§6](Data-SheetsGuide.md#5-weapondata-시트) — WeaponData/WeaponUpgradeData 시트 스키마
+- [Data-PlannerGuide.md](Data-PlannerGuide.md) — 기획자 전달용 압축 가이드
 
 ---
 

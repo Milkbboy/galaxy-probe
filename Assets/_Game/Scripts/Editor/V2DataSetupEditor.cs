@@ -9,7 +9,7 @@
 // 기존 에셋이 있으면 덮어쓰지 않고 스킵. 전부 지우고 재생성하려면
 // Assets/_Game/Data/Characters/, Abilities/, WeaponUpgrades/ 폴더 삭제 후 재실행.
 //
-// 참고: docs/CharacterAbilitySystem.md §5, docs/GoogleSheetsGuide_v2Addendum.md
+// 참고: docs/Sys-Character.md §5, docs/GoogleSheetsGuide_v2Addendum.md
 // ─────────────────────────────────────────────────────────────
 
 using System.IO;

@@ -12,7 +12,7 @@
 //   • _spawnConfig / _waves / _spawner / _tunnel 자동 바인딩 (씬 내 기존 SimpleBugSpawner·TunnelEventManager 참조)
 //   • 씬 더티 마킹 — 사용자가 Ctrl+S로 저장
 //
-// 참고: docs/SimpleBugSheet.md (스키마), docs/_review/WaveData.tsv (초기값)
+// 참고: docs/Data-SheetsGuide.md §2 (스키마), docs/archive/_review_initial_sheet_data/WaveData.tsv (초기값)
 // ─────────────────────────────────────────────────────────────
 
 using System.Collections.Generic;
@@ -127,7 +127,7 @@ namespace DrillCorp.Editor
             Debug.Log($"[SimpleWaveAssetSetup] 생성: {SPAWN_CONFIG_PATH}");
         }
 
-        // docs/_review/WaveData.tsv 값 그대로
+        // docs/archive/_review_initial_sheet_data/WaveData.tsv 값 그대로
         static readonly WaveRow[] WAVE_ROWS = new[]
         {
             new WaveRow { Num = 1, Name = "시작",     Kills = 15f, Normal = 0.12f,  Elite = -1f, Max = 50,  Tunnel = false, TunnelInt = -1f, Swift = -1 },

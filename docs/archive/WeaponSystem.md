@@ -12,7 +12,7 @@
 > - 모든 무기 **self-driven** (각자 `Update()`에서 `TryFire` 호출, v2.html 동시 발동 패턴)
 > - `AimController`는 에임 데이터만 공급 — 장착 개념 없음
 >
-> **현행 문서**: [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md)
+> **현행 문서**: [Sys-Weapon.md](Sys-Weapon.md)
 > — §7 회전톱날 (2026-04-19 완료) / §4 무기 강화 / §5 Title→Game 데이터 흐름 / §8 기관총 탄창
 >
 > 본 문서는 패턴 참조(WeaponBase·BulletPool·Fire 템플릿)용으로 유지됩니다.
@@ -562,7 +562,7 @@ Shotgun FireDelay:
 
 ## 13. 참고 문서
 
-- 전체 기획: `DRILL-CORP-PLAN.md`
+- 전체 기획: `Overview-Plan.md`
 - Bug Behavior: `BugBehaviorSystemAnalysis.md`
 - Formation 시스템: `FormationSystem.md`
-- 카메라 시스템: `CameraSystem.md`
+- 카메라 시스템: `Sys-Camera.md`

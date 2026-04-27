@@ -1,7 +1,7 @@
 # Phase 2 — 폭탄 무기 구현
 
-> 상위 문서: `WEAPON_IMPLEMENTATION_PLAN.md` §5
-> **상태**: ✅ **구현 완료** (2026-04-16) — 본 문서는 실제 구현 결과를 반영.
+> 상위 문서: [archive/WEAPON_IMPLEMENTATION_PLAN.md](archive/WEAPON_IMPLEMENTATION_PLAN.md) §5
+> **상태**: ✅ **구현 완료 / 머지됨** (2026-04-16) — 본 문서는 실제 구현 결과를 반영. 현행 시스템: [Sys-Weapon.md](Sys-Weapon.md)
 
 ## 0. 구현 결과 요약
 

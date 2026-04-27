@@ -391,5 +391,5 @@ Unity AssetDatabase 타이밍 이슈로 인해 **3단계 패턴** 적용:
 ## 11. 참고 문서
 
 - 개발 계획: `docs/BugBehaviorDevelopmentPlan.md`
-- 데이터 시트 로그: `docs/DevLog_04_DataSheet.md`
+- 데이터 시트 로그: `docs/DevLog-04-DataSheet.md`
 - 데이터 구조: `docs/DATA_STRUCTURE.md`

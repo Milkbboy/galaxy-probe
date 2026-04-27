@@ -6,7 +6,7 @@
 
 > 최종 갱신: 2026-04-26 — Weapon/WeaponUpgrade/Character/Ability 4탭 통합 완료. 구 `GoogleSheetsGuide_v2Addendum.md` 흡수.
 >
-> **기획자 전달용 압축 가이드**: [PlannerSheetGuide.md](PlannerSheetGuide.md)
+> **기획자 전달용 압축 가이드**: [Data-PlannerGuide.md](Data-PlannerGuide.md)
 
 ---
 
@@ -113,13 +113,13 @@ Import 는 파일명을 무시하고 SO 내부 `BugName` 필드로 매칭.
 
 ### SpawnConfig (시트 없음)
 
-`Assets/_Game/Data/SpawnConfig.asset` 는 **시트에 없는 전역 폴백값**. 인스펙터 직편집. 튜닝 빈도 낮아 시트에서 뺌. 필드 상세는 [DataStructure.md §3](DataStructure.md#3-spawnconfigdata).
+`Assets/_Game/Data/SpawnConfig.asset` 는 **시트에 없는 전역 폴백값**. 인스펙터 직편집. 튜닝 빈도 낮아 시트에서 뺌. 필드 상세는 [Overview-DataStructure.md §3](Overview-DataStructure.md#3-spawnconfigdata).
 
 ---
 
 ## 3. MachineData 시트
 
-채굴 머신 스탯. [DataStructure.md §5](DataStructure.md#5-machinedata) 참조. v2 는 단일 머신 (Default 1행). 컬럼:
+채굴 머신 스탯. [Overview-DataStructure.md §5](Overview-DataStructure.md#5-machinedata) 참조. v2 는 단일 머신 (Default 1행). 컬럼:
 
 `MachineId`, `MachineName`, `Description`, `MaxHealth`, `HealthRegen`, `Armor`, `MiningRate` (v2: 5), `MiningBonus`, `BaseMiningTarget` (v2: 100), `BaseGemDropRate` (v2: 0.05).
 
@@ -131,7 +131,7 @@ Import 는 파일명을 무시하고 SO 내부 `BugName` 필드로 매칭.
 
 ## 4. UpgradeData 시트
 
-영구 강화. 이중 재화(광석+보석). [DataStructure.md §6](DataStructure.md#6-upgradedata) 참조. 컬럼:
+영구 강화. 이중 재화(광석+보석). [Overview-DataStructure.md §6](Overview-DataStructure.md#6-upgradedata) 참조. 컬럼:
 
 `UpgradeId`, `DisplayName`, `Description`, `UpgradeType`, `MaxLevel`, `BaseValue`, `ValuePerLevel`, `IsPercentage`, `CurrencyType` (v2 — Ore/Gem/Both), `BaseCostOre` (v2 — 광석, 구 `BaseCost` rename), `BaseCostGem` (v2 — 보석), `CostMultiplier`, `OreCostSchedule` (v2 — 파이프 구분 배열), `GemCostSchedule` (v2).
 
@@ -150,7 +150,7 @@ Import 는 파일명을 무시하고 SO 내부 `BugName` 필드로 매칭.
 
 ## 5. WeaponData 시트
 
-무기 5종의 베이스 스탯. v2 무기 시스템: [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md). 컬럼:
+무기 5종의 베이스 스탯. v2 무기 시스템: [Sys-Weapon.md](Sys-Weapon.md). 컬럼:
 
 `WeaponId`, `DisplayName`, `Description`, `ThemeColorHex`, `UnlockedByDefault`, `UnlockGemCost`, `RequiredWeaponId`, `FireDelay`, `Damage`, `HitVfxLifetime`, `ExtraStats`.
 
@@ -231,7 +231,7 @@ ManualCostsGem =  2| 5| 10| 18| 30
 
 ## 7. CharacterData 시트
 
-플레이어 캐릭터 3종. v2 시스템: [CharacterAbilitySystem.md](CharacterAbilitySystem.md). 컬럼:
+플레이어 캐릭터 3종. v2 시스템: [Sys-Character.md](Sys-Character.md). 컬럼:
 
 `CharacterId`, `DisplayName`, `Title`, `Description`, `ThemeColorHex`, `DefaultMachineName`, `Ability1Id`, `Ability2Id`, `Ability3Id`.
 

@@ -9,7 +9,7 @@
 // - Canvas GameObject가 이미 씬에 존재해야 함 (없으면 자동 생성)
 //
 // 참고 문서:
-// - docs/V2_IntegrationPlan.md §3 (Title 씬 허브 패널 재구성)
+// - docs/V2-IntegrationPlan.md §3 (Title 씬 허브 패널 재구성)
 // - docs/v2.html 10~247줄 (HTML 레이아웃 원본)
 // ─────────────────────────────────────────────────────────────
 

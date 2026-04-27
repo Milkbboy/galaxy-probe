@@ -9,7 +9,7 @@ namespace DrillCorp.OutGame
     /// <summary>
     /// 무기별 강화 레벨 관리 (기존 UpgradeManager와 동일한 PlayerPrefs 패턴).
     /// WeaponBase는 런타임에 GetBonus(weaponId, stat)로 보너스 조회.
-    /// v2 가이드: docs/WeaponUnlockUpgradeSystem.md §4, §5
+    /// v2 가이드: docs/Sys-Weapon.md §4, §5
     /// </summary>
     public class WeaponUpgradeManager : MonoBehaviour
     {

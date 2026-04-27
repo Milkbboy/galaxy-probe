@@ -1,6 +1,6 @@
 # Drill-Corp 최적화 이력
 
-> 현재 상태 요약은 [Optimization_Overview.md](Optimization_Overview.md) 참조
+> 현재 상태 요약은 [Sys-Optimization.md](Sys-Optimization.md) 참조
 > 이 문서는 **의사결정 과정 연대기** — 잘못 짚었던 방향, 왜 그렇게 판단했는지, 어떻게 뒤집혔는지를 보존합니다.
 > 원본 상세 문서는 `archive/2026-04_optimization/` 에 그대로 있습니다.
 
@@ -61,7 +61,7 @@
 
 **남은 의문**: "Memory Profiler 스냅샷으로 735MB 실체 확인" 필요 — 문서에 권장했지만 사용자 환경에서 불가 판단.
 
-**산출물**: `archive/2026-04_optimization/Optimization_02_PlannerPCAnalysis.md`, `archive/2026-04_optimization/Optimization_Overview.md` (1+2차 통합본)
+**산출물**: `archive/2026-04_optimization/Optimization_02_PlannerPCAnalysis.md`, `archive/2026-04_optimization/Sys-Optimization.md` (1+2차 통합본)
 
 ---
 
@@ -355,7 +355,7 @@ PooledVfx (프리팹 부착 컴포넌트)
   - `Optimization_02_PlannerPCAnalysis.md` — 2차 기획자 CSV 분석
   - `Optimization_03_ActiveCodePath.md` — 3차 활성 경로 재조사
   - `Optimization_04_VfxPoolingPlan.md` — 4차 풀링 설계 (구현 전 시점 문서, 이후 실제 구현은 본 History 에 반영됨)
-  - `Optimization_Overview.md` — 구 Overview (1+2차 통합본, 초심자용 설명 포함)
+  - `Sys-Optimization.md` — 구 Overview (1+2차 통합본, 초심자용 설명 포함)
 
 - **측정 데이터**: `HierarchyDumps/archive/*` (사용자 측정 원본 스냅샷)
-- **현재 상태**: [Optimization_Overview.md](Optimization_Overview.md)
+- **현재 상태**: [Sys-Optimization.md](Sys-Optimization.md)

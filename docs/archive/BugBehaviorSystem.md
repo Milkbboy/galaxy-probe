@@ -172,7 +172,7 @@ Unity AssetDatabase 타이밍 이슈로 **3단계 패턴**: 빈 에셋 → SaveA
 - `MovementType: Hover`, `MovementParam1: 0.5` → `HoverMovement` SO
 - `Passives: Armor:5, Dodge:20` / `Triggers: ExplodeOnDeath:10:2`
 - 출력: `Assets/_Game/Data/BugBehaviors/Imported/` (`BugBehavior_*`, `Movement_*`, `Attack_*`, ...)
-- 시트 문법 상세는 `GoogleSheetsGuide.md` 참조
+- 시트 문법 상세는 `Data-SheetsGuide.md` 참조
 
 **Phase 5 체크리스트**
 - [ ] 모든 Bug 프리펩을 BugController로 교체
@@ -191,6 +191,6 @@ Unity AssetDatabase 타이밍 이슈로 **3단계 패턴**: 빈 에셋 → SaveA
 
 ## 참고
 - 기획자 가이드: `BugBehaviorPatterns.md`
-- 시트 문법: `GoogleSheetsGuide.md`
-- 데이터 구조: `DataStructure.md`
-- 변경 이력: `CHANGELOG.md`
+- 시트 문법: `Data-SheetsGuide.md`
+- 데이터 구조: `Overview-DataStructure.md`
+- 변경 이력: `Overview-Changelog.md`

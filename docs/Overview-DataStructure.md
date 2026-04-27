@@ -1,6 +1,6 @@
 # 게임 데이터 구조 (Data Structure)
 
-기획자가 Google Sheets에서 튜닝 가능한 게임 데이터 정의서. 시트 컬럼·입력 방법·Import 절차는 [GoogleSheetsGuide.md](GoogleSheetsGuide.md) 참조.
+기획자가 Google Sheets에서 튜닝 가능한 게임 데이터 정의서. 시트 컬럼·입력 방법·Import 절차는 [Data-SheetsGuide.md](Data-SheetsGuide.md) 참조.
 
 > 최종 갱신: 2026-04-23 — SimpleBug 전면 교체 반영. 구 `BugData`/`BugBehaviorData`/`WaveData(SpawnGroup)` 체계 삭제 (`docs/archive/` 이동).
 
@@ -255,7 +255,7 @@ GameEvents.OnBugScoreEarned(score)  // SimpleBug.TakeDamage 사망 시 발행
 | GemDropRate (v2) | gem_drop | 5 | +0.02 (확률 %p) | | **보석** [15,30,50,75,105] |
 | GemCollectSpeed (v2) | gem_speed | 5 | +0.20 (배율) | ✓ | **보석** [10,22,38,58,82] |
 
-> 무기별 강화는 별도 `WeaponUpgradeData` (15항목, 5무기 × 3). 상세: [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md).
+> 무기별 강화는 별도 `WeaponUpgradeData` (15항목, 5무기 × 3). 상세: [Sys-Weapon.md](Sys-Weapon.md).
 
 ---
 
@@ -263,16 +263,16 @@ GameEvents.OnBugScoreEarned(score)  // SimpleBug.TakeDamage 사망 시 발행
 
 설계 의도 + 시트 컬럼 정의는 다음 문서 참조:
 
-- [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md) — 무기 5종 + 해금 체인 + 강화 15항목 설계
-- [CharacterAbilitySystem.md](CharacterAbilitySystem.md) — 캐릭터 3 · 어빌리티 9 설계
-- [GemMiningSystem.md](GemMiningSystem.md) — 보석 드랍·채집 + 이중 재화
-- [GoogleSheetsGuide.md §5~§8](GoogleSheetsGuide.md#5-weapondata-시트) — Weapon/WeaponUpgrade/Character/Ability 시트 스키마 (단일 SSoT)
+- [Sys-Weapon.md](Sys-Weapon.md) — 무기 5종 + 해금 체인 + 강화 15항목 설계
+- [Sys-Character.md](Sys-Character.md) — 캐릭터 3 · 어빌리티 9 설계
+- [Sys-Gem.md](Sys-Gem.md) — 보석 드랍·채집 + 이중 재화
+- [Data-SheetsGuide.md §5~§8](Data-SheetsGuide.md#5-weapondata-시트) — Weapon/WeaponUpgrade/Character/Ability 시트 스키마 (단일 SSoT)
 
 ---
 
 ## 참고
 
-- 시트 입력·Import 절차: [GoogleSheetsGuide.md](GoogleSheetsGuide.md)
-- 기획자 전달용 압축 가이드: [PlannerSheetGuide.md](PlannerSheetGuide.md)
-- Bug/Wave 설계 근거 및 프로토타입 포팅 맥락: 커밋 `9b32067` (SimpleBug 전면 교체) + `docs/CHANGELOG.md` 의 2026-04-23 섹션
+- 시트 입력·Import 절차: [Data-SheetsGuide.md](Data-SheetsGuide.md)
+- 기획자 전달용 압축 가이드: [Data-PlannerGuide.md](Data-PlannerGuide.md)
+- Bug/Wave 설계 근거 및 프로토타입 포팅 맥락: 커밋 `9b32067` (SimpleBug 전면 교체) + `docs/Overview-Changelog.md` 의 2026-04-23 섹션
 - 구 BugBehavior/Formation 시스템 문서: `docs/archive/{BugBehaviorSystem,BugBehaviorPatterns,FormationSystem}.md`

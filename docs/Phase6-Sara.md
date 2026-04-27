@@ -1,14 +1,14 @@
 # Phase 6 — 사라(Sara) 어빌리티 구현 계획
 
 > 작성일: 2026-04-21
+> **상태**: ✅ **구현 완료 / 머지됨** (2026-04-23) — 현행 시스템: [Sys-Character.md §5.4~5.6](Sys-Character.md)
 > 범위: 블랙홀 / 충격파 / 반중력 메테오 (사라 3종)
 > 근거 프로토타입: `docs/v2.html` (994~1000, 1055, 1061~1080, 1146~1184, 1265~1295)
-> 상위 문서: [CharacterAbilitySystem.md](CharacterAbilitySystem.md) §5.4~5.6
-> 형제 문서: [Phase5_VictorAbility_Plan.md](Phase5_VictorAbility_Plan.md)
+> 형제 문서: [Phase5-Victor.md](Phase5-Victor.md)
 
 ## 0. 목표
 
-`CharacterAbilitySystem.md` 스펙의 사라 3종 어빌리티를 Game 씬에 3D 이펙트로 구현한다. 빅터 Phase 에서 만든 공통 인프라(`AbilityContext`, `IAbilityRunner`, `AbilitySlotController`, `AbilityRangeDecal`, `AbilityDecalMeshBuilder`) 는 그대로 재사용하고, 본 페이즈는 **사라 Runner 3종 + 메테오 낙하체 MonoBehaviour + VFX 바인딩** 이 전부.
+`Sys-Character.md` 스펙의 사라 3종 어빌리티를 Game 씬에 3D 이펙트로 구현한다. 빅터 Phase 에서 만든 공통 인프라(`AbilityContext`, `IAbilityRunner`, `AbilitySlotController`, `AbilityRangeDecal`, `AbilityDecalMeshBuilder`) 는 그대로 재사용하고, 본 페이즈는 **사라 Runner 3종 + 메테오 낙하체 MonoBehaviour + VFX 바인딩** 이 전부.
 
 ---
 
@@ -446,8 +446,8 @@ Assets/_Game/Sprites/UI/drillcorp_sara_abilities/
 ## 8. 구현 후 문서 작업
 
 - 본 문서 §10 에 **as-built** 섹션 추가 (빅터 Phase5 §10 패턴) — 생성/수정 파일, 최종 튜닝 값, 구현 중 이슈 기록
-- `docs/CharacterAbilitySystem.md` §5.4~5.6 "2026-XX-XX 폴리싱" 주석 업데이트
-- `docs/CHANGELOG.md` 엔트리 추가
+- `docs/Sys-Character.md` §5.4~5.6 "2026-XX-XX 폴리싱" 주석 업데이트
+- `docs/Overview-Changelog.md` 엔트리 추가
 - `docs/README.md` 인덱스에 Phase6 링크
 
 ---
@@ -555,14 +555,14 @@ Assets/_Game/Sprites/UI/drillcorp_sara_abilities/
 - **블랙홀 흡인 vs BugController** — 현재 프로젝트는 SimpleBug 전용이라 BugController 이동 경합 이슈 없음. 향후 BugController 재도입 시 `ApplyExternalDisplacement` API 신설 검토.
 - **충격파 VFX 재검토** — 현재 LightningWaveBlue. "얼음이 팍!" 느낌을 원하면 `SpikeIce` / `MiniExploFrost` / `IceExplosion` 교체 후보 확인됨 (실시간 비교 튜닝 대기).
 - **슬로우 VFX 크기/위치 미세조정** — `_slowVfxScale=3` 이 대량 벌레에 적용 시 과할 수 있음. 플레이테스트 후 Beetle/Elite/Swift 별 차등.
-- **에디터 전용 코드 마킹 리팩토링** — `docs/Refactor_EditorOnlyCode_Plan.md` 에 정리 완료. Jinus 완료 후 재개.
+- **에디터 전용 코드 마킹 리팩토링** — `docs/Refactor-EditorOnlyCode.md` 에 정리 완료. Jinus 완료 후 재개.
 
 ---
 
 ## 11. 참고 문서
 
-- [CharacterAbilitySystem.md](CharacterAbilitySystem.md) §4~§5.6 — Ability 아키텍처 + 사라 스펙
-- [Phase5_VictorAbility_Plan.md](Phase5_VictorAbility_Plan.md) — 형제 Phase (공통 인프라, 네이밍, 에디터 메뉴 컨벤션)
-- [Refactor_EditorOnlyCode_Plan.md](Refactor_EditorOnlyCode_Plan.md) — `#if UNITY_EDITOR` 마킹 정리 계획 (defer)
-- [VFX_3D_MigrationPlan.md](VFX_3D_MigrationPlan.md) — 2D→3D VFX 컨벤션
+- [Sys-Character.md](Sys-Character.md) §4~§5.6 — Ability 아키텍처 + 사라 스펙
+- [Phase5-Victor.md](Phase5-Victor.md) — 형제 Phase (공통 인프라, 네이밍, 에디터 메뉴 컨벤션)
+- [Refactor-EditorOnlyCode.md](Refactor-EditorOnlyCode.md) — `#if UNITY_EDITOR` 마킹 정리 계획 (defer)
+- [VFX_3D_MigrationPlan.md](archive/VFX_3D_MigrationPlan.md) — 2D→3D VFX 컨벤션
 - `docs/v2.html:994~1000, 1055, 1061~1080, 1146~1184, 1265~1295` — useItem/tick 원본

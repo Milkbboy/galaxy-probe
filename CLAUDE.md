@@ -58,11 +58,11 @@ Unity / URP / Input System / TMP / 외부 패키지 코드를 작성·수정할 
 
 ## 참고 문서 (`docs/`)
 - 인덱스: `README.md`
-- 기획/로드맵: `DRILL-CORP-PLAN.md`
-- 아키텍처: `Architecture.md` / 데이터: `DataStructure.md` (SimpleBug/Wave/Machine/Upgrade SO 정의 + 런타임 흐름)
-- 시트/Import: `GoogleSheetsGuide.md` (기획자 튜닝 워크플로우 포함) / v2 신규 시트: `GoogleSheetsGuide_v2Addendum.md`
-- 시스템별: `WeaponUnlockUpgradeSystem.md` (v2 무기), `WeaponSystem.md` (Phase 3 아카이브), `CameraSystem.md`, `MinimapSystem.md`, `SoundSystem.md`, `GemMiningSystem.md`, `CharacterAbilitySystem.md`
-- 최적화: `Optimization_Overview.md` / 이력: `Optimization_History.md`
-- 개발 로그: `DevLog_01_CoreSystem` ~ `DevLog_05_OutGame`
-- 변경 이력: `CHANGELOG.md`
+- 기획/로드맵: `Overview-Plan.md`
+- 아키텍처: `Overview-Architecture.md` / 데이터: `Overview-DataStructure.md` (SimpleBug/Wave/Machine/Upgrade SO 정의 + 런타임 흐름)
+- 시트/Import: `Data-SheetsGuide.md` (기획자 튜닝 워크플로우 포함) · 기획자 전달용: `Data-PlannerGuide.md`
+- 시스템별: `Sys-Weapon.md` (v2 무기), `archive/WeaponSystem.md` (Phase 3 아카이브), `Sys-Camera.md`, `Sys-Minimap.md`, `Sys-Sound.md`, `Sys-Gem.md`, `Sys-Character.md`
+- 최적화: `Sys-Optimization.md` / 이력: `Sys-Optimization-History.md`
+- 개발 로그: `DevLog-01-Core` ~ `DevLog-05-OutGame`
+- 변경 이력: `Overview-Changelog.md`
 - 과거 자료: `archive/` (프로토타입 분석, 폐기된 BugBehavior/Formation 문서, 완료된 계획서 등)

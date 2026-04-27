@@ -1,7 +1,7 @@
 # MachineData / 머신 강화 UpgradeData 시트 정렬 계획
 
 > 작성: 2026-04-23
-> 상위 문서: [GoogleSheetsGuide.md](GoogleSheetsGuide.md) · [GoogleSheetsGuide_v2Addendum.md](GoogleSheetsGuide_v2Addendum.md) · [DataStructure.md](DataStructure.md)
+> 상위 문서: [Data-SheetsGuide.md](Data-SheetsGuide.md) · [GoogleSheetsGuide_v2Addendum.md](GoogleSheetsGuide_v2Addendum.md) · [Overview-DataStructure.md](Overview-DataStructure.md)
 > 배경 프로토타입: `docs/v2.html` §굴착기 강화
 
 ---
@@ -237,5 +237,5 @@ v2.html 원본 `calcStats()` (421~454줄) 기준 6종:
 
 **완료 후**
 - [ ] CHANGELOG 업데이트
-- [ ] `GoogleSheetsGuide.md` §4 (UpgradeData 섹션) + `GoogleSheetsGuide_v2Addendum.md` 에 실제 최종 스키마 반영
+- [ ] `Data-SheetsGuide.md` §4 (UpgradeData 섹션) + `GoogleSheetsGuide_v2Addendum.md` 에 실제 최종 스키마 반영
 - [ ] 이 계획 문서 (`MachineDataSheetAlignment_Plan.md`) 를 `docs/archive/` 로 이동 or 삭제

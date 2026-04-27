@@ -12,7 +12,7 @@ namespace DrillCorp.OutGame
     /// HubPanel의 AbilityShopSubPanel에 부착.
     /// 선택된 캐릭터의 3개 어빌리티 카드 표시.
     /// 캐릭터 전환 시: Body 통째로 재구성. 통화/해금 이벤트: 노드 유지하고 패치.
-    /// v2 가이드: docs/CharacterAbilitySystem.md §6
+    /// v2 가이드: docs/Sys-Character.md §6
     /// </summary>
     public class AbilityShopUI : MonoBehaviour
     {

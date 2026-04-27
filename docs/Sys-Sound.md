@@ -1,6 +1,6 @@
 # Drill-Corp 사운드 시스템
 
-> 상위 문서: `DRILL-CORP-PLAN.md`
+> 상위 문서: `Overview-Plan.md`
 > 상태: Phase A(게임플레이 핵심) 대부분 구현 완료 / Phase B(UI·이벤트) 및 Phase C(BGM) 대기
 
 ## 0. 개요

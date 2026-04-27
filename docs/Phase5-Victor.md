@@ -1,14 +1,14 @@
 # Phase 5 — 빅터(Victor) 어빌리티 구현 계획
 
 > 작성일: 2026-04-20
+> **상태**: ✅ **구현 완료 / 머지됨** (2026-04-21) — 현행 시스템: [Sys-Character.md §5.1~5.3](Sys-Character.md)
 > 범위: 네이팜 / 화염방사기 / 폭발지뢰 (빅터 3종)
 > 근거 프로토타입: `docs/v2.html` (1054~1263, 1554, 1724, 1749)
-> 상위 문서: [CharacterAbilitySystem.md](CharacterAbilitySystem.md) §5.1~5.3
-> 형제 문서: [Phase2_Bomb_Plan.md](Phase2_Bomb_Plan.md) / [Phase4_Laser_Plan.md](Phase4_Laser_Plan.md)
+> 형제 문서: [Phase2-Bomb.md](Phase2-Bomb.md) / [Phase4-Laser.md](Phase4-Laser.md)
 
 ## 0. 목표
 
-`CharacterAbilitySystem.md` 스펙의 빅터 3종 어빌리티를 Game 씬에 3D 이펙트로 구현한다. 캐릭터 데이터·SO·Registry는 이미 존재하므로 **런타임 실행 레이어**와 **3D VFX**가 본 페이즈의 전부.
+`Sys-Character.md` 스펙의 빅터 3종 어빌리티를 Game 씬에 3D 이펙트로 구현한다. 캐릭터 데이터·SO·Registry는 이미 존재하므로 **런타임 실행 레이어**와 **3D VFX**가 본 페이즈의 전부.
 
 ---
 
@@ -588,8 +588,8 @@ v2 canvas는 700×520 기준. Unity는 1920×1080. **UI 좌표를 비율 변환 
 
 ## 7. 참고 문서
 
-- [CharacterAbilitySystem.md](CharacterAbilitySystem.md) §4~§5.3 — Ability 아키텍처 + 빅터 스펙
-- [VFX_3D_MigrationPlan.md](VFX_3D_MigrationPlan.md) — 2D→3D VFX 컨벤션(Scale 규칙, AutoDestroyPS)
-- [Phase2_Bomb_Plan.md](Phase2_Bomb_Plan.md) — `BombWeapon`/`BombProjectile`/`OverlapSphere` 참고 구현
-- [WeaponUnlockUpgradeSystem.md](WeaponUnlockUpgradeSystem.md) — 지뢰가 파급 받는 폭탄 강화 시스템
+- [Sys-Character.md](Sys-Character.md) §4~§5.3 — Ability 아키텍처 + 빅터 스펙
+- [VFX_3D_MigrationPlan.md](archive/VFX_3D_MigrationPlan.md) — 2D→3D VFX 컨벤션(Scale 규칙, AutoDestroyPS)
+- [Phase2-Bomb.md](Phase2-Bomb.md) — `BombWeapon`/`BombProjectile`/`OverlapSphere` 참고 구현
+- [Sys-Weapon.md](Sys-Weapon.md) — 지뢰가 파급 받는 폭탄 강화 시스템
 - `docs/v2.html:1054~1263, 1554, 1724, 1749` — useItem/tick/draw 원본

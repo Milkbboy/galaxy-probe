@@ -13,7 +13,7 @@ namespace DrillCorp.OutGame
     /// HubPanel의 WeaponShopSubPanel에 부착.
     /// 5종 무기 카드 — 첫 OnEnable에 1회 빌드, 이후 이벤트엔 텍스트·색상만 패치.
     /// 잠김↔해금 전환이 일어난 카드만 본문(UnlockButton↔UpgradeRows)을 재구성.
-    /// v2 가이드: docs/WeaponUnlockUpgradeSystem.md §3·§4·§5
+    /// v2 가이드: docs/Sys-Weapon.md §3·§4·§5
     /// </summary>
     public class WeaponShopUI : MonoBehaviour
     {

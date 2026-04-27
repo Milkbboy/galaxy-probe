@@ -2,7 +2,7 @@
 
 > **작성일**: 2026-04-16  
 > **대상**: 구현자 AI (이 문서를 참조해 바로 착수)  
-> **참조**: `WEAPON_IMPLEMENTATION_PLAN.md`, `Architecture.md`
+> **참조**: `WEAPON_IMPLEMENTATION_PLAN.md`, `Overview-Architecture.md`
 
 ---
 

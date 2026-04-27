@@ -4,7 +4,7 @@ namespace DrillCorp.Weapon.Saw
 {
     /// <summary>
     /// 회전톱날 데이터. 머신 궤도 위 고정 반경에 떠있으며 자체 스핀.
-    /// v2 가이드: docs/WeaponUnlockUpgradeSystem.md §7
+    /// v2 가이드: docs/Sys-Weapon.md §7
     /// </summary>
     [CreateAssetMenu(fileName = "Weapon_Saw", menuName = "Drill-Corp/Weapons/Saw", order = 25)]
     public class SawWeaponData : WeaponData

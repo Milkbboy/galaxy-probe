@@ -1,8 +1,9 @@
 # 리팩토링 계획 — 에디터 전용 코드 마킹 정리
 
 > 작성일: 2026-04-21
-> 상태: **대기 중 (defer)** — Sara/Jinus 어빌리티 개발 완료 후 재개 예정
+> 상태: **🟢 재개 가능 (트리거 조건 충족, 2026-04-27)** — Phase 6/7 완료 + `AbilityData.OnValidated` 구독자 3개 (`BlackHoleRunner`/`ShockwaveRunner`/`MeteorRunner`)
 > 범위: 런타임 폴더에 섞여 있는 `#if UNITY_EDITOR` 블록들의 가시성·검색성 개선
+> 예상 소요: ~20분 (옵션 A+B 조합)
 
 ## 1. 배경
 
@@ -88,5 +89,7 @@
 
 ## 6. 참고
 
-- 현재 생성된 라이브 튜닝 훅: `AbilityData.OnValidated` (2026-04-21 추가), `BlackHoleRunner.OnDataValidated`
-- Phase 6 진행 중 Shockwave/Meteor Runner 에도 동일 훅이 추가되면 이때 묶어서 리팩토링 후보로 승격
+- 현재 생성된 라이브 튜닝 훅 (2026-04-27 기준):
+  - `AbilityData.OnValidated` (이벤트 정의)
+  - `BlackHoleRunner.OnDataValidated` / `ShockwaveRunner.OnDataValidated` / `MeteorRunner.OnDataValidated` 구독
+- Phase 6/7 완료로 트리거 조건 충족 — 다음 정리 라운드에서 옵션 A+B 일괄 적용 권장

@@ -255,5 +255,5 @@ SWIFT_SPEED_MULT       = 6
 
 이 문서 확정 후:
 1. `Step 1` 먼저 구현 — 기존 `BugSpawner.cs`와 병합 또는 교체 판단
-2. `docs/DRILL-CORP-PLAN.md`에 이식 일정 반영
+2. `docs/Overview-Plan.md`에 이식 일정 반영
 3. 무기/에임은 벌레 스폰이 안정된 후 진행

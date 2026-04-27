@@ -51,12 +51,12 @@
   - `Prefabs/UI/BugHpBar.prefab` — SimpleBug 미사용. `CLAUDE.md`의 월드 UI 참조 구현을 `MinimapIcon.cs`로 갱신.
 
 ### Completed — Phase E (문서 정리)
-- ✅ **DataStructure.md 전면 재작성** — 구 `BugData`/`BugBehaviorData`/`WaveData(SpawnGroup)` 섹션 전부 제거, `SimpleBugData`/`SimpleWaveData`/`SpawnConfigData` + 런타임 흐름 추가. Machine/Upgrade 섹션은 v2 현행값(6종) 보존.
-- ✅ **GoogleSheetsGuide.md 전면 재작성** — 시트 구조를 4개(`SimpleBugData`/`WaveData`/`MachineData`/`UpgradeData`)로 갱신. 구 BugBehavior/Passive/Skill/Trigger 파싱 문법 섹션 삭제. SimpleBugSheet.md §2.1·2.2·7 흡수(컬럼·sentinel·기획자 워크플로우).
+- ✅ **Overview-DataStructure.md 전면 재작성** — 구 `BugData`/`BugBehaviorData`/`WaveData(SpawnGroup)` 섹션 전부 제거, `SimpleBugData`/`SimpleWaveData`/`SpawnConfigData` + 런타임 흐름 추가. Machine/Upgrade 섹션은 v2 현행값(6종) 보존.
+- ✅ **Data-SheetsGuide.md 전면 재작성** — 시트 구조를 4개(`SimpleBugData`/`WaveData`/`MachineData`/`UpgradeData`)로 갱신. 구 BugBehavior/Passive/Skill/Trigger 파싱 문법 섹션 삭제. SimpleBugSheet.md §2.1·2.2·7 흡수(컬럼·sentinel·기획자 워크플로우).
 - ✅ **SimpleBugSheet.md 삭제** — 내용이 위 두 문서에 흡수됨.
 - ✅ **3개 폐기 문서 `archive/` 이동**: `BugBehaviorSystem.md`, `BugBehaviorPatterns.md`, `FormationSystem.md`.
 - ✅ **인덱스 갱신**: `docs/README.md` 에서 구 시스템 링크 제거 + SimpleBug 요약 추가. `CLAUDE.md` 의 참고 문서 목록에서 BugBehavior/Formation 제거, `GoogleSheetsGuide_v2Addendum.md` 등 신규 참조 추가.
-- ✅ `docs/_review/README.md` — SimpleBugSheet.md 링크를 GoogleSheetsGuide.md 섹션 앵커로 교체. CSV/TSV 파일은 보존(시트 초기 입력 소스).
+- ✅ `docs/_review/README.md` — SimpleBugSheet.md 링크를 Data-SheetsGuide.md 섹션 앵커로 교체. CSV/TSV 파일은 보존(시트 초기 입력 소스).
 
 ### Remaining — Phase C-4·C-5 (유저 수동)
 - 🔜 C-4 (실질 no-op): `Wave_01~05.asset` 5개 전부 이미 `SimpleWaveData` 타입 + 올바른 값. `SpawnConfig.asset` GUID 일치. 재생성 불필요 — Phase B 커밋 시점에 생성된 상태 그대로 사용.
@@ -67,7 +67,7 @@
 ## [Unreleased] - 2026-04-21 (2) — Phase 7 지누스 어빌리티 (드론 포탑 / 채굴 드론 / 드론 거미)
 
 > 근거: `docs/v2.html:1042~1053, 1057~1060, 1081~1086, 1156~1164, 1185~1214, 1296~1303, 1643~1646`
-> 상세: [Phase7_JinusAbility_Plan.md](Phase7_JinusAbility_Plan.md)
+> 상세: [Phase7-Jinus.md](Phase7-Jinus.md)
 > 맥락: Phase 5·6 에서 만든 어빌리티 인프라 위에 지누스 3종을 **배치형 유닛(HP·AI 자체 보유)** 으로 구현. 빅터(즉시 장판)·사라(즉시 효과) 와 성격이 다른 유닛 중심 어빌리티.
 
 ### Added — 지누스 Runner 3종
@@ -123,7 +123,7 @@ v2 원본은 탄을 쏘지만 공격적 접근 + 0거리 발사로 플레이 체
 ## [Unreleased] - 2026-04-21 — Phase 6 사라 어빌리티 (블랙홀 / 충격파 / 메테오)
 
 > 근거: `docs/v2.html:994~1000, 1055, 1061~1080, 1146~1184, 1265~1295`
-> 상세: [Phase6_SaraAbility_Plan.md](Phase6_SaraAbility_Plan.md)
+> 상세: [Phase6-Sara.md](Phase6-Sara.md)
 > 맥락: Phase 5 빅터 어빌리티 인프라(`AbilityContext`, `IAbilityRunner`, `AbilitySlotController`, `AbilityRangeDecal`, `AbilityDecalMeshBuilder`) 위에 사라 3종 구현.
 
 ### Added — 사라 Runner 3종
@@ -173,14 +173,14 @@ v2 원본은 탄을 쏘지만 공격적 접근 + 0거리 발사로 플레이 체
 - `SaraVfxBinder.cs` 통합 메뉴 (Jinus VfxBinder 와 함께 작업)
 - 충격파 VFX "얼음이 팍" 스타일 재검토 (SpikeIce / MiniExploFrost / IceExplosion 후보 정리됨)
 - SimpleBug 스폰 반경 조정 — 사용자 피드백(너무 멀리 스폰)
-- 에디터 전용 코드 마킹 리팩토링 ([Refactor_EditorOnlyCode_Plan.md](Refactor_EditorOnlyCode_Plan.md))
+- 에디터 전용 코드 마킹 리팩토링 ([Refactor-EditorOnlyCode.md](Refactor-EditorOnlyCode.md))
 
 ---
 
 ## [Unreleased] - 2026-04-21 — 빅터 어빌리티 폴리싱 (범위 표시 / 지뢰 연출 / HUD 테두리)
 
 > 근거: `docs/v2.html` + 인게임 피드백
-> 맥락: [Phase5 Victor 어빌리티](Phase5_VictorAbility_Plan.md) 구현 이후, 인게임에서 **공격 범위가 안 보인다·지뢰가 밋밋하다·HUD 배경이 테마색으로 덮인다**는 플레이 피드백을 해결.
+> 맥락: [Phase5 Victor 어빌리티](Phase5-Victor.md) 구현 이후, 인게임에서 **공격 범위가 안 보인다·지뢰가 밋밋하다·HUD 배경이 테마색으로 덮인다**는 플레이 피드백을 해결.
 
 ### Added — 공통 바닥 데칼 유틸
 
@@ -242,7 +242,7 @@ v2 원본은 탄을 쏘지만 공격적 접근 + 0거리 발사로 플레이 체
 
 ## [Unreleased] - 2026-04-20 (3) — 빅터 어빌리티 3종 Game 구현
 
-> 문서: [Phase5_VictorAbility_Plan.md](Phase5_VictorAbility_Plan.md)
+> 문서: [Phase5-Victor.md](Phase5-Victor.md)
 
 v2.html 의 빅터(중장비 전문가) 3 어빌리티(네이팜·화염방사기·폭발지뢰)를 3D VFX 와 함께 Game 씬에서 동작하도록 구현. 캐릭터/어빌리티 SO + Registry 는 기존 완료 상태였고 본 페이즈는 **런타임 실행 레이어 + Polygon Arsenal 프리펩 바인딩**.
 
@@ -374,11 +374,11 @@ v2.html 원본과 동일한 인게임 HUD·세션 정산·범위 업그레이드
 
 ### Docs
 
-- `README.md` — 헤더 v2 진행 상황 갱신, WeaponSystem 참조를 v2(`WeaponUnlockUpgradeSystem.md`)와 레거시 두 줄로 분리
-- `Architecture.md` — Core 계층에 `UpgradeManager`/`WeaponUpgradeManager`/`CharacterRegistry` 명시, InGame에 `Pickup`(Gem/GemDropSpawner)·`CurrencyHud`(MiningUI/GemCounterUI)·`AimRingBinder` 추가, GameEvents 시그니처 v2 반영, §6.1 Pickup 시스템 신규
-- `DataStructure.md` — BugData `_isElite`, MachineData `BaseMiningTarget` 필드 추가. UpgradeData v2 6종 (`mine_speed`/`mine_target`/`excavator_hp`/`excavator_armor`/`gem_drop`/`gem_speed`) 비용 schedule 명시. CharacterData/WeaponUpgradeData/AbilityData 계층 추가
-- `WeaponUnlockUpgradeSystem.md §11` — 인게임 적용 현황 신규: 해금 필터(`TryDisableIfLocked`), AimRingBinder 자동 숨김, 4종 강화(Saw 패턴), `EffectiveFireDelay` virtual, 투사체 effective 오버로드, 파일 매핑 표
-- `CharacterAbilitySystem.md §2.5` — `CharacterRegistry` 싱글턴 + `MachineController.ApplySelectedCharacter()` 흐름
+- `README.md` — 헤더 v2 진행 상황 갱신, WeaponSystem 참조를 v2(`Sys-Weapon.md`)와 레거시 두 줄로 분리
+- `Overview-Architecture.md` — Core 계층에 `UpgradeManager`/`WeaponUpgradeManager`/`CharacterRegistry` 명시, InGame에 `Pickup`(Gem/GemDropSpawner)·`CurrencyHud`(MiningUI/GemCounterUI)·`AimRingBinder` 추가, GameEvents 시그니처 v2 반영, §6.1 Pickup 시스템 신규
+- `Overview-DataStructure.md` — BugData `_isElite`, MachineData `BaseMiningTarget` 필드 추가. UpgradeData v2 6종 (`mine_speed`/`mine_target`/`excavator_hp`/`excavator_armor`/`gem_drop`/`gem_speed`) 비용 schedule 명시. CharacterData/WeaponUpgradeData/AbilityData 계층 추가
+- `Sys-Weapon.md §11` — 인게임 적용 현황 신규: 해금 필터(`TryDisableIfLocked`), AimRingBinder 자동 숨김, 4종 강화(Saw 패턴), `EffectiveFireDelay` virtual, 투사체 effective 오버로드, 파일 매핑 표
+- `Sys-Character.md §2.5` — `CharacterRegistry` 싱글턴 + `MachineController.ApplySelectedCharacter()` 흐름
 
 ---
 
@@ -407,8 +407,8 @@ v2.html 원본과 동일한 인게임 HUD·세션 정산·범위 업그레이드
 
 ### Docs
 
-- `V2_IntegrationPlan.md §8` — 보석 드랍/채집 ✅, Hub→Game 연결 서브테이블 추가
-- `GemMiningSystem.md §10` — 구현 현황 섹션 신규, 초안 설계와의 차이 표
+- `V2-IntegrationPlan.md §8` — 보석 드랍/채집 ✅, Hub→Game 연결 서브테이블 추가
+- `Sys-Gem.md §10` — 구현 현황 섹션 신규, 초안 설계와의 차이 표
 
 ---
 
@@ -442,7 +442,7 @@ v2.html 원본과 동일한 인게임 HUD·세션 정산·범위 업그레이드
 ### Added — 회전톱날 무기 (v2 §saw 포팅)
 
 - **`SawWeaponData` / `SawWeapon`** (`Scripts/Weapon/Saw/`) — 머신 중심에서 마우스 방향 궤도(`OrbitRadius=7.2`) 위에 떠있으며 블레이드 반경(`BladeRadius=1.8`) 내 Bug에 **0.1초 tick 데미지(0.15) + 슬로우(30%/2s)**. v2.html `tickSaw`/`drawSawPipe` 파라미터 그대로 이식
-- **`SpinSpeed=24 rad/sec`** — v2.html 1109줄 `sawAngle += spinSpeed * dt * 5` 의 `×5` 배율 반영. 문서 초안 `4.8 rad/sec`은 배율을 놓친 값이므로 정정 ([WeaponUnlockUpgradeSystem.md §7.2](WeaponUnlockUpgradeSystem.md) 경고 참조)
+- **`SpinSpeed=24 rad/sec`** — v2.html 1109줄 `sawAngle += spinSpeed * dt * 5` 의 `×5` 배율 반영. 문서 초안 `4.8 rad/sec`은 배율을 놓친 값이므로 정정 ([Sys-Weapon.md §7.2](Sys-Weapon.md) 경고 참조)
 - **`BugController.ApplySlow(strength, duration)`** — `_slowStrength`·`_slowTimer` + `MoveSpeed` getter에 `(1 - _slowStrength)` 곱. 더 강한 슬로우만 덮어쓰고 지속시간은 max. 충격파 어빌리티도 재사용 예정
 - **`SawBladePrefabBuilder.cs`** — 10톱니+허브+볼트 **절차적 메시 자동 생성** (`#77ee77` teeth / `#666` hub / `#bbb` bolt, v2 색상). URP Lit 머티리얼 3종 + Mesh 에셋 3종 + 프리펩 1종 생성 → `Weapon_Saw.asset._bladeVisualPrefab` 자동 바인딩
 - **`WeaponPanelSawSetup.cs`** — Game 씬에 `SawWeapon` GameObject 생성 + `WeaponSlot_Sniper.prefab` 복제→`WeaponSlot_Saw` 리네임 + `WeaponPanelUI._slots/._weapons` 배열 확장
@@ -465,10 +465,10 @@ v2.html은 해금된 모든 무기가 매 프레임 병렬 발동 (`tickSniper/t
 
 ### Docs
 
-- `V2_IntegrationPlan.md §8` — 회전톱날 ✅, 동시 발동 전환 기록
-- `WeaponUnlockUpgradeSystem.md §7` — 구현 완료, SpinSpeed 정정, 파일 매핑 추가
-- `WeaponSystem.md` — Phase 3 아카이브 배너 (현행은 WeaponUnlockUpgradeSystem.md)
-- `Architecture.md` — 무기 시스템 5종 + self-driven 패턴 반영
+- `V2-IntegrationPlan.md §8` — 회전톱날 ✅, 동시 발동 전환 기록
+- `Sys-Weapon.md §7` — 구현 완료, SpinSpeed 정정, 파일 매핑 추가
+- `WeaponSystem.md` — Phase 3 아카이브 배너 (현행은 Sys-Weapon.md)
+- `Overview-Architecture.md` — 무기 시스템 5종 + self-driven 패턴 반영
 
 ---
 
@@ -553,7 +553,7 @@ v2.html은 해금된 모든 무기가 매 프레임 병렬 발동 (`tickSniper/t
   - 트리거 통합: `MachineGunWeapon`, `SniperWeapon`, `BombWeapon`, `BombProjectile`, `LaserWeapon`(StartLaserBeamLoop), `LaserBeam.OnDestroy`(StopLaserBeam), `BugBase`/`BugController`/`SimpleBug`의 `TakeDamage`
   - `SimpleBug.TakeDamage`에 `PlayBugHit` + `GameEvents.OnBugKilled` 훅 추가 (프로토 스타일 벌레가 이벤트를 발행하지 않아 사운드가 나지 않던 버그 수정)
   - `OptionsUI` SFX 슬라이더 → `AudioManager.SetSfxVolume` 실연결
-  - 상세: `docs/SoundSystem.md`
+  - 상세: `docs/Sys-Sound.md`
 
 - **AudioTrimWindow 에디터 툴**: 파형 뷰어 + 드래그 핸들로 AudioClip 구간 편집
   - `Tools → Drill-Corp → Audio → Trim AudioClip`
@@ -580,7 +580,7 @@ v2.html은 해금된 모든 무기가 매 프레임 병렬 발동 (`tickSniper/t
     - `WeaponBase`에 `ShowAmmoRow`/`AmmoCurrent`/`AmmoMax` 가상 프로퍼티 추가
     - `WeaponSlotUI`에 동적 pip 풀 — 슬롯 하단 가는 행에 40개 작은 사각형, 발사 시 오른쪽부터 회색으로 전환
     - 슬롯 높이 90→100 (`BuildDefaultHierarchy` 재실행 필요)
-  - 상세 문서: `docs/Phase3_MachineGun_Plan.md`
+  - 상세 문서: `docs/Phase3-MachineGun.md`
 
 - **폭탄 무기 (Phase 2)**: 좌클릭 수동 발사 + 투사체 비행 + AoE 폭발
   - `BombData` (SO): `_instant` 토글로 비행 모드/즉시 폭발 모드 전환
@@ -591,7 +591,7 @@ v2.html은 해금된 모든 무기가 매 프레임 병렬 발동 (`tickSniper/t
   - `BombAimRingBinder`: 크로스헤어 호에 `_weapon.BarColor` 푸시 — 인스펙터 색 무시
   - `BombPrefabCreator` (에디터 도구): `Tools → Drill-Corp → 3. 게임 초기 설정 → 6. 폭탄 자산 일괄 생성` 메뉴 한 번으로 스프라이트 3종(투사체/마커/폭발) + 프리펩 3종 + 트레일 머티리얼 + SO 자동 생성
   - `WeaponSlotUI` 확장: `_coolOverlay` + `_overlayText` 자식 (검은 반투명 + 큰 초) — 쿨다운 중 표시. `Build Default Hierarchy`에 자동 생성 로직 포함
-  - 상세 문서: `docs/Phase2_Bomb_Plan.md`
+  - 상세 문서: `docs/Phase2-Bomb.md`
 
 ### Fixed
 - **`AimController.EnsureInfoLabel` 호출 순서** — `Awake → Start`로 이동. `TMPFontHolder.Awake()`보다 먼저 실행되면 D2Coding 폰트 미초기화 상태에서 라벨이 만들어져 한글 미지원 LiberationSans로 fallback (\uD074 등 미지원 경고). Start는 모든 Awake 후에 실행되므로 폰트 초기화 보장.
@@ -608,7 +608,7 @@ v2.html은 해금된 모든 무기가 매 프레임 병렬 발동 (`tickSniper/t
   - 메시/머티리얼/셰이더 static 캐싱으로 수백 마리 동시 표시 지원 (SRP Batcher 친화적)
   - 풀링 대응: `BugController.OnEnable/OnDisable/OnDestroy`에서 아이콘 활성/파괴 동기화
   - 디버그 UI(DebugManager, DebugCameraUI) 우상단으로 이동하여 미니맵 자리 확보
-  - 상세 문서: `docs/MinimapSystem.md`
+  - 상세 문서: `docs/Sys-Minimap.md`
 
 ## [Unreleased] - 2026-04-13
 
@@ -618,7 +618,7 @@ v2.html은 해금된 모든 무기가 매 프레임 병렬 발동 (`tickSniper/t
   - `DynamicCamera`: Position Lerp 기반 카메라 제어
   - `DebugCameraUI`: F1 토글 디버그 UI (런타임 슬라이더, Save to Asset)
   - Gizmo 시각화 (MaxOffset 범위, 현재 타겟 위치)
-  - 상세 문서: `docs/CameraSystem.md`
+  - 상세 문서: `docs/Sys-Camera.md`
 
 - **무기 시스템 (Phase 3)**: 오퍼레이터 주무기 4종 구현
   - `WeaponBase` + `WeaponData` 추상 베이스

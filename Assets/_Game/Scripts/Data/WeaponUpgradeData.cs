@@ -47,7 +47,7 @@ namespace DrillCorp.Data
 
     /// <summary>
     /// 무기별 강화 항목 SO.
-    /// v2 통합 가이드: docs/WeaponUnlockUpgradeSystem.md §4
+    /// v2 통합 가이드: docs/Sys-Weapon.md §4
     /// </summary>
     [CreateAssetMenu(fileName = "WeaponUpgrade_New", menuName = "Drill-Corp/Weapon Upgrade Data", order = 7)]
     public class WeaponUpgradeData : ScriptableObject

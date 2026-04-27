@@ -125,4 +125,4 @@ CLAUDE.md 규칙에 따라 **탑다운 뷰**에서:
 ## 10. 참고
 
 - **Nuclear Throne**: 2015년 Vlambeer의 탑다운 로그라이크 슈터
-- **참조**: `DRILL-CORP-PLAN.md` 7. 카메라 시스템
+- **참조**: `Overview-Plan.md` 7. 카메라 시스템

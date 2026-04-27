@@ -342,6 +342,6 @@ BugManager.Update()
 
 ## 14. 참고 문서
 
-- 전체 기획: `DRILL-CORP-PLAN.md`
+- 전체 기획: `Overview-Plan.md`
 - Bug Behavior: `BugBehaviorSystemAnalysis.md`
-- 카메라 시스템: `CameraSystem.md`
+- 카메라 시스템: `Sys-Camera.md`

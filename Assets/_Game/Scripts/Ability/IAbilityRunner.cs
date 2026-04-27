@@ -12,7 +12,7 @@ namespace DrillCorp.Ability
     ///   2. Tick(dt) 매 프레임          — 쿨다운 감소 / 지속형 틱 / AutoInterval 자동 발동
     ///   3. TryUse(aimPoint) 키 입력시  — Manual 트리거만. 쿨다운 남았으면 false 반환
     ///
-    /// 해석 규칙(스펙: docs/Phase5_VictorAbility_Plan.md):
+    /// 해석 규칙(스펙: docs/Phase5-Victor.md):
     ///   · AbilityData.Damage  — ability마다 의미가 다르다 (틱당 / 초당 / 회당)
     ///     네이팜=틱당, 화염방사기=초당(dps), 지뢰=1회당(BombWeapon 실효값에 배율로 덧대짐)
     ///   · AbilityData.Angle   — 라디안 (화염방사기 부채꼴 반각)

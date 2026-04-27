@@ -9,7 +9,7 @@
 // 이미 Saw 슬롯이 있으면 스킵 (중복 실행 안전).
 // Game 씬이 활성 씬이어야 함.
 //
-// 참고: docs/WeaponUnlockUpgradeSystem.md §6
+// 참고: docs/Sys-Weapon.md §6
 // ─────────────────────────────────────────────────────────────
 
 using UnityEditor;
