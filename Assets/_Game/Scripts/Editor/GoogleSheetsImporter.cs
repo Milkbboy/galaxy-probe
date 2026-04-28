@@ -28,7 +28,7 @@ namespace DrillCorp.Editor
 
         // 미리보기 데이터
         private int _previewTab = 0;
-        private readonly string[] _previewTabNames = { "SimpleBugData", "WaveData", "MachineData", "UpgradeData", "WeaponData", "WeaponUpgradeData", "CharacterData", "AbilityData" };
+        private readonly string[] _previewTabNames = { "SimpleBugData", "WaveData", "MachineData", "UpgradeData", "WeaponData", "WeaponUpgradeData", "CharacterData", "AbilityData", "BossData" };
 
         private Dictionary<string, List<List<string>>> _previewData = new Dictionary<string, List<List<string>>>();
         private Vector2 _previewScrollPosition;
@@ -43,6 +43,7 @@ namespace DrillCorp.Editor
         private const string SHEET_WEAPON_UPGRADE_DATA = "WeaponUpgradeData";
         private const string SHEET_CHARACTER_DATA = "CharacterData";
         private const string SHEET_ABILITY_DATA = "AbilityData";
+        private const string SHEET_BOSS_DATA = "BossData";
 
         [MenuItem("Tools/Drill-Corp/4. 데이터 Import/Google Sheets Importer")]
         public static void ShowWindow()
@@ -418,6 +419,13 @@ namespace DrillCorp.Editor
             }
             EditorGUILayout.EndHorizontal();
 
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("BossData"))
+            {
+                ImportBossData();
+            }
+            EditorGUILayout.EndHorizontal();
+
             GUI.enabled = true;
             EditorGUILayout.Space(10);
         }
@@ -682,6 +690,7 @@ namespace DrillCorp.Editor
                 // Ability 가 Character 보다 먼저 — Character 의 Ability1/2/3 lookup 이 가능해짐
                 await ImportAbilityDataAsync();
                 await ImportCharacterDataAsync();
+                await ImportBossDataAsync();
 
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
@@ -804,6 +813,20 @@ namespace DrillCorp.Editor
             catch (Exception e)
             {
                 SetStatus($"AbilityData 오류: {e.Message}", MessageType.Error);
+            }
+        }
+
+        private async void ImportBossData()
+        {
+            SetStatus("BossData 가져오는 중...", MessageType.Info);
+            try
+            {
+                await ImportBossDataAsync();
+                SetStatus("BossData 가져오기 완료!", MessageType.Info);
+            }
+            catch (Exception e)
+            {
+                SetStatus($"BossData 오류: {e.Message}", MessageType.Error);
             }
         }
 
@@ -1791,6 +1814,99 @@ namespace DrillCorp.Editor
                 EditorUtility.SetDirty(character);
 
                 Debug.Log($"[GoogleSheetsImporter] Imported Character: {characterId}");
+            }
+
+            AssetDatabase.SaveAssets();
+        }
+
+        // 시트 'BossData' 1행 → Boss_Spider.asset 갱신.
+        // BossId 로 매칭 (파일명 무관). public 필드 직접 할당 — SerializedObject 안 써도 동작하지만
+        // 다른 Importer 와 일관성을 위해 SerializedObject + ApplyModifiedPropertiesWithoutUndo 사용.
+        private async Task ImportBossDataAsync()
+        {
+            var rows = await ReadSheetAsync(SHEET_BOSS_DATA);
+            if (rows.Count < 2) return;
+
+            var headers = rows[0];
+            string savePath = "Assets/_Game/Data/Boss";
+            if (!AssetDatabase.IsValidFolder(savePath))
+            {
+                AssetDatabase.CreateFolder("Assets/_Game/Data", "Boss");
+            }
+
+            // BossId 로 인덱싱 — 파일명 변경돼도 살아남음.
+            var cache = new Dictionary<string, BossData>(StringComparer.OrdinalIgnoreCase);
+            foreach (var guid in AssetDatabase.FindAssets("t:BossData"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var so0 = AssetDatabase.LoadAssetAtPath<BossData>(path);
+                if (so0 != null && !string.IsNullOrEmpty(so0.BossId))
+                    cache[so0.BossId] = so0;
+            }
+
+            for (int i = 1; i < rows.Count; i++)
+            {
+                var row = rows[i];
+                if (row.Count == 0 || string.IsNullOrEmpty(row[0])) continue;
+
+                string bossId = GetValue(row, headers, "BossId", $"boss_{i}");
+
+                BossData bossData;
+                if (!cache.TryGetValue(bossId, out bossData))
+                {
+                    bossData = ScriptableObject.CreateInstance<BossData>();
+                    string newPath = $"{savePath}/Boss_{bossId}.asset";
+                    AssetDatabase.CreateAsset(bossData, newPath);
+                    cache[bossId] = bossData;
+                    Debug.Log($"[GoogleSheetsImporter] 신규 생성: {newPath}");
+                }
+
+                var so = new SerializedObject(bossData);
+                SetSerializedField(so, "BossId", bossId);
+                SetSerializedField(so, "DisplayName", GetValue(row, headers, "DisplayName", "거미 보스"));
+
+                // Stats
+                SetSerializedField(so, "MaxHp",                  GetFloatValue(row, headers, "MaxHp", 500f));
+                SetSerializedField(so, "ContactDamagePerSecond", GetFloatValue(row, headers, "ContactDamagePerSecond", 30f));
+                SetSerializedField(so, "ContactRange",           GetFloatValue(row, headers, "ContactRange", 1.2f));
+
+                // Spawn Trigger
+                SetSerializedField(so, "KillThreshold", GetFloatValue(row, headers, "KillThreshold", 250f));
+
+                // Movement
+                SetSerializedField(so, "WalkDuration",    GetFloatValue(row, headers, "WalkDuration", 1.5f));
+                SetSerializedField(so, "WalkRadius",      GetFloatValue(row, headers, "WalkRadius", 2.5f));
+                SetSerializedField(so, "WalkSpeed",       GetFloatValue(row, headers, "WalkSpeed", 2.0f));
+                SetSerializedField(so, "IdleDuration",    GetFloatValue(row, headers, "IdleDuration", 2.0f));
+                SetSerializedField(so, "PerchJitter",     GetFloatValue(row, headers, "PerchJitter", 1.5f));
+                SetSerializedField(so, "JumpDurationMin", GetFloatValue(row, headers, "JumpDurationMin", 0.5f));
+                SetSerializedField(so, "JumpDurationMax", GetFloatValue(row, headers, "JumpDurationMax", 1.0f));
+
+                // Attack
+                SetSerializedField(so, "AttackDuration",       GetFloatValue(row, headers, "AttackDuration", 2.0f));
+                SetSerializedField(so, "AttackSpawnFraction",  GetFloatValue(row, headers, "AttackSpawnFraction", 0.5f));
+
+                // Boss Children
+                SetSerializedField(so, "ChildCountPerLanding", GetIntValue(row, headers, "ChildCountPerLanding", 3));
+                SetSerializedField(so, "ChildSpawnJitter",     GetFloatValue(row, headers, "ChildSpawnJitter", 1.5f));
+
+                // Telegraph
+                SetSerializedField(so, "TelegraphCooldownCycles", GetIntValue(row, headers, "TelegraphCooldownCycles", 2));
+                SetSerializedField(so, "TelegraphDuration",       GetFloatValue(row, headers, "TelegraphDuration", 2f));
+                SetSerializedField(so, "InterruptHitsRequired",   GetIntValue(row, headers, "InterruptHitsRequired", 8));
+                SetSerializedField(so, "PounceRadiusMultiplier",  GetFloatValue(row, headers, "PounceRadiusMultiplier", 0.5f));
+                SetSerializedField(so, "PounceImpactDamage",      GetFloatValue(row, headers, "PounceImpactDamage", 50f));
+                SetSerializedField(so, "FlinchDuration",          GetFloatValue(row, headers, "FlinchDuration", 0.6f));
+                SetSerializedField(so, "TelegraphScalePulse",     GetFloatValue(row, headers, "TelegraphScalePulse", 0.1f));
+                SetSerializedField(so, "TelegraphPulseFreq",      GetFloatValue(row, headers, "TelegraphPulseFreq", 4f));
+
+                // HP Bar Visual
+                SetSerializedField(so, "HpBarLowThreshold", GetFloatValue(row, headers, "HpBarLowThreshold", 0.25f));
+
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(bossData);
+
+                Debug.Log($"[GoogleSheetsImporter] Imported: Boss {bossId}");
             }
 
             AssetDatabase.SaveAssets();

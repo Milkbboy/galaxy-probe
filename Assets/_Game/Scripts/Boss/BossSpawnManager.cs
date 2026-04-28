@@ -1,5 +1,6 @@
 using UnityEngine;
 using DrillCorp.Core;
+using DrillCorp.Data;
 using DrillCorp.Machine;
 
 namespace DrillCorp.Boss
@@ -7,14 +8,17 @@ namespace DrillCorp.Boss
     /// <summary>
     /// 세션 누적 처치 점수가 임계값에 도달하면 거미 보스를 한 번 등장시킨다.
     /// v2 원본의 BOSS_KILL_THRESHOLD=700 패턴을 우리 시트 규모에 맞게 조정.
+    /// 임계값은 BossData.KillThreshold (시트) 우선, _bossData 비었으면 _killThreshold 폴백.
     /// </summary>
     public class BossSpawnManager : MonoBehaviour
     {
         [Header("Boss")]
         [SerializeField] private GameObject _spiderBossPrefab;
+        [Tooltip("보스 튜닝 SO (KillThreshold 등). 비우면 _killThreshold 폴백 사용.")]
+        [SerializeField] private BossData _bossData;
 
-        [Header("Trigger")]
-        [Tooltip("세션 누적 처치 점수가 이 값 이상이면 보스 등장")]
+        [Header("Trigger (BossData 비었을 때 폴백)")]
+        [Tooltip("세션 누적 처치 점수가 이 값 이상이면 보스 등장. BossData.KillThreshold 가 우선.")]
         [SerializeField] private float _killThreshold = 250f;
 
         [Header("Spawn")]
@@ -51,7 +55,8 @@ namespace DrillCorp.Boss
             if (_spawned) return;
 
             _accumScore += score;
-            if (_accumScore >= _killThreshold) SpawnBoss();
+            float threshold = _bossData != null ? _bossData.KillThreshold : _killThreshold;
+            if (_accumScore >= threshold) SpawnBoss();
         }
 
         private void SpawnBoss()

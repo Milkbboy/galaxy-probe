@@ -279,7 +279,7 @@ BugBase (추상)
 | **Phase 4** | 미니맵 | ✅ 완료 (기본 표시) |
 | **Phase 5 (추가)** | 기존 BugBase 코드 제거 | ⏳ 대기 |
 | **v2 통합** | 캐릭터·어빌리티·무기 해금/강화·이중재화·mineTarget | ✅ 완료 |
-| **v2 거미 보스** | 6 perch 점프 + 새끼 소환 + 처치=클리어 | ✅ 완료 (2026-04-27) — [Sys-Boss.md](Sys-Boss.md) |
+| **v2 거미 보스** | 6 perch 점프 + 새끼 소환 + 처치=클리어 + Telegraph/Pounce 패턴 + BossData SO 시트화 | ✅ 완료 (2026-04-28) — [Sys-Boss.md](Sys-Boss.md) |
 
 > **참고**: 기획서 Phase 2 (군집)와 별개로 **Bug Behavior 시스템**이 먼저 구축됨.
 > 개별 행동(Movement/Attack/Passive/Skill/Trigger) 조합 기반.

@@ -6,6 +6,38 @@
 
 ---
 
+## [Unreleased] - 2026-04-28 — 거미 보스 BossData SO + 시트 §9 분리
+
+> 상세: [Sys-Boss.md](Sys-Boss.md), [Data-SheetsGuide.md §9](Data-SheetsGuide.md#9-bossdata-시트)
+> 맥락: SpiderBoss 의 `[SerializeField]` 들이 prefab 인스펙터에 박혀 있어 기획자가 코드/씬 안 보면 튜닝 불가. 모든 튜닝 수치를 SO + 시트 1행으로 분리.
+
+### Added
+
+- **`Scripts/Data/BossData.cs`** — Boss 튜닝 SO. 25개 필드 (Stats / Movement / Attack / Telegraph / HP Bar). public 필드라 시트 Importer 가 SerializedObject 로 그대로 매핑.
+- **`Data/Boss/Boss_Spider.asset`** — 기본값 BossData 인스턴스 (SpiderBoss prefab 에 바인딩).
+- **`Editor/BossDataAssetSetup.cs`** — `Tools/Drill-Corp/3. 게임 초기 설정/Boss/1. Boss_Spider.asset 생성` 메뉴.
+- **GoogleSheetsImporter `BossData` 탭** — `_previewTabNames` 9번째, `ImportBossDataAsync()` 신설. BossId 매칭 + SerializedObject 갱신. `Import All Data` 가 마지막에 호출.
+- **`docs/Data-SheetsGuide.md` §9** — BossData 시트 스키마 (전체 25 컬럼, 시트화 안 되는 필드, BossId 매칭 규칙).
+- **`docs/archive/_review_initial_sheet_data/BossData.csv`** — 시트 초기 입력 보존본.
+
+### Changed
+
+- **`SpiderBoss.cs`** — 모든 게임플레이 수치 필드를 `BossData _data` 참조로 교체. 인스펙터에는 시각/연출 (`_fxSocket`, HP 바 offset/size, VFX prefab, Animator triggers, warning icon offset) 만 잔존. `_data` null 시 폴백 `ScriptableObject.CreateInstance<BossData>()` 자동 생성.
+- **`BossSpawnManager.cs`** — `_killThreshold` (인스펙터) 대신 `_bossData.KillThreshold` 우선 참조. `_bossData` 비었을 때 폴백.
+- **`Data-SheetsGuide.md`** — "전체 8탭" → "전체 9탭", §9 신설. §10 (Unity Import) 번호 한 칸 밀림.
+- **`archive/_review_initial_sheet_data/README.md`** — 파일 목록에 BossData.csv 추가.
+
+### Removed (인스펙터 정리)
+
+SpiderBoss 인스펙터에서 다음 필드 제거 (BossData 로 이동):
+- Stats: `_maxHp`, `_contactDamagePerSecond`, `_contactRange`
+- Movement: `_walkDuration`, `_walkRadius`, `_walkSpeed`, `_idleDuration`, `_perchJitter`, `_jumpDurationMin`, `_jumpDurationMax`
+- Attack: `_attackDuration`, `_attackSpawnFraction`
+- Boss Children: `_childCountPerLanding`, `_childSpawnJitter` (`_childBugData` 는 SO 참조라 인스펙터 잔존)
+- Telegraph: `_telegraphCooldownCycles`, `_telegraphDuration`, `_interruptHitsRequired`, `_pounceRadiusMultiplier`, `_pounceImpactDamage`, `_flinchDuration`, `_telegraphScalePulse`, `_telegraphPulseFreq`
+
+---
+
 ## [Unreleased] - 2026-04-27 — v2 거미 보스 풀 포팅
 
 > 상세: [Sys-Boss.md](Sys-Boss.md), 근거 [V2-prototype.html](V2-prototype.html) line 715~880

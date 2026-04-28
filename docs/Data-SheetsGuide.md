@@ -10,7 +10,7 @@
 
 ---
 
-## 시트 구조 (전체 8탭)
+## 시트 구조 (전체 9탭)
 
 | § | 시트 이름 | 행 수 | 설명 | 대응 SO |
 |---|---|---|---|---|
@@ -22,6 +22,7 @@
 | §6 | `WeaponUpgradeData` | 15 | 무기별 강화 (Damage/Range/Cooldown 등) | `WeaponUpgradeData` |
 | §7 | `CharacterData` | 3 | 캐릭터 3종 + 머신·어빌리티 묶음 | `CharacterData` |
 | §8 | `AbilityData` | 9 | 캐릭터 어빌리티 (cooldown/damage/range) | `AbilityData` |
+| §9 | `BossData` | 1 | 거미 보스 튜닝 (HP·movement·telegraph) | `BossData` (Boss_Spider) |
 
 > 구 시트 `BugData`, `WaveSpawnGroups`, `BugBehaviors`, `MovementData`, `AttackData`, `PassiveData`, `SkillData`, `TriggerData` 는 2026-04-23 SimpleBug 전면 교체로 **삭제**. Importer 도 참조하지 않음. 시트에 남아있으면 `_legacy_` prefix 로 rename 하거나 삭제.
 
@@ -298,7 +299,45 @@ ManualCostsGem =  2| 5| 10| 18| 30
 
 ---
 
-## 9. Unity 에서 Import
+## 9. BossData 시트
+
+거미 보스 튜닝 1행. v2 시스템: [Sys-Boss.md](Sys-Boss.md). 컬럼:
+
+`BossId`, `DisplayName`, `MaxHp`, `ContactDamagePerSecond`, `ContactRange`, `KillThreshold`,
+`WalkDuration`, `WalkRadius`, `WalkSpeed`, `IdleDuration`, `PerchJitter`, `JumpDurationMin`, `JumpDurationMax`,
+`AttackDuration`, `AttackSpawnFraction`, `ChildCountPerLanding`, `ChildSpawnJitter`,
+`TelegraphCooldownCycles`, `TelegraphDuration`, `InterruptHitsRequired`, `PounceRadiusMultiplier`, `PounceImpactDamage`, `FlinchDuration`, `TelegraphScalePulse`, `TelegraphPulseFreq`, `HpBarLowThreshold`.
+
+### 시트화 안 되는 필드
+
+`Prefab` 참조 (Animator/Avatar/Mesh/Material), `_childBugData` (SimpleBugData SO), VFX 프리팹, `_fxSocket` Transform — 모두 Unity 인스펙터에서 직접 바인딩.
+
+### BossId ↔ 파일명 매핑
+
+Importer 는 SO 내부 `BossId` 필드로 매칭 (파일명 무관). 새 BossId 추가 시 `Boss_<BossId>.asset` 자동 생성.
+
+### 현재 값
+
+| BossId | DisplayName | MaxHp | KillThreshold | WalkDuration | IdleDuration | TelegraphCooldownCycles | InterruptHitsRequired | PounceImpactDamage |
+|---|---|---|---|---|---|---|---|---|
+| `spider` | 거미 보스 | 500 | 250 | 1.5 | 2.0 | 2 | 8 | 50 |
+
+전체 25개 컬럼 + 기본값: [archive/_review_initial_sheet_data/BossData.csv](archive/_review_initial_sheet_data/BossData.csv) 참조.
+
+### 필드 의미 요약
+
+- **Stats** — `MaxHp`/`ContactDamagePerSecond`/`ContactRange` (머신 접촉 피해 반경)
+- **Spawn** — `KillThreshold` (이 점수 누적 시 등장)
+- **Movement** — Walk/Idle 시간 + 점프 거리(Jitter/Min/Max) + 속도
+- **Attack** — 공격 모션 길이 + 새끼 소환 타이밍 (`AttackSpawnFraction` 0~1)
+- **Telegraph** — N사이클마다 발동 압박 패턴, 인터럽트 hit 수, Pounce 임팩트 데미지
+- **HP Bar** — 빨강 전환 임계 비율
+
+상세는 [Sys-Boss.md](Sys-Boss.md) §3.
+
+---
+
+## 10. Unity 에서 Import
 
 ### 열기
 

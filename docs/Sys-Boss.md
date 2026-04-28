@@ -1,11 +1,30 @@
 # 거미 보스 시스템 (Spider Boss)
 
-> 최종 갱신: 2026-04-27 — v2 거미 보스 풀 포팅 + 자연스러운 행동 사이클(점프→walk→idle)
+> 최종 갱신: 2026-04-28 — BossData SO + 시트 §9 분리 (모든 튜닝 수치를 기획자가 직접 조정 가능)
 > 근거 프로토타입: [V2-prototype.html](V2-prototype.html) line 715~880, 1462~1495
 
 ## 1. 개요
 
 v2 원본의 거미 보스를 Unity 6 탑다운 좌표계로 포팅. 6각 perch 자리를 점프하며 머신을 압박하고 착지 시 새끼 거미를 소환한다. 처치 시 **즉시 게임 클리어** (mineTarget 미달이어도 승리).
+
+**모든 튜닝 수치는 `BossData` SO 에 모이며, 시트 §9 `BossData` 1행이 SSoT.** SpiderBoss 인스펙터에는 시각/연출(VFX·HP 바·FxSocket·Animator triggers) 만 남고 게임플레이 수치는 SO 만 보면 됨.
+
+```
+시트 'BossData' 1행
+   → Boss_Spider.asset (BossData SO)
+      → SpiderBoss._data (인스펙터 바인딩)
+         → 런타임 모든 수치 SO 참조
+```
+
+[Data-SheetsGuide.md §9](Data-SheetsGuide.md#9-bossdata-시트) 에서 컬럼 전체 정의.
+
+### 최초 셋업 (한 번만)
+
+1. 메뉴 `Tools/Drill-Corp/3. 게임 초기 설정/Boss/1. Boss_Spider.asset 생성` 실행
+2. `Assets/_Game/Prefabs/Boss/SpiderBoss.prefab` 더블클릭 (편집 모드)
+3. 루트 SpiderBoss → Inspector → **Data** 슬롯에 방금 만든 `Boss_Spider.asset` 드래그
+4. BossSpawnManager (Game 씬) 의 **Boss Data** 슬롯에도 동일하게 바인딩
+5. 저장
 
 ### 등장 트리거
 
