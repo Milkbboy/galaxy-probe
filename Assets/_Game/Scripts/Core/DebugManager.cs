@@ -41,6 +41,12 @@ namespace DrillCorp.Core
             {
                 KillAllBugs();
             }
+
+            // M 키: 채굴 목표 무한 토글 — ON 이면 채굴 100% 달성해도 세션 종료 안 됨 (밸런스 테스트용)
+            if (Keyboard.current.mKey.wasPressedThisFrame)
+            {
+                ToggleInfiniteMiningTarget();
+            }
         }
 
         private void ToggleMachineInvincible()
@@ -60,6 +66,14 @@ namespace DrillCorp.Core
             }
         }
 
+        private void ToggleInfiniteMiningTarget()
+        {
+            if (_machine != null)
+            {
+                _machine.ToggleInfiniteMiningTarget();
+            }
+        }
+
         private void KillAllBugs()
         {
             var bugs = FindObjectsByType<Bug.Simple.SimpleBug>(FindObjectsInactive.Exclude);
@@ -74,8 +88,8 @@ namespace DrillCorp.Core
         {
             if (!_showDebugUI) return;
 
-            const float width = 250f;
-            const float height = 130f;
+            const float width = 280f;
+            const float height = 160f;
             GUILayout.BeginArea(new Rect(Screen.width - width - 10f, Screen.height - height - 10f, width, height));
             GUILayout.BeginVertical("box");
 
@@ -83,6 +97,7 @@ namespace DrillCorp.Core
             GUILayout.Label($"[I] 머신 무적: {(_machine != null && _machine.IsInvincible ? "<color=cyan>ON</color>" : "OFF")}");
             GUILayout.Label("[H] 머신 체력 회복");
             GUILayout.Label("[K] 모든 벌레 즉사");
+            GUILayout.Label($"[M] 채굴 목표 무한: {(_machine != null && _machine.DebugInfiniteMiningTarget ? "<color=cyan>ON</color>" : "OFF")}");
 
             GUILayout.EndVertical();
             GUILayout.EndArea();

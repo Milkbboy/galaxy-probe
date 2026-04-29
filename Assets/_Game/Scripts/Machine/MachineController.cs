@@ -51,6 +51,7 @@ namespace DrillCorp.Machine
         public int TotalMined => _totalMined;
         public float MiningTarget => _miningTarget;
         public bool IsMiningTargetReached => !_debugInfiniteMiningTarget && _totalMined >= _miningTarget;
+        public bool DebugInfiniteMiningTarget => _debugInfiniteMiningTarget;
 
         public MachineData MachineData => _machineData;
 
@@ -325,6 +326,15 @@ namespace DrillCorp.Machine
         {
             _isInvincible = value;
             Debug.Log($"[Machine] Invincible: {_isInvincible}");
+        }
+
+        /// <summary>
+        /// 채굴 목표 무한 토글 — ON 이면 IsMiningTargetReached 가 항상 false → 세션 자동 종료 안 됨.
+        /// </summary>
+        public void ToggleInfiniteMiningTarget()
+        {
+            _debugInfiniteMiningTarget = !_debugInfiniteMiningTarget;
+            Debug.Log($"[Machine] InfiniteMiningTarget: {_debugInfiniteMiningTarget}");
         }
 
         #endregion
