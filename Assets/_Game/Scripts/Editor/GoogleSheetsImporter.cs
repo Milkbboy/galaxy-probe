@@ -228,8 +228,8 @@ namespace DrillCorp.Editor
             {
                 EditorGUILayout.Space(5);
 
-                // 탭 선택
-                _previewTab = GUILayout.Toolbar(_previewTab, _previewTabNames);
+                // 탭 선택 — 9개가 한 줄이면 글자가 잘리므로 가로 5칸 SelectionGrid 로 자동 줄바꿈
+                _previewTab = GUILayout.SelectionGrid(_previewTab, _previewTabNames, 5, GUILayout.Height(48));
 
                 string currentSheet = _previewTabNames[_previewTab];
 
@@ -253,10 +253,15 @@ namespace DrillCorp.Editor
             var headers = data[0];
             int rowCount = Mathf.Min(data.Count, 20); // 최대 20행 표시
 
-            // 테이블 스크롤뷰
+            // 테이블 스크롤뷰 — 가로/세로 스크롤 모두 켜서 칼럼이 많아도(BossData 26칼럼) 잘리지 않게
             _previewScrollPosition = EditorGUILayout.BeginScrollView(
                 _previewScrollPosition,
-                GUILayout.MaxHeight(250)
+                alwaysShowHorizontal: true,
+                alwaysShowVertical: false,
+                GUI.skin.horizontalScrollbar,
+                GUI.skin.verticalScrollbar,
+                GUI.skin.scrollView,
+                GUILayout.MaxHeight(400)
             );
 
             // 테이블 스타일
@@ -332,7 +337,7 @@ namespace DrillCorp.Editor
 
             try
             {
-                string[] sheetNames = { SHEET_SIMPLE_BUG_DATA, SHEET_WAVE_DATA, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA, SHEET_WEAPON_DATA, SHEET_WEAPON_UPGRADE_DATA, SHEET_CHARACTER_DATA, SHEET_ABILITY_DATA };
+                string[] sheetNames = { SHEET_SIMPLE_BUG_DATA, SHEET_WAVE_DATA, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA, SHEET_WEAPON_DATA, SHEET_WEAPON_UPGRADE_DATA, SHEET_CHARACTER_DATA, SHEET_ABILITY_DATA, SHEET_BOSS_DATA };
 
                 foreach (var sheetName in sheetNames)
                 {
