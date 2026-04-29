@@ -10,7 +10,7 @@
 
 ---
 
-## 시트 구조 (전체 9탭)
+## 시트 구조 (전체 10탭)
 
 | § | 시트 이름 | 행 수 | 설명 | 대응 SO |
 |---|---|---|---|---|
@@ -23,6 +23,7 @@
 | §7 | `CharacterData` | 3 | 캐릭터 3종 + 머신·어빌리티 묶음 | `CharacterData` |
 | §8 | `AbilityData` | 9 | 캐릭터 어빌리티 (cooldown/damage/range) | `AbilityData` |
 | §9 | `BossData` | 1 | 거미 보스 튜닝 (HP·movement·telegraph) | `BossData` (Boss_Spider) |
+| §10 | `SpawnConfigData` | 1 | 전역 스폰 폴백 (SpawnShape, Margin, Tunnel 등) | `SpawnConfigData` (SpawnConfig) |
 
 > 구 시트 `BugData`, `WaveSpawnGroups`, `BugBehaviors`, `MovementData`, `AttackData`, `PassiveData`, `SkillData`, `TriggerData` 는 2026-04-23 SimpleBug 전면 교체로 **삭제**. Importer 도 참조하지 않음. 시트에 남아있으면 `_legacy_` prefix 로 rename 하거나 삭제.
 
@@ -337,7 +338,38 @@ Importer 는 SO 내부 `BossId` 필드로 매칭 (파일명 무관). 새 BossId 
 
 ---
 
-## 10. Unity 에서 Import
+## 10. SpawnConfigData 시트
+
+전역 스폰 폴백 1행. SimpleBugSpawner / TunnelEventManager 가 사용. 웨이브 SO(WaveData)에서 `-1` 로 비워둔 값들은 여기서 폴백을 가져감.
+
+### 컬럼
+
+`DefaultNormalSpawnInterval`, `DefaultEliteSpawnInterval`, `DefaultMaxBugs`,
+`TunnelGameTimeStart`, `DefaultTunnelEventInterval`, `DefaultSwiftPerTunnel`, `TunnelSpawnInterval`,
+`SpawnShape`, `AutoRadius`, `ManualRadius`, `NormalMargin`, `EliteMargin`, `EdgeMargin`, `SpawnJitter`.
+
+### 핵심 필드
+
+- **`SpawnShape`** — `0`=Circle (머신 중심 원형 둘레, 대각선 모서리에 스폰되면 화면 진입까지 시간 소요), `1`=Rect (카메라 사각형 둘레 — 어느 방향이든 균등하게 진입, "5초 정적" 해소)
+- **`NormalMargin` / `EliteMargin`** — 스폰 영역 외곽 두께. Circle 모드에선 반지름 가산, Rect 모드에선 카메라 사각형 외곽 거리
+- **`AutoRadius` / `ManualRadius`** — Circle 모드만 적용. Rect 모드는 카메라 frustum 자체에 맞춰 자동 계산
+- **`TunnelGameTimeStart`** — 게임 시작 후 N초 지나야 땅굴 활성 (TunnelEnabled 웨이브라도 이 시간 미만이면 대기)
+
+### 현재 값
+
+| Shape | NormalMargin | EliteMargin | DefaultMaxBugs | TunnelGameTimeStart |
+|---|---|---|---|---|
+| `1` (Rect) | 0.4 | 0.5 | 90 | 30 |
+
+전체 14개 컬럼 + 기본값: [archive/_review_initial_sheet_data/SpawnConfigData.csv](archive/_review_initial_sheet_data/SpawnConfigData.csv) 참조.
+
+### 1행 SO 매칭
+
+키 컬럼 없음 — 첫 데이터 행만 `Assets/_Game/Data/SpawnConfig.asset` 으로 반영. 자산이 없으면 자동 생성. 다중 행은 무시됨.
+
+---
+
+## 11. Unity 에서 Import
 
 ### 열기
 

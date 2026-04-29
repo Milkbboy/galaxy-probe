@@ -24,6 +24,7 @@ namespace DrillCorp.Bug.Simple
         [SerializeField] private float _eliteInterval = 15f;      // ELITE_INTERVAL 900f / 60
 
         [Header("Spawn Area")]
+        [SerializeField] private SpawnShape _spawnShape = SpawnShape.Rect;
         [SerializeField] private bool _autoRadius = true;
         [SerializeField] private float _manualRadius = 15f;
         [SerializeField] private float _normalMargin = 0.4f;
@@ -91,6 +92,7 @@ namespace DrillCorp.Bug.Simple
             _maxBugs = wave.ResolveMaxBugs(cfg);
             _wave = Mathf.Max(1, wave.WaveNumber);
 
+            _spawnShape = cfg.SpawnShape;
             _autoRadius = cfg.AutoRadius;
             _manualRadius = cfg.ManualRadius;
             _normalMargin = cfg.NormalMargin;
@@ -125,6 +127,13 @@ namespace DrillCorp.Bug.Simple
 
         private Vector3 GetRingSpawnPos(float margin)
         {
+            return _spawnShape == SpawnShape.Rect
+                ? GetRectPerimeterSpawnPos(margin)
+                : GetCirclePerimeterSpawnPos(margin);
+        }
+
+        private Vector3 GetCirclePerimeterSpawnPos(float margin)
+        {
             float angle = Random.Range(0f, Mathf.PI * 2f);
             float radius = GetSpawnRadius() + margin;
             Vector3 center = _machine != null ? _machine.position : transform.position;
@@ -133,6 +142,57 @@ namespace DrillCorp.Bug.Simple
                 0f,
                 center.z + Mathf.Sin(angle) * radius
             );
+        }
+
+        // 카메라 frustum 사각형 외곽 둘레에 균등 스폰.
+        // 둘레 길이로 가중해서 4변 중 하나 선택 → 변 안에서 랜덤 위치 → margin만큼 바깥으로 밀어냄.
+        // 머신 위치가 아니라 카메라 위치 기준이므로 Dynamic 카메라가 마우스 쪽으로 이동해도 자연스럽게 따라감.
+        private Vector3 GetRectPerimeterSpawnPos(float margin)
+        {
+            var cam = Camera.main;
+            if (cam == null || !cam.orthographic)
+            {
+                return GetCirclePerimeterSpawnPos(margin);
+            }
+
+            // XZ 평면 기준 카메라 중심과 화면 절반 크기 (카메라가 -Y로 내려다보는 탑다운)
+            float halfH = cam.orthographicSize;
+            float halfW = halfH * cam.aspect;
+            Vector3 camPos = cam.transform.position;
+
+            // 둘레 길이로 가중해 변 선택 (가로변 2 * 2*halfW, 세로변 2 * 2*halfH)
+            float horizLen = 2f * halfW;
+            float vertLen = 2f * halfH;
+            float total = 2f * (horizLen + vertLen);
+            float pick = Random.Range(0f, total);
+
+            float x, z;
+            if (pick < horizLen)
+            {
+                // 위쪽 변 (Z+)
+                x = camPos.x + Random.Range(-halfW, halfW);
+                z = camPos.z + halfH + margin;
+            }
+            else if (pick < horizLen + vertLen)
+            {
+                // 오른쪽 변 (X+)
+                x = camPos.x + halfW + margin;
+                z = camPos.z + Random.Range(-halfH, halfH);
+            }
+            else if (pick < 2f * horizLen + vertLen)
+            {
+                // 아래쪽 변 (Z-)
+                x = camPos.x + Random.Range(-halfW, halfW);
+                z = camPos.z - halfH - margin;
+            }
+            else
+            {
+                // 왼쪽 변 (X-)
+                x = camPos.x - halfW - margin;
+                z = camPos.z + Random.Range(-halfH, halfH);
+            }
+
+            return new Vector3(x, 0f, z);
         }
 
         private float GetSpawnRadius()
@@ -156,11 +216,36 @@ namespace DrillCorp.Bug.Simple
 #if UNITY_EDITOR
         private void OnDrawGizmosSelected()
         {
+            if (_spawnShape == SpawnShape.Rect)
+            {
+                DrawRectGizmo(_normalMargin, new Color(0.4f, 1f, 0.6f, 0.6f));
+                DrawRectGizmo(_eliteMargin, new Color(1f, 0.8f, 0.2f, 0.6f));
+                return;
+            }
+
             Vector3 c = _machine != null ? _machine.position : transform.position;
             Gizmos.color = new Color(0.4f, 1f, 0.6f, 0.6f);
             Gizmos.DrawWireSphere(c, GetSpawnRadius() + _normalMargin);
             Gizmos.color = new Color(1f, 0.8f, 0.2f, 0.6f);
             Gizmos.DrawWireSphere(c, GetSpawnRadius() + _eliteMargin);
+        }
+
+        private void DrawRectGizmo(float margin, Color color)
+        {
+            var cam = Camera.main;
+            if (cam == null || !cam.orthographic) return;
+            float halfH = cam.orthographicSize + margin;
+            float halfW = cam.orthographicSize * cam.aspect + margin;
+            Vector3 c = cam.transform.position; c.y = 0f;
+            Vector3 a = c + new Vector3(-halfW, 0f, -halfH);
+            Vector3 b = c + new Vector3( halfW, 0f, -halfH);
+            Vector3 cc= c + new Vector3( halfW, 0f,  halfH);
+            Vector3 d = c + new Vector3(-halfW, 0f,  halfH);
+            Gizmos.color = color;
+            Gizmos.DrawLine(a, b);
+            Gizmos.DrawLine(b, cc);
+            Gizmos.DrawLine(cc, d);
+            Gizmos.DrawLine(d, a);
         }
 #endif
     }

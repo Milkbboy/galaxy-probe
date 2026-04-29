@@ -28,7 +28,7 @@ namespace DrillCorp.Editor
 
         // 미리보기 데이터
         private int _previewTab = 0;
-        private readonly string[] _previewTabNames = { "SimpleBugData", "WaveData", "MachineData", "UpgradeData", "WeaponData", "WeaponUpgradeData", "CharacterData", "AbilityData", "BossData" };
+        private readonly string[] _previewTabNames = { "SimpleBugData", "WaveData", "MachineData", "UpgradeData", "WeaponData", "WeaponUpgradeData", "CharacterData", "AbilityData", "BossData", "SpawnConfigData" };
 
         private Dictionary<string, List<List<string>>> _previewData = new Dictionary<string, List<List<string>>>();
         private Vector2 _previewScrollPosition;
@@ -44,6 +44,7 @@ namespace DrillCorp.Editor
         private const string SHEET_CHARACTER_DATA = "CharacterData";
         private const string SHEET_ABILITY_DATA = "AbilityData";
         private const string SHEET_BOSS_DATA = "BossData";
+        private const string SHEET_SPAWN_CONFIG_DATA = "SpawnConfigData";
 
         [MenuItem("Tools/Drill-Corp/4. 데이터 Import/Google Sheets Importer")]
         public static void ShowWindow()
@@ -337,7 +338,7 @@ namespace DrillCorp.Editor
 
             try
             {
-                string[] sheetNames = { SHEET_SIMPLE_BUG_DATA, SHEET_WAVE_DATA, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA, SHEET_WEAPON_DATA, SHEET_WEAPON_UPGRADE_DATA, SHEET_CHARACTER_DATA, SHEET_ABILITY_DATA, SHEET_BOSS_DATA };
+                string[] sheetNames = { SHEET_SIMPLE_BUG_DATA, SHEET_WAVE_DATA, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA, SHEET_WEAPON_DATA, SHEET_WEAPON_UPGRADE_DATA, SHEET_CHARACTER_DATA, SHEET_ABILITY_DATA, SHEET_BOSS_DATA, SHEET_SPAWN_CONFIG_DATA };
 
                 foreach (var sheetName in sheetNames)
                 {
@@ -428,6 +429,10 @@ namespace DrillCorp.Editor
             if (GUILayout.Button("BossData"))
             {
                 ImportBossData();
+            }
+            if (GUILayout.Button("SpawnConfigData"))
+            {
+                ImportSpawnConfigData();
             }
             EditorGUILayout.EndHorizontal();
 
@@ -696,6 +701,7 @@ namespace DrillCorp.Editor
                 await ImportAbilityDataAsync();
                 await ImportCharacterDataAsync();
                 await ImportBossDataAsync();
+                await ImportSpawnConfigDataAsync();
 
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
@@ -832,6 +838,20 @@ namespace DrillCorp.Editor
             catch (Exception e)
             {
                 SetStatus($"BossData 오류: {e.Message}", MessageType.Error);
+            }
+        }
+
+        private async void ImportSpawnConfigData()
+        {
+            SetStatus("SpawnConfigData 가져오는 중...", MessageType.Info);
+            try
+            {
+                await ImportSpawnConfigDataAsync();
+                SetStatus("SpawnConfigData 가져오기 완료!", MessageType.Info);
+            }
+            catch (Exception e)
+            {
+                SetStatus($"SpawnConfigData 오류: {e.Message}", MessageType.Error);
             }
         }
 
@@ -1913,6 +1933,64 @@ namespace DrillCorp.Editor
 
                 Debug.Log($"[GoogleSheetsImporter] Imported: Boss {bossId}");
             }
+
+            AssetDatabase.SaveAssets();
+        }
+
+        // 시트 'SpawnConfigData' 1행 → SpawnConfig.asset 갱신.
+        // 1행 SO 패턴 — 키 컬럼 없이 첫 데이터 행을 그대로 SpawnConfig.asset 에 반영.
+        // 자산이 없으면 기본 경로에 새로 생성.
+        private async Task ImportSpawnConfigDataAsync()
+        {
+            var rows = await ReadSheetAsync(SHEET_SPAWN_CONFIG_DATA);
+            if (rows.Count < 2) return;
+
+            var headers = rows[0];
+            var row = rows[1]; // 1행 SO — 첫 데이터 행만 사용
+            if (row.Count == 0) return;
+
+            // 우선 t:SpawnConfigData 로 찾고, 없으면 기본 경로에 생성
+            const string defaultPath = "Assets/_Game/Data/SpawnConfig.asset";
+            SpawnConfigData cfg = null;
+            foreach (var guid in AssetDatabase.FindAssets("t:SpawnConfigData"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                cfg = AssetDatabase.LoadAssetAtPath<SpawnConfigData>(path);
+                if (cfg != null) break;
+            }
+            if (cfg == null)
+            {
+                cfg = ScriptableObject.CreateInstance<SpawnConfigData>();
+                AssetDatabase.CreateAsset(cfg, defaultPath);
+                Debug.Log($"[GoogleSheetsImporter] 신규 생성: {defaultPath}");
+            }
+
+            var so = new SerializedObject(cfg);
+
+            // Spawn Defaults
+            SetSerializedField(so, "DefaultNormalSpawnInterval", GetFloatValue(row, headers, "DefaultNormalSpawnInterval", 0.083f));
+            SetSerializedField(so, "DefaultEliteSpawnInterval",  GetFloatValue(row, headers, "DefaultEliteSpawnInterval", 15f));
+            SetSerializedField(so, "DefaultMaxBugs",             GetIntValue(row, headers, "DefaultMaxBugs", 90));
+
+            // Tunnel Defaults
+            SetSerializedField(so, "TunnelGameTimeStart",       GetFloatValue(row, headers, "TunnelGameTimeStart", 30f));
+            SetSerializedField(so, "DefaultTunnelEventInterval", GetFloatValue(row, headers, "DefaultTunnelEventInterval", 15f));
+            SetSerializedField(so, "DefaultSwiftPerTunnel",      GetIntValue(row, headers, "DefaultSwiftPerTunnel", 10));
+            SetSerializedField(so, "TunnelSpawnInterval",        GetFloatValue(row, headers, "TunnelSpawnInterval", 0.2f));
+
+            // Spawn Area — SpawnShape enum 은 Circle=0 / Rect=1 정수로 시트에 적음
+            SetSerializedField(so, "SpawnShape",  GetIntValue(row, headers, "SpawnShape", 1));
+            SetSerializedField(so, "AutoRadius",  GetBoolValue(row, headers, "AutoRadius", true));
+            SetSerializedField(so, "ManualRadius", GetFloatValue(row, headers, "ManualRadius", 15f));
+            SetSerializedField(so, "NormalMargin", GetFloatValue(row, headers, "NormalMargin", 0.4f));
+            SetSerializedField(so, "EliteMargin",  GetFloatValue(row, headers, "EliteMargin", 0.5f));
+            SetSerializedField(so, "EdgeMargin",   GetFloatValue(row, headers, "EdgeMargin", 0.4f));
+            SetSerializedField(so, "SpawnJitter",  GetFloatValue(row, headers, "SpawnJitter", 0.15f));
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(cfg);
+
+            Debug.Log($"[GoogleSheetsImporter] Imported SpawnConfig — SpawnShape={cfg.SpawnShape}");
 
             AssetDatabase.SaveAssets();
         }
