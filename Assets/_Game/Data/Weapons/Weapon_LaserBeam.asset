@@ -27,9 +27,9 @@ MonoBehaviour:
   _hitVfxLifetime: 0.5
   _cooldown: 5
   _beamDuration: 10
-  _beamSpeed: 1.725
+  _beamSpeed: 7
   _stopDistance: 0.033
-  _beamRadius: 1
+  _beamRadius: 1.2
   _tickInterval: 0.1
   _beamPrefab: {fileID: 4142905922988169902, guid: a9bc23ce6f3273949a90dec24e7c18c9, type: 3}
   _scorchPrefab: {fileID: 5916145937693747247, guid: 7380fcbe047e25a43a257229fc527121, type: 3}

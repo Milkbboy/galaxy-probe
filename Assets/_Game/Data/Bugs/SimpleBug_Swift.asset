@@ -16,10 +16,11 @@ MonoBehaviour:
   Kind: 2
   Prefab: {fileID: 5500000000000000201, guid: c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8, type: 3}
   BaseHp: 1
-  BaseSpeed: 3
-  Size: 0.2
+  BaseSpeed: 6
+  Size: 0.3
   Score: 0.5
   HpPerWave: 0
   SpeedPerWave: 0
   SpeedRandom: 0
   Tint: {r: 0.87058824, g: 0.87058824, b: 1, a: 1}
+  IsBossChild: 0

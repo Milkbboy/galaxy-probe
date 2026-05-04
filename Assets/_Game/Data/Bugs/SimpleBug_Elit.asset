@@ -15,11 +15,12 @@ MonoBehaviour:
   BugName: Elite
   Kind: 1
   Prefab: {fileID: 5500000000000000101, guid: b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7, type: 3}
-  BaseHp: 10
+  BaseHp: 20
   BaseSpeed: 0.35
-  Size: 0.8
+  Size: 0.7
   Score: 5
   HpPerWave: 0.5
   SpeedPerWave: 0.04
   SpeedRandom: 0.15
   Tint: {r: 1, g: 0.84313726, b: 0, a: 1}
+  IsBossChild: 0

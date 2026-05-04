@@ -26,4 +26,4 @@ MonoBehaviour:
   _hitVfxPrefab: {fileID: 0}
   _hitVfxLifetime: 1.5
   _useAimRadius: 1
-  _customRange: 0.4
+  _customRange: 0.6

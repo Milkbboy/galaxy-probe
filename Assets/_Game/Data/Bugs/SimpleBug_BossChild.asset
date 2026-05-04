@@ -16,8 +16,8 @@ MonoBehaviour:
   Kind: 2
   Prefab: {fileID: 5500000000000000201, guid: 804f5f6bffbc94d4ba58e88213566e3c, type: 3}
   BaseHp: 1
-  BaseSpeed: 3
-  Size: 0.2
+  BaseSpeed: 6
+  Size: 0.3
   Score: 0.5
   HpPerWave: 0
   SpeedPerWave: 0

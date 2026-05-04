@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CameraSettings
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.CameraSystem.CameraSettingsData
   _isFixed: 1
-  _fixedOrthographicSize: 25
+  _fixedOrthographicSize: 16
   _orthographicSize: 15
   _mouseWeight: 0.5
   _maxOffset: 15
