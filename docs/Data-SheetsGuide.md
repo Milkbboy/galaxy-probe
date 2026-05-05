@@ -10,7 +10,7 @@
 
 ---
 
-## 시트 구조 (전체 12탭)
+## 시트 구조 (전체 11탭)
 
 | § | 시트 이름 | 행 수 | 설명 | 대응 SO |
 |---|---|---|---|---|
@@ -24,8 +24,7 @@
 | §8 | `AbilityData` | 9 | 캐릭터 어빌리티 (cooldown/damage/range) | `AbilityData` |
 | §9 | `BossData` | 1 | 거미 보스 튜닝 (HP·movement·telegraph) | `BossData` (Boss_Spider) |
 | §10 | `SpawnConfigData` | 1 | 전역 스폰 폴백 (SpawnShape, Margin, Tunnel 등) | `SpawnConfigData` (SpawnConfig) |
-| §11 | `AimData` | 1 | 에임 크기·크로스헤어 배율 | `AimData` (AimConfig) |
-| §12 | `GemData` | 1 | 보석 크기·픽업 반경·진행 링 | `GemData` (GemConfig) |
+| §11 | `Constants` | N | 게임 전역 const (Aim·Gem 크기 등) — Key/Value row 형 | `GameConstantsData` (GameConstants) |
 
 > 구 시트 `BugData`, `WaveSpawnGroups`, `BugBehaviors`, `MovementData`, `AttackData`, `PassiveData`, `SkillData`, `TriggerData` 는 2026-04-23 SimpleBug 전면 교체로 **삭제**. Importer 도 참조하지 않음. 시트에 남아있으면 `_legacy_` prefix 로 rename 하거나 삭제.
 
@@ -371,71 +370,55 @@ Importer 는 SO 내부 `BossId` 필드로 매칭 (파일명 무관). 새 BossId 
 
 ---
 
-## 11. AimData 시트
+## 11. Constants 시트
 
-마우스 조준(에임) 크기·시각 1행. `AimController` 가 Awake 에서 읽어 적용.
+게임 전역 const — 1행 SO 가 늘어나는 걸 막기 위해 한 시트에 통합. **Key/Value row 형식** (다른 시트들의 컬럼형과 다름).
 
-### 컬럼
+### 시트 구조
 
-| 컬럼 | 타입 | 설명 | 예시 |
-|---|---|---|---|
-| **AimRadius** | float | `AutoCalculateRadius=FALSE` 일 때만 사용. 마우스 커서 판정 반경(월드 유닛). | 0.5 |
-| **AutoCalculateRadius** | bool | 크로스헤어 스프라이트 bounds 로부터 자동 계산. CrosshairScale 적용 후 측정되므로 비주얼/판정 일치. | TRUE |
-| **CrosshairScale** | float | 크로스헤어 SpriteRenderer.localScale 배율. 자동 계산 모드에선 판정 반경도 함께 변함. | 1.0 |
-| **CrosshairHeight** | float | 크로스헤어·링·라벨이 지면(Y=0)보다 떠있는 높이. 벌레 스프라이트보다 크게 둘 것. | 2.0 |
-
-### 현재 값
-
-| AimRadius | AutoCalculateRadius | CrosshairScale | CrosshairHeight |
-|---|---|---|---|
-| 0.5 | TRUE | 1.0 | 2.0 |
-
-전체 컬럼 + 기본값: [archive/_review_initial_sheet_data/AimData.csv](archive/_review_initial_sheet_data/AimData.csv).
-
-### 1행 SO 매칭
-
-키 컬럼 없음 — 첫 데이터 행만 `Assets/_Game/Data/AimConfig.asset` 으로 반영. 자산이 없으면 자동 생성. 메뉴 `Tools/Drill-Corp/3. 게임 초기 설정/Aim/1. AimConfig.asset 생성` 으로 사전 생성도 가능.
-
-### 시트화 안 되는 필드
-
-`AimController` 의 InfoLabel 폰트/색/스케일·LayerMask·Color(_normal/_ready) 등 시각 디테일은 인스펙터 직편집. 시트는 **크기 결정 4종** 만 다룸.
-
----
-
-## 12. GemData 시트
-
-월드 보석(채굴 가능 광물) 크기·채집 1행. `GemDropSpawner.OnEnable` 이 `Gem.ActiveData` 로 주입 → `Gem.Create()` 시점에 인스턴스 스냅샷.
-
-### 컬럼
-
-| 컬럼 | 타입 | 설명 | 예시 |
-|---|---|---|---|
-| **SpriteSize** | float | 보석 비주얼 지름(월드 유닛). 스프라이트 PPU 와 무관하게 이 크기로 정규화. | 1.2 |
-| **PickupRadius** | float | 마우스가 이 반경 안에 들어오면 호버 판정. 시각적으로는 SpriteSize/2 와 비슷하게. | 0.6 |
-| **PickupDuration** | float | 호버 누적 시 채집 완료까지 기본 시간(초). `gem_speed` 업그레이드는 이 위에 +20%/lv. | 2.0 |
-| **HoverDecayMul** | float | 호버 이탈 시 진행도 감소 배율(1.0 = 채집 속도와 동일 속도로 감소). 작을수록 잠시 벗어나도 진행도 유지. | 0.5 |
-| **RingRadius** | float | 진행 링 반경(월드 유닛). 보통 PickupRadius 와 동일. | 0.6 |
-| **RingWidth** | float | 진행 링 두께(LineRenderer widthMultiplier). | 0.07 |
+| 컬럼 | 설명 |
+|---|---|
+| **Key** | `GameConstantsData.cs` 의 public 필드명과 정확히 일치 |
+| **Value** | 숫자/TRUE·FALSE/문자열 |
+| **Description** | 튜닝 메모(선택, Importer 가 무시) |
 
 ### 현재 값
 
-| SpriteSize | PickupRadius | PickupDuration | HoverDecayMul | RingRadius | RingWidth |
-|---|---|---|---|---|---|
-| 1.2 | 0.6 | 2.0 | 0.5 | 0.6 | 0.07 |
+| Key | Value | Description |
+|---|---|---|
+| AimRadius | 0.5 | 마우스 커서 판정 반경(월드 유닛). 크로스헤어 비주얼이 자동 일치. |
+| AimCrosshairHeight | 2.0 | 크로스헤어가 지면에서 떠있는 높이. |
+| GemSpriteSize | 1.2 | 보석 비주얼 지름(월드 유닛). |
+| GemPickupRadius | 0.6 | 호버 판정 반경. 보통 GemSpriteSize/2. |
+| GemPickupDuration | 2.0 | 채집 호버 시간(초). gem_speed 업그레이드는 이 위에 +20%/lv. |
+| GemHoverDecayMul | 0.5 | 호버 이탈 시 진행도 감소 배율. |
+| GemRingRadius | 0.6 | 진행 링 반경(월드 유닛). |
+| GemRingWidth | 0.07 | 진행 링 두께. |
 
-전체 컬럼 + 기본값: [archive/_review_initial_sheet_data/GemData.csv](archive/_review_initial_sheet_data/GemData.csv).
+전체: [archive/_review_initial_sheet_data/Constants.csv](archive/_review_initial_sheet_data/Constants.csv).
 
-### 1행 SO 매칭
+### Importer 동작 — Key 자동 디스패치
 
-키 컬럼 없음 — 첫 데이터 행만 `Assets/_Game/Data/GemConfig.asset` 으로 반영. 자산이 없으면 자동 생성. 메뉴 `Tools/Drill-Corp/3. 게임 초기 설정/Gem/1. GemConfig.asset 생성`. 씬의 `GemDropSpawner` 인스펙터에 이 SO 를 끌어다 연결해야 활성화 (미연결 시 코드 폴백값 사용).
+Importer 는 `SerializedObject.FindProperty(Key)` 로 `GameConstantsData.cs` 의 동일 이름 필드를 찾고, `propertyType` 에 따라 자동 파싱 (Float/Int/Bool/String).
+
+**새 const 추가 워크플로우** — Importer 코드 수정 불필요:
+1. `GameConstantsData.cs` 에 public 필드 한 줄 추가 (예: `public float MachineRotationSpeed = 30f;`)
+2. 시트에 row 한 줄 추가 (`Key=MachineRotationSpeed, Value=30`)
+3. Importer 실행 → 자동 적용
+
+**알 수 없는 Key** (SO 에 필드 없음) → Warning 로그 후 무시. 오타 추적에 도움.
+
+### SO 매칭
+
+`Assets/_Game/Data/GameConstants.asset` 로 반영. 자산이 없으면 자동 생성. 메뉴 `Tools/Drill-Corp/3. 게임 초기 설정/Constants/1. GameConstants.asset 생성`. 씬의 `AimController` / `GemDropSpawner` 인스펙터에 이 SO 를 끌어다 연결.
 
 ### 시트화 안 되는 필드
 
-보석 가치(Normal=1, Elite=5)·드랍 색은 `GemDropSpawner` / `MachineData` 에서 관리. **여기는 크기·타이밍만**.
+`AimController` InfoLabel 폰트/색·LayerMask·Color, `GemDropSpawner` 의 보석 가치(Normal=1, Elite=5)/색은 인스펙터 직편집. **시트는 size/timing 등 자주 튜닝하는 수치만**.
 
 ---
 
-## 13. Unity 에서 Import
+## 12. Unity 에서 Import
 
 ### 열기
 
@@ -451,8 +434,8 @@ Importer 는 SO 내부 `BossId` 필드로 매칭 (파일명 무관). 새 BossId 
 
 ### Import 실행
 
-- `Import All Data` — 12개 시트 순서대로 (SimpleBug → Machine → Upgrade → Wave → Weapon → WeaponUpgrade → Ability → Character → Boss → SpawnConfig → Aim → Gem)
-- 시트별 버튼 — `SimpleBugData`, `WaveData`, `MachineData`, `UpgradeData`, `WeaponData`, `WeaponUpgradeData`, `CharacterData`, `AbilityData`, `BossData`, `SpawnConfigData`, `AimData`, `GemData`
+- `Import All Data` — 11개 시트 순서대로 (SimpleBug → Machine → Upgrade → Wave → Weapon → WeaponUpgrade → Ability → Character → Boss → SpawnConfig → Constants)
+- 시트별 버튼 — `SimpleBugData`, `WaveData`, `MachineData`, `UpgradeData`, `WeaponData`, `WeaponUpgradeData`, `CharacterData`, `AbilityData`, `BossData`, `SpawnConfigData`, `Constants`
 
 ### 결과 경로
 

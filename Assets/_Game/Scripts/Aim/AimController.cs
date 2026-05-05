@@ -14,13 +14,12 @@ namespace DrillCorp.Aim
     /// </summary>
     public class AimController : MonoBehaviour
     {
-        [Header("Config (시트 'AimData' ↔ AimConfig.asset)")]
-        [Tooltip("연결되면 AimRadius/AutoCalculateRadius/CrosshairScale/CrosshairHeight 를 시트값으로 덮어씀.")]
-        [SerializeField] private AimData _aimData;
+        [Header("Config (시트 'Constants' ↔ GameConstants.asset)")]
+        [Tooltip("연결되면 AimRadius/AimCrosshairHeight 를 시트값으로 덮어씀.")]
+        [SerializeField] private GameConstantsData _constants;
 
-        [Header("Aim Settings (AimData 미연결 시 폴백)")]
+        [Header("Aim Settings (Constants 미연결 시 폴백)")]
         [SerializeField] private float _aimRadius = 0.5f;
-        [SerializeField] private bool _autoCalculateRadius = true;
         [SerializeField] private LayerMask _bugLayer;
 
         [Tooltip("크로스헤어·링·라벨이 지면(Y=0)보다 얼마나 위에 떠있을지. " +
@@ -141,30 +140,44 @@ namespace DrillCorp.Aim
         private void Awake()
         {
             _mainCamera = Camera.main;
-            ApplyAimData();
-            CalculateAimRadius();
+            ApplyConstants();
+            ResizeCrosshairToRadius();
             EnsureBugLayer();
             EnsureMachineTransform();
             // EnsureInfoLabel은 Start로 이동 — TMPFontHolder.Awake가 먼저 실행돼야
             // TMPFontHelper가 D2Coding을 반환. Awake끼리는 순서 보장 없음.
         }
 
-        // 시트로 튜닝되는 값들을 SerializeField 폴백 위에 덮어씌움.
-        // CalculateAimRadius() 가 _crosshairRenderer.transform.localScale 을 base 로 채우기 전에
-        // 호출돼야 CrosshairScale 이 _baseCrosshairScale 에 반영된다.
-        private void ApplyAimData()
+        // 시트(Constants) 값을 SerializeField 폴백 위에 덮어씌움.
+        private void ApplyConstants()
         {
-            if (_aimData == null) return;
+            if (_constants == null) return;
+            _aimRadius = _constants.AimRadius;
+            _crosshairHeight = _constants.AimCrosshairHeight;
+        }
 
-            _aimRadius = _aimData.AimRadius;
-            _autoCalculateRadius = _aimData.AutoCalculateRadius;
-            _crosshairHeight = _aimData.CrosshairHeight;
-
-            if (_crosshairRenderer != null && !Mathf.Approximately(_aimData.CrosshairScale, 1f))
+        // 크로스헤어 sprite 의 자연 크기로부터 _aimRadius 에 정확히 맞도록 스케일.
+        // → 비주얼 지름 = _aimRadius * 2 (월드 유닛). 판정 반경과 항상 일치.
+        // _baseAimRadius / _baseCrosshairScale 은 SetRangeMultiplier 가 곱셈 base 로 사용.
+        private void ResizeCrosshairToRadius()
+        {
+            if (_crosshairRenderer != null && _crosshairRenderer.sprite != null)
             {
-                var t = _crosshairRenderer.transform;
-                t.localScale = t.localScale * _aimData.CrosshairScale;
+                Vector3 nat = _crosshairRenderer.sprite.bounds.size; // 스프라이트 자연 크기 (transform scale 무관)
+                float natRadius = Mathf.Max(nat.x, nat.y) / 2f;
+                if (natRadius > 0f)
+                {
+                    float s = _aimRadius / natRadius;
+                    _crosshairRenderer.transform.localScale = Vector3.one * s;
+                }
             }
+
+            _baseAimRadius = _aimRadius;
+            _baseCrosshairScale = _crosshairRenderer != null
+                ? _crosshairRenderer.transform.localScale
+                : Vector3.one;
+
+            ApplyRangeMultiplier();
         }
 
         private void EnsureInfoLabel()
@@ -247,23 +260,6 @@ namespace DrillCorp.Aim
                 if (obj != null)
                     _machineTransform = obj.transform;
             }
-        }
-
-        private void CalculateAimRadius()
-        {
-            if (_autoCalculateRadius && _crosshairRenderer != null && _crosshairRenderer.sprite != null)
-            {
-                Vector3 spriteSize = _crosshairRenderer.bounds.size;
-                _aimRadius = Mathf.Max(spriteSize.x, spriteSize.z) / 2f;
-            }
-
-            // 배율 적용을 위한 원본 값 보존
-            _baseAimRadius = _aimRadius;
-            _baseCrosshairScale = _crosshairRenderer != null
-                ? _crosshairRenderer.transform.localScale
-                : Vector3.one;
-
-            ApplyRangeMultiplier();  // 현재 배율 즉시 반영 (기본 1.0이면 변화 없음)
         }
 
         private void Update()

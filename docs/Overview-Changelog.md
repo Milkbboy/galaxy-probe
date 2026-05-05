@@ -6,6 +6,40 @@
 
 ---
 
+## [Unreleased] - 2026-05-05 — Aim/Gem 시트 → Constants 통합 + Aim 단순화
+
+> 상세: [Data-SheetsGuide.md §11](Data-SheetsGuide.md#11-constants-시트)
+> 맥락: 직전 커밋(`e29ce27`)이 `AimData`/`GemData` 1행 SO 두 개를 만들었지만 사실상 const 데이터라 시트 sprawl. 한 곳으로 모아 Key/Value row 패턴으로 정리. Aim 의 비주얼·판정 분리도 사용자 피드백으로 단순화.
+
+### Added
+
+- **`Scripts/Data/GameConstantsData.cs`** — Aim·Gem 모든 전역 상수를 public 필드로 보유 (8 필드). 시트 Key 와 필드명 1:1 매칭.
+- **`Editor/GameConstantsAssetSetup.cs`** — `Tools/Drill-Corp/3. 게임 초기 설정/Constants/1. GameConstants.asset 생성` 메뉴.
+- **GoogleSheetsImporter `Constants` 탭** — `ImportConstantsAsync()` 신설. `SerializedObject.FindProperty(Key)` + `propertyType` 기반 자동 파싱(Float/Int/Bool/String). 새 const 추가 시 SO 필드 + 시트 row 만 추가, **Importer 코드 수정 불필요**.
+- **`docs/archive/_review_initial_sheet_data/Constants.csv`** — 초기값 보존본.
+
+### Changed
+
+- **Aim 단순화** — `AutoCalculateRadius` / `CrosshairScale` 필드 제거. 시트엔 `AimRadius` (월드 유닛) 한 개만. `AimController.ResizeCrosshairToRadius()` 가 `_crosshairRenderer.sprite.bounds` 의 자연 크기로부터 정확히 `AimRadius`에 맞도록 자동 스케일 → "비주얼 = 판정" 항상 일치.
+- **`AimController.cs`** — `_aimData` → `_constants` (GameConstantsData) 참조. `ApplyConstants()` 에서 `AimRadius`/`AimCrosshairHeight` 만 읽음.
+- **`Gem.cs`** — `Gem.ActiveData` → `Gem.ActiveConstants` (GameConstantsData). 필드명 `Gem*` prefix 로 충돌 방지.
+- **`GemDropSpawner.cs`** — `_gemData` → `_constants`.
+- **`Data-SheetsGuide.md`** — "12탭" → "11탭". 구 §11(AimData)/§12(GemData) 삭제, 신 §11(Constants) 통합 섹션. Import 절 §13 → §12.
+
+### Removed
+
+- `Scripts/Data/AimData.cs` / `Scripts/Data/GemData.cs`
+- `Editor/AimDataAssetSetup.cs` / `Editor/GemDataAssetSetup.cs`
+- `Data/AimConfig.asset` / `Data/GemConfig.asset`
+- `archive/_review_initial_sheet_data/AimData.csv` / `GemData.csv`
+- GoogleSheetsImporter 의 `ImportAimDataAsync` / `ImportGemDataAsync` / `SHEET_AIM_DATA` / `SHEET_GEM_DATA`
+
+### 시트 작업 가이드
+
+기획자: 시트 `AimData`/`GemData` 탭 삭제 → 새 `Constants` 탭 생성 → `Constants.csv` 본문 붙여넣기 → Import.
+
+---
+
 ## [Unreleased] - 2026-05-05 — Aim/Gem 크기 시트화 (§11/§12)
 
 > 상세: [Data-SheetsGuide.md §11](Data-SheetsGuide.md#11-aimdata-시트), [§12](Data-SheetsGuide.md#12-gemdata-시트)

@@ -30,9 +30,9 @@ namespace DrillCorp.Pickup
         private static readonly Color DefaultGemColor = new Color(0.67f, 0.87f, 1f, 1f);
 
         /// <summary>GemDropSpawner 가 OnEnable 에서 주입. 다음 Gem.Create() 부터 반영.</summary>
-        public static GemData ActiveData;
+        public static GameConstantsData ActiveConstants;
 
-        // 인스턴스 스냅샷 — Create() 시점의 ActiveData 를 복사해 보관(런타임 교체 안전).
+        // 인스턴스 스냅샷 — Create() 시점의 ActiveConstants 를 복사해 보관(런타임 교체 안전).
         private float _pickupDuration = DefaultPickupDuration;
         private float _pickupRadius = DefaultPickupRadius;
         private float _hoverDecayMul = DefaultHoverDecayMul;
@@ -61,16 +61,16 @@ namespace DrillCorp.Pickup
             gem._tint = tint ?? DefaultGemColor;
 
             // 시트값 스냅샷
-            var data = ActiveData;
+            var data = ActiveConstants;
             float spriteSize = DefaultSpriteSize;
             if (data != null)
             {
-                gem._pickupDuration = data.PickupDuration;
-                gem._pickupRadius   = data.PickupRadius;
-                gem._hoverDecayMul  = data.HoverDecayMul;
-                gem._ringRadius     = data.RingRadius;
-                gem._ringWidth      = data.RingWidth;
-                spriteSize          = data.SpriteSize;
+                gem._pickupDuration = data.GemPickupDuration;
+                gem._pickupRadius   = data.GemPickupRadius;
+                gem._hoverDecayMul  = data.GemHoverDecayMul;
+                gem._ringRadius     = data.GemRingRadius;
+                gem._ringWidth      = data.GemRingWidth;
+                spriteSize          = data.GemSpriteSize;
             }
 
             var visualGo = new GameObject("Visual");

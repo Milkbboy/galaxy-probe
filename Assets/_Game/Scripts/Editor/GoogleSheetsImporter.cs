@@ -28,7 +28,7 @@ namespace DrillCorp.Editor
 
         // 미리보기 데이터
         private int _previewTab = 0;
-        private readonly string[] _previewTabNames = { "SimpleBugData", "WaveData", "MachineData", "UpgradeData", "WeaponData", "WeaponUpgradeData", "CharacterData", "AbilityData", "BossData", "SpawnConfigData", "AimData", "GemData" };
+        private readonly string[] _previewTabNames = { "SimpleBugData", "WaveData", "MachineData", "UpgradeData", "WeaponData", "WeaponUpgradeData", "CharacterData", "AbilityData", "BossData", "SpawnConfigData", "Constants" };
 
         private Dictionary<string, List<List<string>>> _previewData = new Dictionary<string, List<List<string>>>();
         private Vector2 _previewScrollPosition;
@@ -45,8 +45,7 @@ namespace DrillCorp.Editor
         private const string SHEET_ABILITY_DATA = "AbilityData";
         private const string SHEET_BOSS_DATA = "BossData";
         private const string SHEET_SPAWN_CONFIG_DATA = "SpawnConfigData";
-        private const string SHEET_AIM_DATA = "AimData";
-        private const string SHEET_GEM_DATA = "GemData";
+        private const string SHEET_CONSTANTS = "Constants";
 
         [MenuItem("Tools/Drill-Corp/4. 데이터 Import/Google Sheets Importer")]
         public static void ShowWindow()
@@ -340,7 +339,7 @@ namespace DrillCorp.Editor
 
             try
             {
-                string[] sheetNames = { SHEET_SIMPLE_BUG_DATA, SHEET_WAVE_DATA, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA, SHEET_WEAPON_DATA, SHEET_WEAPON_UPGRADE_DATA, SHEET_CHARACTER_DATA, SHEET_ABILITY_DATA, SHEET_BOSS_DATA, SHEET_SPAWN_CONFIG_DATA, SHEET_AIM_DATA, SHEET_GEM_DATA };
+                string[] sheetNames = { SHEET_SIMPLE_BUG_DATA, SHEET_WAVE_DATA, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA, SHEET_WEAPON_DATA, SHEET_WEAPON_UPGRADE_DATA, SHEET_CHARACTER_DATA, SHEET_ABILITY_DATA, SHEET_BOSS_DATA, SHEET_SPAWN_CONFIG_DATA, SHEET_CONSTANTS };
 
                 foreach (var sheetName in sheetNames)
                 {
@@ -439,14 +438,11 @@ namespace DrillCorp.Editor
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("AimData"))
+            if (GUILayout.Button("Constants"))
             {
-                ImportAimData();
+                ImportConstants();
             }
-            if (GUILayout.Button("GemData"))
-            {
-                ImportGemData();
-            }
+            GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
 
             GUI.enabled = true;
@@ -715,8 +711,7 @@ namespace DrillCorp.Editor
                 await ImportCharacterDataAsync();
                 await ImportBossDataAsync();
                 await ImportSpawnConfigDataAsync();
-                await ImportAimDataAsync();
-                await ImportGemDataAsync();
+                await ImportConstantsAsync();
 
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
@@ -870,31 +865,17 @@ namespace DrillCorp.Editor
             }
         }
 
-        private async void ImportAimData()
+        private async void ImportConstants()
         {
-            SetStatus("AimData 가져오는 중...", MessageType.Info);
+            SetStatus("Constants 가져오는 중...", MessageType.Info);
             try
             {
-                await ImportAimDataAsync();
-                SetStatus("AimData 가져오기 완료!", MessageType.Info);
+                await ImportConstantsAsync();
+                SetStatus("Constants 가져오기 완료!", MessageType.Info);
             }
             catch (Exception e)
             {
-                SetStatus($"AimData 오류: {e.Message}", MessageType.Error);
-            }
-        }
-
-        private async void ImportGemData()
-        {
-            SetStatus("GemData 가져오는 중...", MessageType.Info);
-            try
-            {
-                await ImportGemDataAsync();
-                SetStatus("GemData 가져오기 완료!", MessageType.Info);
-            }
-            catch (Exception e)
-            {
-                SetStatus($"GemData 오류: {e.Message}", MessageType.Error);
+                SetStatus($"Constants 오류: {e.Message}", MessageType.Error);
             }
         }
 
@@ -2038,79 +2019,84 @@ namespace DrillCorp.Editor
             AssetDatabase.SaveAssets();
         }
 
-        // 시트 'AimData' 1행 → AimConfig.asset 갱신. SpawnConfigData 와 동일 패턴.
-        private async Task ImportAimDataAsync()
+        // 시트 'Constants' 의 Key/Value 행 → GameConstants.asset 의 동일 이름 public 필드.
+        // SerializedObject.FindProperty(Key) + propertyType 으로 자동 디스패치 — 새 상수 추가는
+        // GameConstantsData.cs 에 필드 한 줄 + 시트에 row 한 줄. 이 메서드는 손댈 일 없음.
+        private async Task ImportConstantsAsync()
         {
-            var rows = await ReadSheetAsync(SHEET_AIM_DATA);
+            var rows = await ReadSheetAsync(SHEET_CONSTANTS);
             if (rows.Count < 2) return;
 
             var headers = rows[0];
-            var row = rows[1];
-            if (row.Count == 0) return;
+            int keyIdx = headers.IndexOf("Key");
+            int valueIdx = headers.IndexOf("Value");
+            if (keyIdx < 0 || valueIdx < 0)
+            {
+                Debug.LogError("[GoogleSheetsImporter] Constants 시트에 'Key', 'Value' 컬럼이 필요합니다.");
+                return;
+            }
 
-            const string defaultPath = "Assets/_Game/Data/AimConfig.asset";
-            AimData cfg = null;
-            foreach (var guid in AssetDatabase.FindAssets("t:AimData"))
+            const string defaultPath = "Assets/_Game/Data/GameConstants.asset";
+            GameConstantsData cfg = null;
+            foreach (var guid in AssetDatabase.FindAssets("t:GameConstantsData"))
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
-                cfg = AssetDatabase.LoadAssetAtPath<AimData>(path);
+                cfg = AssetDatabase.LoadAssetAtPath<GameConstantsData>(path);
                 if (cfg != null) break;
             }
             if (cfg == null)
             {
-                cfg = ScriptableObject.CreateInstance<AimData>();
+                cfg = ScriptableObject.CreateInstance<GameConstantsData>();
                 AssetDatabase.CreateAsset(cfg, defaultPath);
                 Debug.Log($"[GoogleSheetsImporter] 신규 생성: {defaultPath}");
             }
 
             var so = new SerializedObject(cfg);
-            SetSerializedField(so, "AimRadius",            GetFloatValue(row, headers, "AimRadius", 0.5f));
-            SetSerializedField(so, "AutoCalculateRadius",  GetBoolValue(row, headers, "AutoCalculateRadius", true));
-            SetSerializedField(so, "CrosshairScale",       GetFloatValue(row, headers, "CrosshairScale", 1f));
-            SetSerializedField(so, "CrosshairHeight",      GetFloatValue(row, headers, "CrosshairHeight", 2f));
+            int applied = 0, missing = 0;
+
+            for (int i = 1; i < rows.Count; i++)
+            {
+                var row = rows[i];
+                if (row.Count <= keyIdx) continue;
+                string key = row[keyIdx]?.Trim();
+                if (string.IsNullOrEmpty(key)) continue;
+                string value = row.Count > valueIdx ? (row[valueIdx] ?? "").Trim() : "";
+
+                var prop = so.FindProperty(key);
+                if (prop == null)
+                {
+                    Debug.LogWarning($"[GoogleSheetsImporter] Constants: 알 수 없는 Key '{key}' — GameConstantsData 에 필드 없음, 무시");
+                    missing++;
+                    continue;
+                }
+
+                switch (prop.propertyType)
+                {
+                    case SerializedPropertyType.Float:
+                        if (float.TryParse(value, out float fv)) prop.floatValue = fv;
+                        else { Debug.LogWarning($"[GoogleSheetsImporter] Constants: '{key}' float 파싱 실패 ('{value}')"); continue; }
+                        break;
+                    case SerializedPropertyType.Integer:
+                        if (int.TryParse(value, out int iv)) prop.intValue = iv;
+                        else { Debug.LogWarning($"[GoogleSheetsImporter] Constants: '{key}' int 파싱 실패 ('{value}')"); continue; }
+                        break;
+                    case SerializedPropertyType.Boolean:
+                        prop.boolValue = value.Equals("TRUE", StringComparison.OrdinalIgnoreCase) || value == "1";
+                        break;
+                    case SerializedPropertyType.String:
+                        prop.stringValue = value;
+                        break;
+                    default:
+                        Debug.LogWarning($"[GoogleSheetsImporter] Constants: '{key}' 의 타입 {prop.propertyType} 는 미지원");
+                        continue;
+                }
+                applied++;
+            }
+
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(cfg);
 
-            Debug.Log($"[GoogleSheetsImporter] Imported AimConfig — Radius={cfg.AimRadius}, Scale={cfg.CrosshairScale}");
-            AssetDatabase.SaveAssets();
-        }
-
-        // 시트 'GemData' 1행 → GemConfig.asset 갱신. SpawnConfigData 와 동일 패턴.
-        private async Task ImportGemDataAsync()
-        {
-            var rows = await ReadSheetAsync(SHEET_GEM_DATA);
-            if (rows.Count < 2) return;
-
-            var headers = rows[0];
-            var row = rows[1];
-            if (row.Count == 0) return;
-
-            const string defaultPath = "Assets/_Game/Data/GemConfig.asset";
-            GemData cfg = null;
-            foreach (var guid in AssetDatabase.FindAssets("t:GemData"))
-            {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                cfg = AssetDatabase.LoadAssetAtPath<GemData>(path);
-                if (cfg != null) break;
-            }
-            if (cfg == null)
-            {
-                cfg = ScriptableObject.CreateInstance<GemData>();
-                AssetDatabase.CreateAsset(cfg, defaultPath);
-                Debug.Log($"[GoogleSheetsImporter] 신규 생성: {defaultPath}");
-            }
-
-            var so = new SerializedObject(cfg);
-            SetSerializedField(so, "SpriteSize",     GetFloatValue(row, headers, "SpriteSize", 1.2f));
-            SetSerializedField(so, "PickupRadius",   GetFloatValue(row, headers, "PickupRadius", 0.6f));
-            SetSerializedField(so, "PickupDuration", GetFloatValue(row, headers, "PickupDuration", 2f));
-            SetSerializedField(so, "HoverDecayMul",  GetFloatValue(row, headers, "HoverDecayMul", 0.5f));
-            SetSerializedField(so, "RingRadius",     GetFloatValue(row, headers, "RingRadius", 0.6f));
-            SetSerializedField(so, "RingWidth",      GetFloatValue(row, headers, "RingWidth", 0.07f));
-            so.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(cfg);
-
-            Debug.Log($"[GoogleSheetsImporter] Imported GemConfig — SpriteSize={cfg.SpriteSize}, PickupRadius={cfg.PickupRadius}");
+            Debug.Log($"[GoogleSheetsImporter] Imported GameConstants — {applied} applied, {missing} unknown keys");
             AssetDatabase.SaveAssets();
         }
 

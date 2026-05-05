@@ -27,8 +27,8 @@ namespace DrillCorp.Pickup
         [Tooltip("월드 보석 스프라이트. 비워두면 단색 Quad로 대체.")]
         [SerializeField] private Sprite _gemSprite;
 
-        [Tooltip("보석 크기·채집 시간 SO. 시트 'GemData' ↔ GemConfig.asset. 비워두면 코드 폴백 사용.")]
-        [SerializeField] private GemData _gemData;
+        [Tooltip("게임 전역 상수 SO. 시트 'Constants' ↔ GameConstants.asset. 비워두면 Gem 은 코드 폴백 사용.")]
+        [SerializeField] private GameConstantsData _constants;
 
         // v2 보석 규칙 — 일반 보석 color #aadfff / value 1, 엘리트 보석 color #ffd700 / value 5.
         private static readonly Color NormalGemColor = new Color(0.67f, 0.87f, 1f, 1f);
@@ -42,7 +42,7 @@ namespace DrillCorp.Pickup
         {
             GameEvents.OnBugDied += HandleBugDied;
             _machine = FindAnyObjectByType<MachineController>();
-            if (_gemData != null) Gem.ActiveData = _gemData;
+            if (_constants != null) Gem.ActiveConstants = _constants;
         }
 
         private void OnDisable()
