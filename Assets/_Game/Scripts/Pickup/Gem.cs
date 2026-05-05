@@ -16,17 +16,28 @@ namespace DrillCorp.Pickup
     /// </summary>
     public class Gem : MonoBehaviour
     {
-        private const float BasePickupDuration = 2f;
-        private const float PickupRadius = 0.6f;
-        private const float HoverDecayMul = 0.5f;   // 호버 이탈 시 진행도 감소 배율
+        // 폴백 기본값 — GemData 미연결 시 사용. 시트 ↔ GemConfig.asset 가 ActiveData 에 주입되면 그쪽 우선.
+        private const float DefaultPickupDuration = 2f;
+        private const float DefaultPickupRadius = 0.6f;
+        private const float DefaultHoverDecayMul = 0.5f;
+        private const float DefaultRingRadius = 0.6f;
+        private const float DefaultRingWidth = 0.07f;
+        private const float DefaultSpriteSize = 1.2f;
 
         private const int RingSegments = 48;
-        private const float RingRadius = 0.6f;   // 크기 확대에 맞춰 링도 확대
 
         // v2 기본 보석 색 (#aadfff 근사). 엘리트 보석은 Create에서 금색으로 덮어씀.
         private static readonly Color DefaultGemColor = new Color(0.67f, 0.87f, 1f, 1f);
 
-        private const float SpriteSize = 1.2f;   // 월드 유닛 기준 지름 (이전 0.7 → 1.2로 확대)
+        /// <summary>GemDropSpawner 가 OnEnable 에서 주입. 다음 Gem.Create() 부터 반영.</summary>
+        public static GemData ActiveData;
+
+        // 인스턴스 스냅샷 — Create() 시점의 ActiveData 를 복사해 보관(런타임 교체 안전).
+        private float _pickupDuration = DefaultPickupDuration;
+        private float _pickupRadius = DefaultPickupRadius;
+        private float _hoverDecayMul = DefaultHoverDecayMul;
+        private float _ringRadius = DefaultRingRadius;
+        private float _ringWidth = DefaultRingWidth;
 
         private AimController _aim;
         private LineRenderer _progressRing;
@@ -49,6 +60,19 @@ namespace DrillCorp.Pickup
             gem._value = Mathf.Max(1, value);
             gem._tint = tint ?? DefaultGemColor;
 
+            // 시트값 스냅샷
+            var data = ActiveData;
+            float spriteSize = DefaultSpriteSize;
+            if (data != null)
+            {
+                gem._pickupDuration = data.PickupDuration;
+                gem._pickupRadius   = data.PickupRadius;
+                gem._hoverDecayMul  = data.HoverDecayMul;
+                gem._ringRadius     = data.RingRadius;
+                gem._ringWidth      = data.RingWidth;
+                spriteSize          = data.SpriteSize;
+            }
+
             var visualGo = new GameObject("Visual");
             visualGo.transform.SetParent(root.transform, false);
             var sr = visualGo.AddComponent<SpriteRenderer>();
@@ -56,11 +80,11 @@ namespace DrillCorp.Pickup
             sr.color = gem._tint;  // 스프라이트가 있어도 tint 적용 (엘리트=금색)
             sr.sortingOrder = 50;
 
-            float scale = SpriteSize;
+            float scale = spriteSize;
             if (sprite != null && sprite.rect.width > 0f)
             {
                 float unit = sprite.rect.width / sprite.pixelsPerUnit;
-                scale = unit > 0f ? SpriteSize / unit : SpriteSize;
+                scale = unit > 0f ? spriteSize / unit : spriteSize;
             }
             visualGo.transform.localScale = Vector3.one * scale;
 
@@ -84,7 +108,7 @@ namespace DrillCorp.Pickup
             gemPos.y = 0f;
 
             float dist = Vector3.Distance(aimPos, gemPos);
-            bool hovering = dist <= PickupRadius;
+            bool hovering = dist <= _pickupRadius;
 
             if (hovering)
             {
@@ -95,7 +119,7 @@ namespace DrillCorp.Pickup
                     speedMul += um.GetTotalBonus(UpgradeType.GemCollectSpeed);
 
                 _hoverTime += Time.deltaTime * speedMul;
-                if (_hoverTime >= BasePickupDuration)
+                if (_hoverTime >= _pickupDuration)
                 {
                     Collect();
                     return;
@@ -104,10 +128,10 @@ namespace DrillCorp.Pickup
             else
             {
                 // 이탈 시 진행도 부드럽게 감소 (완전 리셋은 답답)
-                _hoverTime = Mathf.Max(0f, _hoverTime - Time.deltaTime * HoverDecayMul);
+                _hoverTime = Mathf.Max(0f, _hoverTime - Time.deltaTime * _hoverDecayMul);
             }
 
-            UpdateRing(_hoverTime / BasePickupDuration, hovering);
+            UpdateRing(_hoverTime / _pickupDuration, hovering);
         }
 
         private void Collect()
@@ -138,7 +162,7 @@ namespace DrillCorp.Pickup
             _progressRing = ringObj.AddComponent<LineRenderer>();
             _progressRing.useWorldSpace = true;
             _progressRing.positionCount = 0;
-            _progressRing.widthMultiplier = 0.07f;   // 크기 확대에 맞춰 링 두께도 확대
+            _progressRing.widthMultiplier = _ringWidth;
             _progressRing.material = new Material(Shader.Find("Sprites/Default"));
             var idle = _tint; idle.a = 0.25f;
             _progressRing.startColor = idle;
@@ -175,9 +199,9 @@ namespace DrillCorp.Pickup
                 float t = count > 1 ? (float)i / (count - 1) : 0f;
                 float a = startAngle - totalAngle * t;
                 _progressRing.SetPosition(i, new Vector3(
-                    center.x + Mathf.Cos(a) * RingRadius,
+                    center.x + Mathf.Cos(a) * _ringRadius,
                     ringY,
-                    center.z + Mathf.Sin(a) * RingRadius));
+                    center.z + Mathf.Sin(a) * _ringRadius));
             }
 
             Color col = _tint;

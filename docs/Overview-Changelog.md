@@ -6,6 +6,29 @@
 
 ---
 
+## [Unreleased] - 2026-05-05 — Aim/Gem 크기 시트화 (§11/§12)
+
+> 상세: [Data-SheetsGuide.md §11](Data-SheetsGuide.md#11-aimdata-시트), [§12](Data-SheetsGuide.md#12-gemdata-시트)
+> 맥락: 에임 반경·크로스헤어 배율, 보석 크기·픽업 반경/시간이 코드 const / SerializeField 에 박혀 있어 기획자가 만질 수 없었음. 1행 SO 패턴(SpawnConfigData 동일)으로 분리.
+
+### Added
+
+- **`Scripts/Data/AimData.cs`** — 에임 4 필드 (AimRadius, AutoCalculateRadius, CrosshairScale, CrosshairHeight).
+- **`Scripts/Data/GemData.cs`** — 보석 6 필드 (SpriteSize, PickupRadius, PickupDuration, HoverDecayMul, RingRadius, RingWidth).
+- **`Editor/AimDataAssetSetup.cs`** / **`Editor/GemDataAssetSetup.cs`** — `Tools/Drill-Corp/3. 게임 초기 설정/Aim·Gem/1. *Config.asset 생성` 메뉴.
+- **GoogleSheetsImporter `AimData` / `GemData` 탭** — 11·12번째. `ImportAimDataAsync()` / `ImportGemDataAsync()` 신설. 1행 SO 패턴.
+- **`docs/Data-SheetsGuide.md` §11/§12** — 시트 스키마.
+- **`docs/archive/_review_initial_sheet_data/AimData.csv`** / **`GemData.csv`** — 초기값 보존본.
+
+### Changed
+
+- **`AimController.cs`** — `[SerializeField] AimData _aimData` 추가. Awake 에서 `ApplyAimData()` 가 SerializeField 폴백을 시트값으로 덮어씀. 자동 반경 계산 전에 `CrosshairScale` 을 `_crosshairRenderer.transform.localScale` 에 곱해, "비주얼 = 판정 반경" 일관성 유지.
+- **`Gem.cs`** — `private const SpriteSize/PickupRadius/RingRadius/...` → 인스턴스 필드. `Create()` 시점에 `Gem.ActiveData` 에서 스냅샷.
+- **`GemDropSpawner.cs`** — `[SerializeField] GemData _gemData` 추가, OnEnable 에서 `Gem.ActiveData` 주입.
+- **`Data-SheetsGuide.md`** — "전체 10탭" → "전체 12탭", §11/§12 신설. Import 절 번호 한 칸 밀림 (§11 → §13).
+
+---
+
 ## [Unreleased] - 2026-04-28 — 거미 보스 BossData SO + 시트 §9 분리
 
 > 상세: [Sys-Boss.md](Sys-Boss.md), [Data-SheetsGuide.md §9](Data-SheetsGuide.md#9-bossdata-시트)

@@ -28,7 +28,7 @@ namespace DrillCorp.Editor
 
         // 미리보기 데이터
         private int _previewTab = 0;
-        private readonly string[] _previewTabNames = { "SimpleBugData", "WaveData", "MachineData", "UpgradeData", "WeaponData", "WeaponUpgradeData", "CharacterData", "AbilityData", "BossData", "SpawnConfigData" };
+        private readonly string[] _previewTabNames = { "SimpleBugData", "WaveData", "MachineData", "UpgradeData", "WeaponData", "WeaponUpgradeData", "CharacterData", "AbilityData", "BossData", "SpawnConfigData", "AimData", "GemData" };
 
         private Dictionary<string, List<List<string>>> _previewData = new Dictionary<string, List<List<string>>>();
         private Vector2 _previewScrollPosition;
@@ -45,6 +45,8 @@ namespace DrillCorp.Editor
         private const string SHEET_ABILITY_DATA = "AbilityData";
         private const string SHEET_BOSS_DATA = "BossData";
         private const string SHEET_SPAWN_CONFIG_DATA = "SpawnConfigData";
+        private const string SHEET_AIM_DATA = "AimData";
+        private const string SHEET_GEM_DATA = "GemData";
 
         [MenuItem("Tools/Drill-Corp/4. 데이터 Import/Google Sheets Importer")]
         public static void ShowWindow()
@@ -338,7 +340,7 @@ namespace DrillCorp.Editor
 
             try
             {
-                string[] sheetNames = { SHEET_SIMPLE_BUG_DATA, SHEET_WAVE_DATA, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA, SHEET_WEAPON_DATA, SHEET_WEAPON_UPGRADE_DATA, SHEET_CHARACTER_DATA, SHEET_ABILITY_DATA, SHEET_BOSS_DATA, SHEET_SPAWN_CONFIG_DATA };
+                string[] sheetNames = { SHEET_SIMPLE_BUG_DATA, SHEET_WAVE_DATA, SHEET_MACHINE_DATA, SHEET_UPGRADE_DATA, SHEET_WEAPON_DATA, SHEET_WEAPON_UPGRADE_DATA, SHEET_CHARACTER_DATA, SHEET_ABILITY_DATA, SHEET_BOSS_DATA, SHEET_SPAWN_CONFIG_DATA, SHEET_AIM_DATA, SHEET_GEM_DATA };
 
                 foreach (var sheetName in sheetNames)
                 {
@@ -433,6 +435,17 @@ namespace DrillCorp.Editor
             if (GUILayout.Button("SpawnConfigData"))
             {
                 ImportSpawnConfigData();
+            }
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("AimData"))
+            {
+                ImportAimData();
+            }
+            if (GUILayout.Button("GemData"))
+            {
+                ImportGemData();
             }
             EditorGUILayout.EndHorizontal();
 
@@ -702,6 +715,8 @@ namespace DrillCorp.Editor
                 await ImportCharacterDataAsync();
                 await ImportBossDataAsync();
                 await ImportSpawnConfigDataAsync();
+                await ImportAimDataAsync();
+                await ImportGemDataAsync();
 
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
@@ -852,6 +867,34 @@ namespace DrillCorp.Editor
             catch (Exception e)
             {
                 SetStatus($"SpawnConfigData 오류: {e.Message}", MessageType.Error);
+            }
+        }
+
+        private async void ImportAimData()
+        {
+            SetStatus("AimData 가져오는 중...", MessageType.Info);
+            try
+            {
+                await ImportAimDataAsync();
+                SetStatus("AimData 가져오기 완료!", MessageType.Info);
+            }
+            catch (Exception e)
+            {
+                SetStatus($"AimData 오류: {e.Message}", MessageType.Error);
+            }
+        }
+
+        private async void ImportGemData()
+        {
+            SetStatus("GemData 가져오는 중...", MessageType.Info);
+            try
+            {
+                await ImportGemDataAsync();
+                SetStatus("GemData 가져오기 완료!", MessageType.Info);
+            }
+            catch (Exception e)
+            {
+                SetStatus($"GemData 오류: {e.Message}", MessageType.Error);
             }
         }
 
@@ -1992,6 +2035,82 @@ namespace DrillCorp.Editor
 
             Debug.Log($"[GoogleSheetsImporter] Imported SpawnConfig — SpawnShape={cfg.SpawnShape}");
 
+            AssetDatabase.SaveAssets();
+        }
+
+        // 시트 'AimData' 1행 → AimConfig.asset 갱신. SpawnConfigData 와 동일 패턴.
+        private async Task ImportAimDataAsync()
+        {
+            var rows = await ReadSheetAsync(SHEET_AIM_DATA);
+            if (rows.Count < 2) return;
+
+            var headers = rows[0];
+            var row = rows[1];
+            if (row.Count == 0) return;
+
+            const string defaultPath = "Assets/_Game/Data/AimConfig.asset";
+            AimData cfg = null;
+            foreach (var guid in AssetDatabase.FindAssets("t:AimData"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                cfg = AssetDatabase.LoadAssetAtPath<AimData>(path);
+                if (cfg != null) break;
+            }
+            if (cfg == null)
+            {
+                cfg = ScriptableObject.CreateInstance<AimData>();
+                AssetDatabase.CreateAsset(cfg, defaultPath);
+                Debug.Log($"[GoogleSheetsImporter] 신규 생성: {defaultPath}");
+            }
+
+            var so = new SerializedObject(cfg);
+            SetSerializedField(so, "AimRadius",            GetFloatValue(row, headers, "AimRadius", 0.5f));
+            SetSerializedField(so, "AutoCalculateRadius",  GetBoolValue(row, headers, "AutoCalculateRadius", true));
+            SetSerializedField(so, "CrosshairScale",       GetFloatValue(row, headers, "CrosshairScale", 1f));
+            SetSerializedField(so, "CrosshairHeight",      GetFloatValue(row, headers, "CrosshairHeight", 2f));
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(cfg);
+
+            Debug.Log($"[GoogleSheetsImporter] Imported AimConfig — Radius={cfg.AimRadius}, Scale={cfg.CrosshairScale}");
+            AssetDatabase.SaveAssets();
+        }
+
+        // 시트 'GemData' 1행 → GemConfig.asset 갱신. SpawnConfigData 와 동일 패턴.
+        private async Task ImportGemDataAsync()
+        {
+            var rows = await ReadSheetAsync(SHEET_GEM_DATA);
+            if (rows.Count < 2) return;
+
+            var headers = rows[0];
+            var row = rows[1];
+            if (row.Count == 0) return;
+
+            const string defaultPath = "Assets/_Game/Data/GemConfig.asset";
+            GemData cfg = null;
+            foreach (var guid in AssetDatabase.FindAssets("t:GemData"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                cfg = AssetDatabase.LoadAssetAtPath<GemData>(path);
+                if (cfg != null) break;
+            }
+            if (cfg == null)
+            {
+                cfg = ScriptableObject.CreateInstance<GemData>();
+                AssetDatabase.CreateAsset(cfg, defaultPath);
+                Debug.Log($"[GoogleSheetsImporter] 신규 생성: {defaultPath}");
+            }
+
+            var so = new SerializedObject(cfg);
+            SetSerializedField(so, "SpriteSize",     GetFloatValue(row, headers, "SpriteSize", 1.2f));
+            SetSerializedField(so, "PickupRadius",   GetFloatValue(row, headers, "PickupRadius", 0.6f));
+            SetSerializedField(so, "PickupDuration", GetFloatValue(row, headers, "PickupDuration", 2f));
+            SetSerializedField(so, "HoverDecayMul",  GetFloatValue(row, headers, "HoverDecayMul", 0.5f));
+            SetSerializedField(so, "RingRadius",     GetFloatValue(row, headers, "RingRadius", 0.6f));
+            SetSerializedField(so, "RingWidth",      GetFloatValue(row, headers, "RingWidth", 0.07f));
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(cfg);
+
+            Debug.Log($"[GoogleSheetsImporter] Imported GemConfig — SpriteSize={cfg.SpriteSize}, PickupRadius={cfg.PickupRadius}");
             AssetDatabase.SaveAssets();
         }
 

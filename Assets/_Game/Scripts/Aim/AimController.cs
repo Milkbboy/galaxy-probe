@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
+using DrillCorp.Data;
 using DrillCorp.Machine;
 
 namespace DrillCorp.Aim
@@ -13,7 +14,11 @@ namespace DrillCorp.Aim
     /// </summary>
     public class AimController : MonoBehaviour
     {
-        [Header("Aim Settings")]
+        [Header("Config (시트 'AimData' ↔ AimConfig.asset)")]
+        [Tooltip("연결되면 AimRadius/AutoCalculateRadius/CrosshairScale/CrosshairHeight 를 시트값으로 덮어씀.")]
+        [SerializeField] private AimData _aimData;
+
+        [Header("Aim Settings (AimData 미연결 시 폴백)")]
         [SerializeField] private float _aimRadius = 0.5f;
         [SerializeField] private bool _autoCalculateRadius = true;
         [SerializeField] private LayerMask _bugLayer;
@@ -136,11 +141,30 @@ namespace DrillCorp.Aim
         private void Awake()
         {
             _mainCamera = Camera.main;
+            ApplyAimData();
             CalculateAimRadius();
             EnsureBugLayer();
             EnsureMachineTransform();
             // EnsureInfoLabel은 Start로 이동 — TMPFontHolder.Awake가 먼저 실행돼야
             // TMPFontHelper가 D2Coding을 반환. Awake끼리는 순서 보장 없음.
+        }
+
+        // 시트로 튜닝되는 값들을 SerializeField 폴백 위에 덮어씌움.
+        // CalculateAimRadius() 가 _crosshairRenderer.transform.localScale 을 base 로 채우기 전에
+        // 호출돼야 CrosshairScale 이 _baseCrosshairScale 에 반영된다.
+        private void ApplyAimData()
+        {
+            if (_aimData == null) return;
+
+            _aimRadius = _aimData.AimRadius;
+            _autoCalculateRadius = _aimData.AutoCalculateRadius;
+            _crosshairHeight = _aimData.CrosshairHeight;
+
+            if (_crosshairRenderer != null && !Mathf.Approximately(_aimData.CrosshairScale, 1f))
+            {
+                var t = _crosshairRenderer.transform;
+                t.localScale = t.localScale * _aimData.CrosshairScale;
+            }
         }
 
         private void EnsureInfoLabel()

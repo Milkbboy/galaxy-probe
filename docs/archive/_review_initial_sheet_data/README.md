@@ -1,7 +1,7 @@
 # Drill-Corp 데이터 시트 입력 초안 (아카이브)
 
-> 작성: 2026-04-23 · 최종 갱신: 2026-04-29 (Boss/SpawnConfig 추가, 10탭)
-> 용도: Google Sheets 10 탭에 붙여넣은 **초기 데이터** 보존본. 시트가 SSoT 가 된 후 참고용.
+> 작성: 2026-04-23 · 최종 갱신: 2026-05-05 (Aim/Gem 추가, 12탭)
+> 용도: Google Sheets 12 탭에 붙여넣은 **초기 데이터** 보존본. 시트가 SSoT 가 된 후 참고용.
 > 스키마 문서: [Data-SheetsGuide.md](../../Data-SheetsGuide.md) · [Overview-DataStructure.md](../../Overview-DataStructure.md)
 
 ---
@@ -20,6 +20,8 @@
 | `AbilityData.csv`            | `AbilityData`   | [Data-SheetsGuide.md §8](../../Data-SheetsGuide.md#8-abilitydata-시트) — 어빌리티 9종, Cooldown/Damage/Range 등 밸런스 |
 | `BossData.csv`               | `BossData`      | [Data-SheetsGuide.md §9](../../Data-SheetsGuide.md#9-bossdata-시트) — 거미 보스 1행, HP/movement/attack/telegraph |
 | `SpawnConfigData.csv`        | `SpawnConfigData` | [Data-SheetsGuide.md §10](../../Data-SheetsGuide.md#10-spawnconfigdata-시트) — 전역 스폰 폴백 1행, SpawnShape/Margin 등 |
+| `AimData.csv`                | `AimData`       | [Data-SheetsGuide.md §11](../../Data-SheetsGuide.md#11-aimdata-시트) — 에임 크기·자동 계산·크로스헤어 배율 1행 |
+| `GemData.csv`                | `GemData`       | [Data-SheetsGuide.md §12](../../Data-SheetsGuide.md#12-gemdata-시트) — 보석 크기·픽업 반경/시간·진행 링 1행 |
 
 모든 파일은 **1행은 헤더 + 2행부터 실제 데이터**. Google Sheets에 이미 헤더 행이 만들어져 있으면 본문(2행 이후)만 붙여넣으면 됨.
 
