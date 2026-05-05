@@ -69,7 +69,7 @@ namespace DrillCorp.Machine
 
         [Header("Debug")]
         [Tooltip("시작 시 무적 상태 (디버그/테스트용)")]
-        [SerializeField] private bool _startInvincible = true;
+        [SerializeField] private bool _startInvincible = false;
 
         private bool _isInvincible;
         public bool IsInvincible => _isInvincible;
