@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.GameConstantsData
   AimRadius: 2
   AimCrosshairHeight: 2
-  GemSpriteSize: 1.2
+  GemSpriteSize: 2
   GemPickupRadius: 0.6
   GemPickupDuration: 2
   GemHoverDecayMul: 0.5
