@@ -44,7 +44,6 @@ namespace DrillCorp.EditorTools
         private const float WaveformHeight = 100f;
         private const float HandleHitPx = 8f;
 
-        [MenuItem("Tools/Drill-Corp/Audio/Trim AudioClip")]
         public static void Open()
         {
             var w = GetWindow<AudioTrimWindow>("Trim AudioClip");

@@ -20,7 +20,6 @@ namespace DrillCorp.EditorTools
         private const float BarWidth = 0.2f;   // 가로 두께
         private const float BarHeight = 10.0f;  // 세로 길이
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/6. 무기 게이지 프리펩 생성")]
         public static void Create()
         {
             EnsureFolders();

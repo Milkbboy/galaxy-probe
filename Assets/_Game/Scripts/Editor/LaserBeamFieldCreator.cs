@@ -16,7 +16,6 @@ namespace DrillCorp.EditorTools
         private const string PrefabPath = FolderPath + "/LaserBeamField.prefab";
         private const string SpritePath = FolderPath + "/LaserBeamFieldCircle.png";
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/5. 레이저 필드 프리펩 생성")]
         public static void Create()
         {
             EnsureFolders();

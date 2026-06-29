@@ -52,7 +52,6 @@ namespace DrillCorp.Editor
         const float Y_HUB   = 0.020f;
         const float Y_BOLT  = 0.040f;
 
-        [MenuItem("Tools/Drill-Corp/Weapons/SawBlade 프리펩 생성")]
         public static void Build()
         {
             EnsureFolders();

@@ -20,7 +20,7 @@ namespace DrillCorp.EditorTools
     ///
     /// v2.html drawItemUI 의 `ctx.stroke(roundRect)` 1px 테마색 외곽선 포팅.
     ///
-    /// 메뉴: Tools/Drill-Corp/3. 게임 초기 설정/UI/어빌리티 슬롯 테두리 스프라이트 생성
+    /// Legacy generator. 실제 빌드 UI 작업에서는 메뉴에 노출하지 않는다.
     /// </summary>
     public static class AbilitySlotBorderCreator
     {
@@ -34,7 +34,6 @@ namespace DrillCorp.EditorTools
         // 9-slice 가장자리 고정 영역 — 두께보다 크게 잡으면 안전.
         private const int SliceMarginPx = 4;
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/UI/어빌리티 슬롯 테두리 스프라이트 생성")]
         public static void CreateBorderSprite()
         {
             EnsureFolders();

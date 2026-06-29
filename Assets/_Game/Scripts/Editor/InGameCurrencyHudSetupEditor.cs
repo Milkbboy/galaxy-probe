@@ -27,7 +27,6 @@ namespace DrillCorp.Editor
         private static readonly Color OreColor  = new Color(1f, 0.65f, 0.35f, 1f);     // 철광석 광맥 주황
         private static readonly Color GemColor  = new Color(0.53f, 0.87f, 1f, 1f);     // #88ddff
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/3. 광석·보석 HUD 추가")]
         public static void SetupCurrencyHud()
         {
             var canvas = Object.FindAnyObjectByType<Canvas>();

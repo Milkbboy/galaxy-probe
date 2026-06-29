@@ -14,7 +14,6 @@ namespace DrillCorp.EditorTools
         const string DATA_PATH = "Assets/_Game/Data/Boss/Boss_Spider.asset";
         const string FOLDER    = "Assets/_Game/Data/Boss";
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/Boss/1. Boss_Spider.asset 생성")]
         public static void CreateBossSpiderAsset()
         {
             EnsureFolder();

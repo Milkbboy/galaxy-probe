@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 using DrillCorp.Core;
@@ -13,6 +14,14 @@ namespace DrillCorp.OutGame
     /// </summary>
     public class HubController : MonoBehaviour
     {
+        public enum FocusTarget
+        {
+            None,
+            Upgrades,
+            Character,
+            Crafting
+        }
+
         [SerializeField] private TitleUI _titleUI;
 
         [Header("v2 베이스값 (MachineData 동기화 필요)")]
@@ -36,6 +45,7 @@ namespace DrillCorp.OutGame
         // 리셋 2단계 확인용
         private Coroutine _resetConfirmRoutine;
         private bool _awaitingResetConfirm;
+        private FocusTarget _pendingFocusTarget = FocusTarget.None;
 
         private void Awake()
         {
@@ -61,6 +71,60 @@ namespace DrillCorp.OutGame
             yield return null;  // 모든 Awake/Start + CSF 1차 계산 끝난 뒤
             var rt = transform as RectTransform;
             if (rt != null) LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+            ApplyPendingFocus();
+        }
+
+        public void Focus(FocusTarget target)
+        {
+            _pendingFocusTarget = target;
+            if (!isActiveAndEnabled)
+                return;
+
+            ApplyPendingFocus();
+        }
+
+        private void ApplyPendingFocus()
+        {
+            if (_pendingFocusTarget == FocusTarget.None)
+                return;
+
+            var target = _pendingFocusTarget;
+            _pendingFocusTarget = FocusTarget.None;
+
+            var panel = FindFocusPanel(target);
+            if (panel == null)
+                return;
+
+            var button = panel.GetComponentInChildren<Button>(includeInactive: false);
+            if (button != null && EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(button.gameObject);
+        }
+
+        private Transform FindFocusPanel(FocusTarget target)
+        {
+            string panelName = target switch
+            {
+                FocusTarget.Upgrades => "ExcavatorUpgradeSubPanel",
+                FocusTarget.Character => "CharacterSelectSubPanel",
+                FocusTarget.Crafting => "WeaponShopSubPanel",
+                _ => null
+            };
+
+            if (string.IsNullOrEmpty(panelName))
+                return null;
+
+            return FindDeep(transform, panelName);
+        }
+
+        private static Transform FindDeep(Transform root, string name)
+        {
+            foreach (var t in root.GetComponentsInChildren<Transform>(includeInactive: true))
+            {
+                if (t.name == name)
+                    return t;
+            }
+
+            return null;
         }
 
         private void OnDisable()

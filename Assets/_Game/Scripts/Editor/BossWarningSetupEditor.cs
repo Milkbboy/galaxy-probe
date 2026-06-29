@@ -35,7 +35,6 @@ namespace DrillCorp.EditorTools
         static readonly Color ColShadow     = new Color32(0x00, 0x00, 0x00, 0xc0);
         static readonly Color ColBackground = new Color32(0x10, 0x05, 0x20, 0xd8); // 검보라 알파 ~85%
 
-        [MenuItem("Drill-Corp/HUD/Build Boss Warning")]
         public static void BuildBossWarning()
         {
             var canvas = Object.FindAnyObjectByType<Canvas>();

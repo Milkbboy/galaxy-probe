@@ -28,7 +28,6 @@ namespace DrillCorp.Editor
         // ═════════════════════════════════════════════════════
         // 통합 원클릭 — 에셋 → 프리펩 → 씬 바인딩 전체 진행
         // ═════════════════════════════════════════════════════
-        [MenuItem("Tools/Drill-Corp/Weapons/★ Saw 풀셋업 (에셋 + 프리펩 + 씬)")]
         public static void FullSetup()
         {
             Debug.Log("[SawFullSetup] 1/3 — Weapon_Saw.asset 생성/확인");
@@ -43,7 +42,6 @@ namespace DrillCorp.Editor
             Debug.Log("[SawFullSetup] 완료 — Game 씬 저장 (Ctrl+S) 후 플레이하세요.");
         }
 
-        [MenuItem("Tools/Drill-Corp/Weapons/WeaponPanel에 Saw 슬롯 추가 (활성 씬)")]
         public static void Setup()
         {
             var panelUI = Object.FindAnyObjectByType<WeaponPanelUI>();
@@ -134,7 +132,7 @@ namespace DrillCorp.Editor
                 else
                 {
                     Debug.LogWarning($"[SawSetup] {SAW_DATA_PATH} 없음.\n" +
-                        "Tools/Drill-Corp/3. 게임 초기 설정/Title/4b. Weapon_Saw 에셋만 생성 먼저 실행 후, " +
+                        "V2DataSetupEditor.CreateSawWeaponDataMenu() 실행 후, " +
                         "SawWeapon 의 _data 슬롯에 수동 바인딩하세요.");
                 }
             }

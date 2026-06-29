@@ -29,7 +29,6 @@ namespace DrillCorp.EditorTools
         // === 색 (프로토타입 #4fc3f7 파랑) ===
         private static readonly Color GunBlue = new Color(0.298f, 0.765f, 0.969f, 1f);
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/7. 기관총 자산 일괄 생성")]
         public static void CreateAll()
         {
             EnsureFolders();

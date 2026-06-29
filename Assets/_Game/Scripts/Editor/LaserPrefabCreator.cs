@@ -46,7 +46,6 @@ namespace DrillCorp.EditorTools
         private const float LifeArcRadiusOffset = 0.2f;
         private const float CrosshairOffset = 0.15f;    // 빔 반경 비례 (프로토 +4px 비율)
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/8. 레이저 자산 일괄 생성")]
         public static void CreateAll()
         {
             EnsureFolders();

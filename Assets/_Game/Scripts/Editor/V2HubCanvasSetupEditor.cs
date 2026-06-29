@@ -41,7 +41,6 @@ namespace DrillCorp.Editor
         const string HUB_PANEL_NAME      = "HubPanel";
         const string RESULT_OVERLAY_NAME = "ResultOverlay";
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/Title/3. v2 Hub Canvas 추가")]
         public static void BuildHubCanvas()
         {
             // TMP 한글 폰트(D2Coding) 먼저 보장

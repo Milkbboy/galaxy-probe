@@ -32,7 +32,6 @@ namespace DrillCorp.EditorTools
             }
         }
 
-        [MenuItem("Drill-Corp/Simple Bug/Attach FBX Models To Prefabs")]
         public static void AttachModels()
         {
             // FBX가 Z-up(세로로 서있음)으로 임포트되므로 X축 -90도 회전해 엎드리게 한다.

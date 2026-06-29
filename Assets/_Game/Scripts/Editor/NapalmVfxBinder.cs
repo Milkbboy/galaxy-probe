@@ -22,7 +22,6 @@ namespace DrillCorp.EditorTools
         private const string OilFireTilePath =
             "Assets/Polygon Arsenal/Prefabs/Environment/Fire/OilFire/OilFireRed.prefab";
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/빅터/2. 네이팜 VFX 바인딩")]
         public static void BindNapalmVfx()
         {
             var tile = AssetDatabase.LoadAssetAtPath<GameObject>(OilFireTilePath);

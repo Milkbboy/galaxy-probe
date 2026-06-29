@@ -33,7 +33,6 @@ namespace DrillCorp.Editor
         const string WAVES_DIR = DATA_ROOT + "/Waves";
         const string SPAWN_CONFIG_PATH = DATA_ROOT + "/SpawnConfig.asset";
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/SimpleBug/1. SpawnConfig + Wave_01~05 에셋 생성")]
         public static void CreateWaveAssets()
         {
             EnsureFolders();
@@ -44,7 +43,6 @@ namespace DrillCorp.Editor
             Debug.Log("[SimpleWaveAssetSetup] SpawnConfig + Wave_01~05 생성 완료. Data/SpawnConfig.asset, Data/Waves/ 확인.");
         }
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/SimpleBug/2. Game 씬에 SimpleWaveManager 바인딩")]
         public static void BindSimpleWaveManagerInScene()
         {
             var scene = SceneManager.GetActiveScene();

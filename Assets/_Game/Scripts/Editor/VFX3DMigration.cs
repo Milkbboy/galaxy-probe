@@ -98,7 +98,6 @@ namespace DrillCorp.EditorTools
 
         private const string MenuRoot = "Tools/Drill-Corp/VFX 3D Migration/";
 
-        [MenuItem(MenuRoot + "\u25B6 전체 실행 (Run All Phases)")]
         public static void RunAll()
         {
             if (!EditorUtility.DisplayDialog(
@@ -156,7 +155,6 @@ namespace DrillCorp.EditorTools
                 "롤백: 각 Weapon_*.asset의 VFX 필드를 원본 2D 프리펩으로 되돌리면 즉시 복구됨.");
         }
 
-        [MenuItem(MenuRoot + "2. One-shot Variants만 생성")]
         public static void RunOneShotsOnly()
         {
             EnsureFolder("Assets/_Game/Prefabs", "Weapons");
@@ -168,7 +166,6 @@ namespace DrillCorp.EditorTools
             Debug.Log($"[VFX3DMigration] One-shot Variants — 신규 {ok} / 생략 {skipped}");
         }
 
-        [MenuItem(MenuRoot + "3. Projectile Visual Variants만 생성")]
         public static void RunProjectileVisualsOnly()
         {
             EnsureFolder("Assets/_Game/Prefabs", "Weapons");
@@ -180,7 +177,6 @@ namespace DrillCorp.EditorTools
             Debug.Log($"[VFX3DMigration] Projectile Visuals — 신규 {ok} / 생략 {skipped}");
         }
 
-        [MenuItem(MenuRoot + "4. Projectile 프리펩 재구성만")]
         public static void RunProjectilePrefabsOnly()
         {
             BuildProjectile3D(
@@ -199,7 +195,6 @@ namespace DrillCorp.EditorTools
             AssetDatabase.Refresh();
         }
 
-        [MenuItem(MenuRoot + "7. Projectile _3D 프리펩 재생성 (삭제 후 재빌드)")]
         public static void RegenerateProjectilePrefabs()
         {
             if (!EditorUtility.DisplayDialog(
@@ -234,7 +229,6 @@ namespace DrillCorp.EditorTools
             }
         }
 
-        [MenuItem(MenuRoot + "5. Data SO 갱신만")]
         public static void RunDataOnly()
         {
             var mg = AssetDatabase.LoadAssetAtPath<GameObject>(WeaponPrefabFolder + "/MachineGunBullet_3D.prefab");
@@ -246,7 +240,6 @@ namespace DrillCorp.EditorTools
             AssetDatabase.SaveAssets();
         }
 
-        [MenuItem(MenuRoot + "6. Laser 스코치만 생성 + SO 연결")]
         public static void RunLaserScorchOnly()
         {
             EnsureFolder("Assets/_Game/Prefabs", "Weapons");

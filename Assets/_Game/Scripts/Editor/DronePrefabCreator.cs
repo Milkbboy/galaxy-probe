@@ -57,7 +57,6 @@ namespace DrillCorp.EditorTools
         private const float MiningBodyScale = 2.0f;
         private const float SpiderBodyScale = 1.8f;
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/10. 지누스 드론 프리펩 생성")]
         public static void CreateAllPrefabs()
         {
             EnsureFolders();

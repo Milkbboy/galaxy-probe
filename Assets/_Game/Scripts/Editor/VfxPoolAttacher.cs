@@ -43,7 +43,6 @@ namespace DrillCorp.EditorTools
             "FX_Laser_Impact",   // 장판형 루프 — LaserScorchDecay 가 페이드 제어
         };
 
-        [MenuItem(MENU_ROOT + "모든 VFX 프리팹에 PooledVfx 부착", priority = 100)]
         public static void AttachToAll()
         {
             var prefabPaths = CollectVfxPrefabPaths();
@@ -121,7 +120,6 @@ namespace DrillCorp.EditorTools
                 "OK");
         }
 
-        [MenuItem(MENU_ROOT + "PooledVfx 누락 프리팹 목록", priority = 101)]
         public static void ListMissing()
         {
             var prefabPaths = CollectVfxPrefabPaths();
@@ -155,7 +153,6 @@ namespace DrillCorp.EditorTools
                 $"  루트 PS 없음 ({noPsList.Count}):\n    " + string.Join("\n    ", noPsList));
         }
 
-        [MenuItem(MENU_ROOT + "AutoDestroyPS 제거 (풀링 전환 시)", priority = 200)]
         public static void RemoveAutoDestroyPS()
         {
             if (!EditorUtility.DisplayDialog(

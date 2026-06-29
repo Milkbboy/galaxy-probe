@@ -51,7 +51,6 @@ namespace DrillCorp.EditorTools
         // 0.3으로 줄이면 너무 작아서 안 보이고, 1.0이 지뢰 본체(GlowZoneRed 스케일 0.5)와 적당한 비율.
         private const float CenterDotScale = 1.0f;
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/빅터/1. 지뢰 프리펩 생성")]
         public static void CreateMinePrefab()
         {
             EnsureFolders();

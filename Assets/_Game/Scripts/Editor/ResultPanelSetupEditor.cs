@@ -33,7 +33,6 @@ namespace DrillCorp.EditorTools
         static readonly Color ColOre       = new Color32(0xff, 0xd7, 0x00, 0xFF);
         static readonly Color ColGem       = new Color32(0x88, 0xdd, 0xff, 0xFF);
 
-        [MenuItem("Drill-Corp/HUD/Build Result Panel")]
         public static void BuildResultPanel()
         {
             var canvas = Object.FindAnyObjectByType<Canvas>();

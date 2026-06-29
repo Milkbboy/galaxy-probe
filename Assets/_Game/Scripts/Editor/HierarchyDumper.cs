@@ -32,19 +32,16 @@ namespace DrillCorp.EditorTools
 
         // ─── 메뉴 ───
 
-        [MenuItem(MENU_ROOT + "1. 스냅샷 A 저장 %&#q", priority = 100)]
         public static void DumpSnapshotA()
         {
             _lastSnapshotA = Dump("A");
         }
 
-        [MenuItem(MENU_ROOT + "2. 스냅샷 B 저장 %&#w", priority = 101)]
         public static void DumpSnapshotB()
         {
             _lastSnapshotB = Dump("B");
         }
 
-        [MenuItem(MENU_ROOT + "3. A vs B diff 저장", priority = 102)]
         public static void DiffAB()
         {
             // static 필드는 스크립트 재컴파일 시 리셋됨 → 파일시스템에서 최신 A/B 를 자동 탐색.
@@ -87,7 +84,6 @@ namespace DrillCorp.EditorTools
             return candidates[0];
         }
 
-        [MenuItem(MENU_ROOT + "덤프 폴더 열기", priority = 200)]
         public static void OpenDumpFolder()
         {
             string dir = EnsureDumpDir();

@@ -30,7 +30,6 @@ namespace DrillCorp.Editor
         const string UPG_DIR   = DATA_ROOT + "/Upgrades";
         const string WPN_DIR   = DATA_ROOT + "/Weapons";
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/Title/4. v2 Data Assets 생성")]
         public static void CreateAllV2Assets()
         {
             EnsureFolders();
@@ -48,7 +47,6 @@ namespace DrillCorp.Editor
             Debug.Log("[V2DataSetup] 완료. Characters/Abilities/WeaponUpgrades/Upgrades/Weapons 폴더를 확인하세요.");
         }
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/Title/4b. Weapon_Saw 에셋만 생성")]
         public static void CreateSawWeaponDataMenu()
         {
             EnsureFolders();

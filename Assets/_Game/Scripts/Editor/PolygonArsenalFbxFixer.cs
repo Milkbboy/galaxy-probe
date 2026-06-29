@@ -19,7 +19,6 @@ namespace DrillCorp.EditorTools
     {
         private const string TargetFolder = "Assets/Polygon Arsenal/Models";
 
-        [MenuItem("Tools/Drill-Corp/4. 서드파티 유틸/Polygon Arsenal FBX 머티리얼 경로 수정")]
         public static void FixMaterialLocations()
         {
             if (!AssetDatabase.IsValidFolder(TargetFolder))

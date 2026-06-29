@@ -47,7 +47,7 @@ namespace DrillCorp.Editor
         private const string SHEET_SPAWN_CONFIG_DATA = "SpawnConfigData";
         private const string SHEET_CONSTANTS = "Constants";
 
-        [MenuItem("Tools/Drill-Corp/4. 데이터 Import/Google Sheets Importer")]
+        [MenuItem("Drill-Corp/Google Sheet Importer")]
         public static void ShowWindow()
         {
             var window = GetWindow<GoogleSheetsImporter>("Google Sheets Importer");

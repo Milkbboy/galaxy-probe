@@ -44,7 +44,6 @@ namespace DrillCorp.EditorTools
         const float SideMargin  = 12f;
         const float SlotSpacing = 8f;
 
-        [MenuItem("Drill-Corp/HUD/Build Ability HUD")]
         public static void BuildAbilityHud()
         {
             var canvas = Object.FindAnyObjectByType<Canvas>();

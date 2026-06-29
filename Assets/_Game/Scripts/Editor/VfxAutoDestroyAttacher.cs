@@ -42,7 +42,6 @@ namespace DrillCorp.EditorTools
             "FX_Laser_Impact",   // 장판형 루프 — LaserScorchDecay 가 페이드 제어
         };
 
-        [MenuItem(MENU_ROOT + "모든 VFX 프리팹에 AutoDestroyPS 부착", priority = 100)]
         public static void AttachToAllVfx()
         {
             var prefabPaths = CollectVfxPrefabPaths();
@@ -121,7 +120,6 @@ namespace DrillCorp.EditorTools
                 "OK");
         }
 
-        [MenuItem(MENU_ROOT + "AutoDestroyPS 누락 프리팹 목록", priority = 101)]
         public static void ListMissing()
         {
             var prefabPaths = CollectVfxPrefabPaths();

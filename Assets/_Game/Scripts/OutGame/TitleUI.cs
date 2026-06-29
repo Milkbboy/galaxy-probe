@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
 using DrillCorp.Core;
@@ -8,6 +9,7 @@ namespace DrillCorp.OutGame
     public class TitleUI : MonoBehaviour
     {
         [Header("Panels")]
+        [SerializeField] private GameObject _titleLandingPanel;
         [SerializeField] private GameObject _mainPanel;
         [SerializeField] private GameObject _upgradePanel;
         [SerializeField] private GameObject _optionsPanel;
@@ -27,18 +29,33 @@ namespace DrillCorp.OutGame
         [Header("Currency Display")]
         [SerializeField] private TextMeshProUGUI _currencyText;
 
+        private bool _returnToLandingAfterOptions;
+
         private void Start()
         {
             SetupButtons();
             UpdateCurrencyDisplay();
 
-            // v2 — Title 진입 = Hub 바로 표시. Hub가 없는 구형 씬만 MainPanel 폴백.
-            if (_useHubForUpgrade && _hubPanel != null)
+            if (_titleLandingPanel != null)
+                ShowTitleLandingPanel();
+            else if (_useHubForUpgrade && _hubPanel != null)
                 ShowHubPanel();
             else
                 ShowMainPanel();
 
             GameEvents.OnCurrencyChanged += OnCurrencyChanged;
+        }
+
+        private void Update()
+        {
+            if (_titleLandingPanel == null || !_titleLandingPanel.activeSelf)
+                return;
+
+            var keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.anyKey.wasPressedThisFrame)
+            {
+                StartGame();
+            }
         }
 
         private void OnDestroy()
@@ -63,7 +80,7 @@ namespace DrillCorp.OutGame
 
         private void OnStartClicked()
         {
-            GameManager.Instance?.LoadGameScene();
+            StartGame();
         }
 
         private void OnUpgradeClicked()
@@ -81,11 +98,28 @@ namespace DrillCorp.OutGame
 
         private void OnQuitClicked()
         {
+            QuitGame();
+        }
+
+        public void StartGame()
+        {
+            GameManager.Instance?.LoadGameScene();
+        }
+
+        public void QuitGame()
+        {
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else
             Application.Quit();
 #endif
+        }
+
+        public void ShowTitleLandingPanel()
+        {
+            SetAllPanelsActive(false);
+            if (_titleLandingPanel != null)
+                _titleLandingPanel.SetActive(true);
         }
 
         public void ShowMainPanel()
@@ -104,9 +138,24 @@ namespace DrillCorp.OutGame
 
         public void ShowOptionsPanel()
         {
+            _returnToLandingAfterOptions = _titleLandingPanel != null && _titleLandingPanel.activeSelf;
             SetAllPanelsActive(false);
             if (_optionsPanel != null)
                 _optionsPanel.SetActive(true);
+        }
+
+        public void CloseOptionsPanel()
+        {
+            if (_returnToLandingAfterOptions && _titleLandingPanel != null)
+            {
+                ShowTitleLandingPanel();
+                return;
+            }
+
+            if (_useHubForUpgrade && _hubPanel != null)
+                ShowHubPanel();
+            else
+                ShowMainPanel();
         }
 
         public void ShowHubPanel()
@@ -116,8 +165,36 @@ namespace DrillCorp.OutGame
                 _hubPanel.SetActive(true);
         }
 
+        public void ShowUpgradeHubPanel()
+        {
+            ShowHubPanel(HubController.FocusTarget.Upgrades);
+        }
+
+        public void ShowCharacterHubPanel()
+        {
+            ShowHubPanel(HubController.FocusTarget.Character);
+        }
+
+        public void ShowCraftingHubPanel()
+        {
+            ShowHubPanel(HubController.FocusTarget.Crafting);
+        }
+
+        private void ShowHubPanel(HubController.FocusTarget focusTarget)
+        {
+            ShowHubPanel();
+
+            if (_hubPanel == null)
+                return;
+
+            var hub = _hubPanel.GetComponent<HubController>();
+            if (hub != null)
+                hub.Focus(focusTarget);
+        }
+
         private void SetAllPanelsActive(bool active)
         {
+            if (_titleLandingPanel != null) _titleLandingPanel.SetActive(active);
             if (_mainPanel != null) _mainPanel.SetActive(active);
             if (_upgradePanel != null) _upgradePanel.SetActive(active);
             if (_optionsPanel != null) _optionsPanel.SetActive(active);

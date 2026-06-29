@@ -52,7 +52,6 @@ namespace DrillCorp.EditorTools
         // 본체 색 (빨강). Unlit 머티리얼에 적용.
         private static readonly Color BodyColor = new Color(1f, 0.3f, 0.1f, 1f);
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/사라/1. 메테오 프리펩 생성")]
         public static void CreateMeteorPrefab()
         {
             EnsureFolders();

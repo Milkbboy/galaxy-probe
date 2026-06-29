@@ -37,7 +37,6 @@ namespace DrillCorp.EditorTools
         // === 색 (프로토타입 #f4a423 주황) ===
         private static readonly Color BombOrange = new Color(0.957f, 0.643f, 0.137f, 1f);
 
-        [MenuItem("Tools/Drill-Corp/3. 게임 초기 설정/6. 폭탄 자산 일괄 생성")]
         public static void CreateAll()
         {
             EnsureFolders();
