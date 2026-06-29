@@ -70,3 +70,4 @@ HierarchyDumps/
 
 # Google API Credentials (보안)
 Assets/_Game/Data/Credentials/google-credentials.json
+Assets/_Game/Data/Credentials/google-credentials.json.meta
