@@ -1,6 +1,6 @@
 # Drill-Corp 문서 인덱스
 
-> 최종 갱신: 2026-04-27 — 30초 요약 + 5분 투어 추가. SimpleBug 전면 교체 + 레거시 문서 archive 이동 + 가이드 재작성 이력은 [CHANGELOG](Overview-Changelog.md).
+> 최종 갱신: 2026-07-14 — 아웃게임 화면 분리 및 굴착기 업그레이드 UI 개편 계획 추가. SimpleBug 전면 교체 + 레거시 문서 archive 이동 + 가이드 재작성 이력은 [CHANGELOG](Overview-Changelog.md).
 
 ## 30초 요약
 
@@ -41,6 +41,7 @@
 | 목적 | 문서 |
 |---|---|
 | **총론 — 갭 분석 · 씬 구성 판단 · 작업 순서** | [V2-IntegrationPlan.md](V2-IntegrationPlan.md) |
+| **아웃게임 화면 분리 + 굴착기 업그레이드 UI 개편 계획** | [Plan-OutGameScreenSeparation.md](Plan-OutGameScreenSeparation.md) |
 | 캐릭터 3종 + 어빌리티 9종 설계 | [Sys-Character.md](Sys-Character.md) |
 | 캐릭터 고유 장비 v2.html 원본 분석 (수치 타이 브레이커) | [V2-CharacterAbilityReference.md](V2-CharacterAbilityReference.md) |
 | 무기 해금 체인 · 무기별 강화 · 회전톱날 | [Sys-Weapon.md](Sys-Weapon.md) |
