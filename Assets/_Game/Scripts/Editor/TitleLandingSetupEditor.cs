@@ -23,8 +23,27 @@ namespace DrillCorp.Editor
         private const string ButtonNormalSpritePath = TitleSpriteFolder + "/title_button_panel_normal.png";
         private const string ButtonHoverSpritePath = TitleSpriteFolder + "/title_button_panel_hover_green.png";
         private const string ButtonDisabledSpritePath = TitleSpriteFolder + "/title_button_panel_disabled.png";
+        private const string BottomNavigationBaseSpritePath = TitleSpriteFolder + "/bottom_navigation_metal_base_1920x220.png";
+        private const string BottomMetalFrameSpritePath = TitleSpriteFolder + "/common_metal_button_frame_600x140.png";
+        private const string BottomHoverGlowSpritePath = TitleSpriteFolder + "/common_hover_glow_504x92.png";
+        private const string UpgradesInnerPanelSpritePath = TitleSpriteFolder + "/upgrades_inner_panel_green_504x92.png";
+        private const string CharacterInnerPanelSpritePath = TitleSpriteFolder + "/character_inner_panel_cyan_504x92.png";
+        private const string CraftingInnerPanelSpritePath = TitleSpriteFolder + "/crafting_inner_panel_purple_504x92.png";
+        private const string UpgradesIconSpritePath = TitleSpriteFolder + "/icon_upgrades_128.png";
+        private const string CharacterIconSpritePath = TitleSpriteFolder + "/icon_character_128.png";
+        private const string CraftingIconSpritePath = TitleSpriteFolder + "/icon_crafting_128.png";
         private const string PanelName = "TitleLandingPanel";
-        private static readonly Vector4 ButtonBorder = new Vector4(48f, 48f, 48f, 48f);
+        private static readonly Vector4 ButtonBorder = new Vector4(56f, 36f, 56f, 36f);
+        private static readonly Vector4 BottomMetalFrameBorder = new Vector4(48f, 40f, 48f, 40f);
+        private static readonly Vector4 BottomPanelBorder = new Vector4(32f, 24f, 32f, 24f);
+        private static readonly Vector2 BottomButtonSize = new Vector2(520f, 126f);
+        // The fixed-size artwork is uniformly scaled from 600x140. Rendering these
+        // layers as Simple images keeps the 536x104 panel inset proportional.
+        private static readonly Vector2 BottomFrameSize = new Vector2(520f, 126f);
+        private static readonly Vector2 BottomPanelSize = new Vector2(464.533f, 90.133f);
+        private static readonly Vector2 BottomIconSize = new Vector2(104f, 104f);
+        private static readonly Vector2 BottomTitleSize = new Vector2(310f, 42f);
+        private static readonly Vector2 BottomSubtitleSize = new Vector2(310f, 24f);
 
         public static void ApplyTitleLandingScreen()
         {
@@ -64,6 +83,15 @@ namespace DrillCorp.Editor
             ProcessTransparentSprite(projectRoot, "title_button_panel_normal.png", ButtonNormalSpritePath, true);
             ProcessTransparentSprite(projectRoot, "title_button_panel_hover_green.png", ButtonHoverSpritePath, true);
             ProcessTransparentSprite(projectRoot, "title_button_panel_disabled.png", ButtonDisabledSpritePath, true);
+            CopySprite(projectRoot, "bottom_navigation_metal_base_1920x220.png", BottomNavigationBaseSpritePath, false, true);
+            CopySprite(projectRoot, "common_metal_button_frame_600x140.png", BottomMetalFrameSpritePath, true, true, BottomMetalFrameBorder);
+            CopySprite(projectRoot, "common_hover_glow_504x92.png", BottomHoverGlowSpritePath, true, true, BottomPanelBorder);
+            CopySprite(projectRoot, "upgrades_inner_panel_green_504x92.png", UpgradesInnerPanelSpritePath, true, true, BottomPanelBorder);
+            CopySprite(projectRoot, "character_inner_panel_cyan_504x92.png", CharacterInnerPanelSpritePath, true, true, BottomPanelBorder);
+            CopySprite(projectRoot, "crafting_inner_panel_purple_504x92.png", CraftingInnerPanelSpritePath, true, true, BottomPanelBorder);
+            CopySprite(projectRoot, "icon_upgrades_128.png", UpgradesIconSpritePath, false, true);
+            CopySprite(projectRoot, "icon_character_128.png", CharacterIconSpritePath, false, true);
+            CopySprite(projectRoot, "icon_crafting_128.png", CraftingIconSpritePath, false, true);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -76,6 +104,11 @@ namespace DrillCorp.Editor
         }
 
         private static void CopySprite(string projectRoot, string sourceName, string targetAssetPath, bool sliced, bool alpha)
+        {
+            CopySprite(projectRoot, sourceName, targetAssetPath, sliced, alpha, sliced ? ButtonBorder : Vector4.zero);
+        }
+
+        private static void CopySprite(string projectRoot, string sourceName, string targetAssetPath, bool sliced, bool alpha, Vector4 spriteBorder)
         {
             var sourceFullPath = Path.Combine(projectRoot, SourceFolder, sourceName);
             var targetFullPath = Path.Combine(projectRoot, targetAssetPath);
@@ -90,7 +123,7 @@ namespace DrillCorp.Editor
             if (!File.Exists(targetFullPath) || File.GetLastWriteTimeUtc(sourceFullPath) > File.GetLastWriteTimeUtc(targetFullPath))
                 File.Copy(sourceFullPath, targetFullPath, true);
 
-            ImportSprite(targetAssetPath, sliced, alpha);
+            ImportSprite(targetAssetPath, sliced, alpha, spriteBorder);
         }
 
         private static void ProcessTransparentSprite(string projectRoot, string sourceName, string targetAssetPath, bool sliced)
@@ -118,7 +151,7 @@ namespace DrillCorp.Editor
             Object.DestroyImmediate(sourceTexture);
             Object.DestroyImmediate(cropped);
 
-            ImportSprite(targetAssetPath, sliced, true);
+            ImportSprite(targetAssetPath, sliced, true, sliced ? ButtonBorder : Vector4.zero);
         }
 
         private static void ApplyCheckerTransparency(Texture2D texture)
@@ -185,6 +218,11 @@ namespace DrillCorp.Editor
 
         private static void ImportSprite(string assetPath, bool sliced, bool alpha)
         {
+            ImportSprite(assetPath, sliced, alpha, sliced ? ButtonBorder : Vector4.zero);
+        }
+
+        private static void ImportSprite(string assetPath, bool sliced, bool alpha, Vector4 spriteBorder)
+        {
             AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
             var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
             if (importer != null)
@@ -192,9 +230,10 @@ namespace DrillCorp.Editor
                 importer.textureType = TextureImporterType.Sprite;
                 importer.spriteImportMode = SpriteImportMode.Single;
                 importer.mipmapEnabled = false;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
                 importer.alphaIsTransparency = alpha;
                 importer.spritePivot = new Vector2(0.5f, 0.5f);
-                importer.spriteBorder = sliced ? ButtonBorder : Vector4.zero;
+                importer.spriteBorder = sliced ? spriteBorder : Vector4.zero;
                 importer.SaveAndReimport();
             }
         }
@@ -242,14 +281,14 @@ namespace DrillCorp.Editor
 
             var contentRoot = CreateContentRoot(panel);
             CreateStretchImage(contentRoot, "BackgroundImage", BackgroundSpritePath);
+            CreateImage(contentRoot, "BottomNavigationBase", BottomNavigationBaseSpritePath, new Vector2(0f, -430f), new Vector2(1920f, 220f), false, false);
             CreateImage(contentRoot, "LogoImage", LogoSpritePath, new Vector2(0f, 300f), new Vector2(1040f, 310f), false, true);
 
-            CreateTitleButton(contentRoot, "PressAnyKeyButton", "PRESS ANY KEY TO START", new Vector2(0f, -300f), new Vector2(650f, 92f), 34f, titleUI.StartGame);
             CreateTitleButton(contentRoot, "SettingsButton", "SETTINGS", new Vector2(640f, 345f), new Vector2(350f, 92f), 34f, titleUI.ShowOptionsPanel);
             CreateTitleButton(contentRoot, "ExitButton", "EXIT GAME", new Vector2(640f, 225f), new Vector2(350f, 92f), 32f, titleUI.QuitGame);
-            CreateTitleButton(contentRoot, "UpgradesButton", "UPGRADES", new Vector2(-520f, -445f), new Vector2(430f, 130f), 36f, titleUI.ShowUpgradeHubPanel);
-            CreateTitleButton(contentRoot, "CharacterButton", "SELECT\nCHARACTER", new Vector2(0f, -445f), new Vector2(430f, 130f), 30f, titleUI.ShowCharacterHubPanel);
-            CreateTitleButton(contentRoot, "CraftingButton", "CRAFTING", new Vector2(520f, -445f), new Vector2(430f, 130f), 36f, titleUI.ShowCraftingHubPanel);
+            CreateBottomMenuButton(contentRoot, "UpgradesButton", "UPGRADES", "ENHANCE YOUR DRILL", UpgradesInnerPanelSpritePath, UpgradesIconSpritePath, new Color(0.337f, 0.949f, 0.698f, 0.65f), new Vector2(-510f, -421f), titleUI.ShowUpgradeHubPanel);
+            CreateBottomMenuButton(contentRoot, "CharacterButton", "CHARACTER", "SELECT YOUR SPECIALIST", CharacterInnerPanelSpritePath, CharacterIconSpritePath, new Color(0.325f, 0.867f, 0.961f, 0.65f), new Vector2(0f, -421f), titleUI.ShowCharacterHubPanel);
+            CreateBottomMenuButton(contentRoot, "CraftingButton", "CRAFTING", "BUILD POWERFUL WEAPONS", CraftingInnerPanelSpritePath, CraftingIconSpritePath, new Color(0.757f, 0.518f, 0.957f, 0.65f), new Vector2(510f, -421f), titleUI.ShowCraftingHubPanel);
         }
 
         private static RectTransform CreateContentRoot(RectTransform parent)
@@ -337,6 +376,116 @@ namespace DrillCorp.Editor
             text.raycastTarget = false;
             text.enableAutoSizing = true;
             text.fontSizeMin = Mathf.Max(16f, fontSize - 10f);
+            text.fontSizeMax = fontSize;
+            text.textWrappingMode = TextWrappingModes.NoWrap;
+            ApplyD2Coding(text);
+        }
+
+        private static void CreateBottomMenuButton(RectTransform parent, string name, string title, string subtitle, string innerPanelSpritePath, string iconSpritePath, Color glowTint, Vector2 position, UnityEngine.Events.UnityAction action)
+        {
+            var rootObj = new GameObject(name);
+            rootObj.transform.SetParent(parent, false);
+
+            var rootRect = rootObj.AddComponent<RectTransform>();
+            rootRect.anchorMin = new Vector2(0.5f, 0.5f);
+            rootRect.anchorMax = new Vector2(0.5f, 0.5f);
+            rootRect.pivot = new Vector2(0.5f, 0.5f);
+            rootRect.anchoredPosition = position;
+            rootRect.sizeDelta = BottomButtonSize;
+
+            var rootImage = rootObj.AddComponent<Image>();
+            rootImage.color = new Color(1f, 1f, 1f, 0f);
+            rootImage.raycastTarget = true;
+
+            var button = rootObj.AddComponent<Button>();
+            button.targetGraphic = rootImage;
+            button.transition = Selectable.Transition.None;
+            UnityEventTools.AddPersistentListener(button.onClick, action);
+
+            var visualRoot = CreateRect(rootRect, "VisualRoot", Vector2.zero, BottomButtonSize);
+            var visualGroup = visualRoot.gameObject.AddComponent<CanvasGroup>();
+
+            CreateLayerImage(visualRoot, "InnerPanel", innerPanelSpritePath, Vector2.zero, BottomPanelSize, Color.white);
+
+            var hoverGlow = CreateLayerImage(visualRoot, "HoverGlow", BottomHoverGlowSpritePath, Vector2.zero, BottomPanelSize, glowTint);
+            hoverGlow.gameObject.SetActive(false);
+
+            CreateLayerImage(visualRoot, "MetalFrame", BottomMetalFrameSpritePath, Vector2.zero, BottomFrameSize, Color.white);
+
+            var icon = CreateIconImage(visualRoot, "Icon", iconSpritePath, new Vector2(-178f, 0f), BottomIconSize);
+            icon.raycastTarget = false;
+
+            CreateDivider(visualRoot, "IconDivider", new Vector2(-118f, 0f), new Vector2(2f, 86f), new Color(0.62f, 0.9f, 0.86f, 0.24f));
+            CreateBottomButtonText(visualRoot, "TitleText", title, new Vector2(78f, 16f), BottomTitleSize, 31f, new Color32(0xF1, 0xE5, 0xD2, 0xFF), FontStyles.Bold);
+            CreateBottomButtonText(visualRoot, "SubtitleText", subtitle, new Vector2(78f, -25f), BottomSubtitleSize, 15f, new Color32(0xB6, 0xC5, 0xB8, 0xDD), FontStyles.Bold);
+
+            var visual = rootObj.AddComponent<BottomMenuButtonVisual>();
+            var so = new SerializedObject(visual);
+            so.FindProperty("_visualRoot").objectReferenceValue = visualRoot;
+            so.FindProperty("_hoverGlow").objectReferenceValue = hoverGlow.gameObject;
+            so.FindProperty("_visualGroup").objectReferenceValue = visualGroup;
+            so.FindProperty("_pressedScale").floatValue = 0.98f;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static RectTransform CreateRect(RectTransform parent, string name, Vector2 position, Vector2 size)
+        {
+            var obj = new GameObject(name);
+            obj.transform.SetParent(parent, false);
+
+            var rect = obj.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = position;
+            rect.sizeDelta = size;
+            return rect;
+        }
+
+        private static Image CreateLayerImage(RectTransform parent, string name, string spritePath, Vector2 position, Vector2 size, Color color)
+        {
+            var rect = CreateRect(parent, name, position, size);
+            var image = rect.gameObject.AddComponent<Image>();
+            image.sprite = string.IsNullOrEmpty(spritePath) ? null : AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
+            image.type = Image.Type.Simple;
+            image.preserveAspect = true;
+            image.color = color;
+            image.raycastTarget = false;
+            return image;
+        }
+
+        private static Image CreateIconImage(RectTransform parent, string name, string spritePath, Vector2 position, Vector2 size)
+        {
+            var rect = CreateRect(parent, name, position, size);
+            var image = rect.gameObject.AddComponent<Image>();
+            image.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
+            image.type = Image.Type.Simple;
+            image.preserveAspect = true;
+            image.color = Color.white;
+            image.raycastTarget = false;
+            return image;
+        }
+
+        private static void CreateDivider(RectTransform parent, string name, Vector2 position, Vector2 size, Color color)
+        {
+            var rect = CreateRect(parent, name, position, size);
+            var image = rect.gameObject.AddComponent<Image>();
+            image.color = color;
+            image.raycastTarget = false;
+        }
+
+        private static void CreateBottomButtonText(RectTransform parent, string name, string textValue, Vector2 position, Vector2 size, float fontSize, Color32 color, FontStyles fontStyle)
+        {
+            var rect = CreateRect(parent, name, position, size);
+            var text = rect.gameObject.AddComponent<TextMeshProUGUI>();
+            text.text = textValue;
+            text.fontSize = fontSize;
+            text.fontStyle = fontStyle;
+            text.alignment = TextAlignmentOptions.Center;
+            text.color = color;
+            text.raycastTarget = false;
+            text.enableAutoSizing = true;
+            text.fontSizeMin = Mathf.Max(10f, fontSize - 8f);
             text.fontSizeMax = fontSize;
             text.textWrappingMode = TextWrappingModes.NoWrap;
             ApplyD2Coding(text);
