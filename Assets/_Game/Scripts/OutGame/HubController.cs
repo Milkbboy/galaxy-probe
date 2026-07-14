@@ -36,6 +36,14 @@ namespace DrillCorp.OutGame
         private TextMeshProUGUI _oreValueText;
         private TextMeshProUGUI _gemValueText;
         private TextMeshProUGUI _targetLabel;
+        private TextMeshProUGUI _screenTitleText;
+        private GameObject _upgradeScreen;
+        private GameObject _characterScreen;
+        private GameObject _craftingScreen;
+        private Button _backButton;
+        private Button _upgradesNavButton;
+        private Button _characterNavButton;
+        private Button _craftingNavButton;
         private Button _cheatButton;
         private Button _resetButton;
         private Button _startButton;
@@ -45,6 +53,7 @@ namespace DrillCorp.OutGame
         // 리셋 2단계 확인용
         private Coroutine _resetConfirmRoutine;
         private bool _awaitingResetConfirm;
+        private FocusTarget _currentTarget = FocusTarget.Upgrades;
         private FocusTarget _pendingFocusTarget = FocusTarget.None;
 
         private void Awake()
@@ -55,6 +64,7 @@ namespace DrillCorp.OutGame
 
         private void OnEnable()
         {
+            ShowScreen(_currentTarget);
             RefreshCurrency();
             RefreshTargetLabel();
             GameEvents.OnOreChanged       += OnOreChanged;
@@ -91,6 +101,8 @@ namespace DrillCorp.OutGame
             var target = _pendingFocusTarget;
             _pendingFocusTarget = FocusTarget.None;
 
+            ShowScreen(target);
+
             var panel = FindFocusPanel(target);
             if (panel == null)
                 return;
@@ -104,9 +116,9 @@ namespace DrillCorp.OutGame
         {
             string panelName = target switch
             {
-                FocusTarget.Upgrades => "ExcavatorUpgradeSubPanel",
+                FocusTarget.Upgrades => "WeaponShopSubPanel",
                 FocusTarget.Character => "CharacterSelectSubPanel",
-                FocusTarget.Crafting => "WeaponShopSubPanel",
+                FocusTarget.Crafting => "CraftingScreen",
                 _ => null
             };
 
@@ -150,7 +162,20 @@ namespace DrillCorp.OutGame
 
             _oreValueText = topBar.Find("OreDisplay/Value")?.GetComponent<TextMeshProUGUI>();
             _gemValueText = topBar.Find("GemDisplay/Value")?.GetComponent<TextMeshProUGUI>();
+            _screenTitleText = topBar.Find("TitleGroup/TitleText")?.GetComponent<TextMeshProUGUI>();
             _targetLabel  = topBar.Find("TitleGroup/TargetLabel")?.GetComponent<TextMeshProUGUI>();
+
+            var screenContainer = transform.Find("ScreenContainer");
+            _upgradeScreen = screenContainer?.Find("UpgradeScreen")?.gameObject;
+            _characterScreen = screenContainer?.Find("CharacterScreen")?.gameObject;
+            _craftingScreen = screenContainer?.Find("CraftingScreen")?.gameObject;
+
+            _backButton = topBar.Find("BackButton")?.GetComponent<Button>();
+
+            var bottomNavigation = transform.Find("BottomNavigation");
+            _upgradesNavButton = bottomNavigation?.Find("UpgradesButton")?.GetComponent<Button>();
+            _characterNavButton = bottomNavigation?.Find("CharacterButton")?.GetComponent<Button>();
+            _craftingNavButton = bottomNavigation?.Find("CraftingButton")?.GetComponent<Button>();
 
             _cheatButton   = topBar.Find("CheatButton")?.GetComponent<Button>();
             _resetButton   = topBar.Find("ResetButton")?.GetComponent<Button>();
@@ -158,13 +183,14 @@ namespace DrillCorp.OutGame
             _optionsButton = topBar.Find("OptionsButton")?.GetComponent<Button>();
             _quitButton    = topBar.Find("QuitButton")?.GetComponent<Button>();
 
-            // v2 — MainPanel 제거로 레거시 BackButton은 더 이상 사용 안 함.
-            var legacyBack = topBar.Find("BackButton");
-            if (legacyBack != null) legacyBack.gameObject.SetActive(false);
         }
 
         private void WireButtons()
         {
+            if (_backButton != null) _backButton.onClick.AddListener(OnBackClicked);
+            if (_upgradesNavButton != null) _upgradesNavButton.onClick.AddListener(() => Focus(FocusTarget.Upgrades));
+            if (_characterNavButton != null) _characterNavButton.onClick.AddListener(() => Focus(FocusTarget.Character));
+            if (_craftingNavButton != null) _craftingNavButton.onClick.AddListener(() => Focus(FocusTarget.Crafting));
             if (_cheatButton   != null) _cheatButton.onClick.AddListener(OnCheatClicked);
             if (_resetButton   != null) _resetButton.onClick.AddListener(OnResetClicked);
             if (_startButton   != null) _startButton.onClick.AddListener(OnStartClicked);
@@ -223,6 +249,50 @@ namespace DrillCorp.OutGame
         // ═══════════════════════════════════════════════════
         // 버튼 핸들러
         // ═══════════════════════════════════════════════════
+        private void OnBackClicked()
+        {
+            CancelResetConfirm();
+            _titleUI?.ShowTitleLandingPanel();
+        }
+
+        private void ShowScreen(FocusTarget target)
+        {
+            if (target == FocusTarget.None)
+                target = FocusTarget.Upgrades;
+
+            _currentTarget = target;
+            if (_upgradeScreen != null) _upgradeScreen.SetActive(target == FocusTarget.Upgrades);
+            if (_characterScreen != null) _characterScreen.SetActive(target == FocusTarget.Character);
+            if (_craftingScreen != null) _craftingScreen.SetActive(target == FocusTarget.Crafting);
+
+            if (_screenTitleText != null)
+            {
+                _screenTitleText.text = target switch
+                {
+                    FocusTarget.Character => "DRILL CORP  ·  CHARACTER",
+                    FocusTarget.Crafting => "DRILL CORP  ·  CRAFTING",
+                    _ => "DRILL CORP  ·  UPGRADES"
+                };
+            }
+
+            if (_targetLabel != null)
+                _targetLabel.gameObject.SetActive(target == FocusTarget.Upgrades);
+
+            SetNavigationState(_upgradesNavButton, target == FocusTarget.Upgrades);
+            SetNavigationState(_characterNavButton, target == FocusTarget.Character);
+            SetNavigationState(_craftingNavButton, target == FocusTarget.Crafting);
+        }
+
+        private static void SetNavigationState(Button button, bool selected)
+        {
+            if (button == null) return;
+            var image = button.targetGraphic as Image;
+            if (image != null)
+                image.color = selected
+                    ? new Color32(0x08, 0x54, 0x70, 0xFF)
+                    : new Color32(0x12, 0x12, 0x2a, 0xFF);
+        }
+
         private void OnStartClicked()
         {
             GameManager.Instance?.LoadGameScene();

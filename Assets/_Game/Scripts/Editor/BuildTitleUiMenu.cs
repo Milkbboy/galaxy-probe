@@ -21,6 +21,19 @@ namespace DrillCorp.Editor
             FocusTitleLandingPanel();
         }
 
+        [MenuItem("Drill-Corp/UI/Title/Apply Upgrade UI", priority = 20)]
+        public static void ApplyUpgradeUi()
+        {
+            if (!EnsureTitleSceneReady())
+                return;
+
+            ApplyProject16x9Settings();
+            V2HubCanvasSetupEditor.BuildHubCanvas();
+            EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
+            FocusPanel("HubPanel");
+            Debug.Log("[BuildTitleUI] UPGRADES 화면 구조 적용 및 Title 씬 저장 완료.");
+        }
+
         [MenuItem("Drill-Corp/UI/Title/Open Title Scene", priority = 100)]
         public static void OpenTitleScene()
         {
@@ -52,11 +65,16 @@ namespace DrillCorp.Editor
 
         private static void FocusTitleLandingPanel()
         {
+            FocusPanel(TitleLandingPanelName);
+        }
+
+        private static void FocusPanel(string panelName)
+        {
             var canvas = Object.FindAnyObjectByType<Canvas>();
             if (canvas == null)
                 return;
 
-            var panel = canvas.transform.Find(TitleLandingPanelName);
+            var panel = canvas.transform.Find(panelName);
             var target = panel != null ? panel.gameObject : canvas.gameObject;
             Selection.activeGameObject = target;
             EditorGUIUtility.PingObject(target);

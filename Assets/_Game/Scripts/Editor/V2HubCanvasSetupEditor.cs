@@ -188,76 +188,305 @@ namespace DrillCorp.Editor
         }
 
         // ═════════════════════════════════════════════════════
-        // HubPanel (허브 메인 화면)
-        //   v2.html의 #outgame 영역에 대응
+        // HubPanel (아웃게임 공통 셸 + 3개 화면 루트)
         // ═════════════════════════════════════════════════════
         static GameObject CreateHubPanel(Transform canvasRoot)
         {
-            // 루트 — 풀스크린 이미지 배경
             var hub = CreatePanel(canvasRoot, HUB_PANEL_NAME);
-            AddImage(hub, new Color32(0x0d, 0x0d, 0x1a, 0xFF)); // v2 body 배경
+            AddImage(hub, new Color32(0x08, 0x0f, 0x18, 0xFF));
 
-            // 세로 레이아웃 (TopBar / CharacterRow / BodyScroll)
-            // childControlHeight = true + BodyScrollView의 flexibleHeight=1 →
-            // TopBar·CharacterSelect는 LayoutElement preferredHeight로 고정,
-            // BodyScrollView가 남는 세로 공간 다 차지.
             var hubVL = hub.AddComponent<VerticalLayoutGroup>();
-            hubVL.padding = new RectOffset(24, 24, 24, 24);
-            hubVL.spacing = 12;
+            hubVL.padding = new RectOffset(20, 20, 16, 16);
+            hubVL.spacing = 10;
             hubVL.childControlWidth = true;
             hubVL.childControlHeight = true;
             hubVL.childForceExpandWidth = true;
             hubVL.childForceExpandHeight = false;
 
             CreateTopBar(hub.transform);
-            CreateCharacterSelectSubPanel(hub.transform);
-            CreateBodyScrollArea(hub.transform);
+            CreateScreenContainer(hub.transform);
+            CreateBottomNavigation(hub.transform);
 
             return hub;
         }
 
-        // ── TopBar: 타이틀 + 재화 + 치트/리셋/시작 ──
+        // ── 공통 헤더: 뒤로가기 + 화면 제목 + 재화 ──
         static void CreateTopBar(Transform parent)
         {
-            var bar = CreateRow(parent, "TopBar", 80);
+            var bar = CreateRow(parent, "TopBar", 88);
             AddImage(bar, ColBg);
             AddRoundedPadding(bar, 14, 14);
 
             var hl = bar.GetComponent<HorizontalLayoutGroup>();
-            hl.spacing = 16;
+            hl.spacing = 14;
             hl.childAlignment = TextAnchor.MiddleLeft;
             hl.childControlWidth = false;
-            hl.childControlHeight = false;       // 자식 sizeDelta.y 유지 (34·40·70)
+            hl.childControlHeight = false;
             hl.childForceExpandWidth = false;
-            hl.childForceExpandHeight = false;   // 버튼이 세로로 강제 확장되지 않음
+            hl.childForceExpandHeight = false;
 
-            // 왼쪽: 타이틀 + 서브타이틀
-            var titleGroup = CreateVGroup(bar.transform, "TitleGroup", 340, 70);
-            CreateText(titleGroup.transform, "TitleText", "DRILL-CORP", 22, ColTextHi);
+            CreateSmallButton(bar.transform, "BackButton", "≪", ColBorder, 70, 26);
+
+            var titleGroup = CreateVGroup(bar.transform, "TitleGroup", 560, 64);
+            CreateText(titleGroup.transform, "TitleText", "DRILL CORP  ·  UPGRADES", 24, ColTextHi);
             var sub = CreateText(titleGroup.transform, "TargetLabel",
-                "목표: <color=#f4a423>150</color> 채굴 · 보석 드랍 7% (1.6초 수집)",
-                13, ColTextLow);
+                "굴착기 · 무기 · 보석 채집 영구 강화", 13, ColTextLow);
             sub.richText = true;
 
-            // 가운데 spacer
             var spacer = new GameObject("Spacer");
             spacer.transform.SetParent(bar.transform, false);
-            var spacerRect = spacer.AddComponent<RectTransform>();
-            spacerRect.sizeDelta = new Vector2(10, 10);
+            spacer.AddComponent<RectTransform>().sizeDelta = new Vector2(10, 10);
             var sle = spacer.AddComponent<LayoutElement>();
             sle.flexibleWidth = 1;
 
-            // 오른쪽: 재화·치트·리셋·시작
-            // 광석/보석 아이콘은 Assets/_Game/Sprites/UI/06_gold·01_diamond에서 자동 로드.
             var oreIcon = LoadUISprite("06_gold");
             var gemIcon = LoadUISprite("01_diamond");
             CreateCurrencyBadge(bar.transform, "OreDisplay", "광석", "0", ColOre, oreIcon);
             CreateCurrencyBadge(bar.transform, "GemDisplay", "보석", "0", ColGem, gemIcon);
-            CreateSmallButton(bar.transform, "CheatButton", "치트 +1000", ColOk, 110);
-            CreateSmallButton(bar.transform, "ResetButton", "초기화", ColDanger, 90);
-            CreateSmallButton(bar.transform, "OptionsButton", "옵션", ColBorder, 70, 14);
-            CreateSmallButton(bar.transform, "QuitButton", "종료", ColBorder, 70, 14);
-            CreateSmallButton(bar.transform, "StartButton", "채굴 시작", ColAccent, 150, 18);
+        }
+
+        static void CreateScreenContainer(Transform parent)
+        {
+            var container = new GameObject("ScreenContainer");
+            container.transform.SetParent(parent, false);
+            container.AddComponent<RectTransform>();
+            var containerLayout = container.AddComponent<LayoutElement>();
+            containerLayout.flexibleHeight = 1;
+
+            var upgradeScreen = CreateScreenRoot(container.transform, "UpgradeScreen");
+            CreateUpgradeScreen(upgradeScreen.transform);
+
+            var characterScreen = CreateScreenRoot(container.transform, "CharacterScreen");
+            CreateCharacterScreen(characterScreen.transform);
+
+            var craftingScreen = CreateScreenRoot(container.transform, "CraftingScreen");
+            CreateCraftingScreen(craftingScreen.transform);
+
+            upgradeScreen.SetActive(true);
+            characterScreen.SetActive(false);
+            craftingScreen.SetActive(false);
+        }
+
+        static GameObject CreateScreenRoot(Transform parent, string name)
+        {
+            var screen = new GameObject(name);
+            screen.transform.SetParent(parent, false);
+            var rect = screen.AddComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            return screen;
+        }
+
+        static void CreateUpgradeScreen(Transform parent)
+        {
+            var layout = parent.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 10;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+
+            var main = new GameObject("MainArea");
+            main.transform.SetParent(parent, false);
+            main.AddComponent<RectTransform>();
+            var mainElement = main.AddComponent<LayoutElement>();
+            mainElement.flexibleHeight = 1;
+
+            var mainLayout = main.AddComponent<HorizontalLayoutGroup>();
+            mainLayout.spacing = 12;
+            mainLayout.childControlWidth = true;
+            mainLayout.childControlHeight = true;
+            mainLayout.childForceExpandWidth = false;
+            mainLayout.childForceExpandHeight = true;
+
+            CreateWeaponScrollPanel(main.transform);
+            CreateMachinePreviewPanel(main.transform);
+            CreateGrowthColumn(main.transform);
+            CreateStatDisplaySubPanel(parent);
+        }
+
+        static void CreateWeaponScrollPanel(Transform parent)
+        {
+            var panel = new GameObject("WeaponShopSubPanel");
+            panel.transform.SetParent(parent, false);
+            panel.AddComponent<RectTransform>();
+            AddImage(panel, ColBg);
+
+            var element = panel.AddComponent<LayoutElement>();
+            element.preferredWidth = 500;
+            element.minWidth = 420;
+
+            var panelLayout = panel.AddComponent<VerticalLayoutGroup>();
+            panelLayout.padding = new RectOffset(12, 12, 10, 10);
+            panelLayout.spacing = 8;
+            panelLayout.childControlWidth = true;
+            panelLayout.childControlHeight = true;
+            panelLayout.childForceExpandWidth = true;
+            panelLayout.childForceExpandHeight = false;
+
+            var header = CreateText(panel.transform, "Header", "무기 & 강화", 18, ColTextHi);
+            header.fontStyle = FontStyles.Bold;
+            header.alignment = TextAlignmentOptions.Center;
+            header.gameObject.AddComponent<LayoutElement>().preferredHeight = 30;
+
+            var scrollObject = new GameObject("ScrollArea");
+            scrollObject.transform.SetParent(panel.transform, false);
+            scrollObject.AddComponent<RectTransform>();
+            var scrollElement = scrollObject.AddComponent<LayoutElement>();
+            scrollElement.flexibleHeight = 1;
+            scrollElement.minHeight = 240;
+            var scroll = scrollObject.AddComponent<ScrollRect>();
+            scroll.horizontal = false;
+            scroll.vertical = true;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 28;
+
+            var viewport = new GameObject("Viewport");
+            viewport.transform.SetParent(scrollObject.transform, false);
+            var viewportRect = viewport.AddComponent<RectTransform>();
+            viewportRect.anchorMin = Vector2.zero;
+            viewportRect.anchorMax = Vector2.one;
+            viewportRect.offsetMin = Vector2.zero;
+            viewportRect.offsetMax = Vector2.zero;
+            viewport.AddComponent<Image>().color = new Color(0, 0, 0, 0.01f);
+            viewport.AddComponent<RectMask2D>();
+
+            var content = new GameObject("Content");
+            content.transform.SetParent(viewport.transform, false);
+            var contentRect = content.AddComponent<RectTransform>();
+            contentRect.anchorMin = new Vector2(0, 1);
+            contentRect.anchorMax = new Vector2(1, 1);
+            contentRect.pivot = new Vector2(0.5f, 1);
+            contentRect.sizeDelta = Vector2.zero;
+
+            var contentLayout = content.AddComponent<VerticalLayoutGroup>();
+            contentLayout.spacing = 8;
+            contentLayout.childControlWidth = true;
+            contentLayout.childControlHeight = true;
+            contentLayout.childForceExpandWidth = true;
+            contentLayout.childForceExpandHeight = false;
+            contentLayout.childAlignment = TextAnchor.UpperCenter;
+            content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            scroll.viewport = viewportRect;
+            scroll.content = contentRect;
+        }
+
+        static void CreateMachinePreviewPanel(Transform parent)
+        {
+            var panel = new GameObject("MachinePreviewPanel");
+            panel.transform.SetParent(parent, false);
+            var rect = panel.AddComponent<RectTransform>();
+            var element = panel.AddComponent<LayoutElement>();
+            element.flexibleWidth = 1;
+            element.minWidth = 480;
+            AddImage(panel, new Color32(0x08, 0x18, 0x24, 0xFF));
+
+            var placeholder = new GameObject("MachinePreviewPlaceholder");
+            placeholder.transform.SetParent(panel.transform, false);
+            var placeholderRect = placeholder.AddComponent<RectTransform>();
+            placeholderRect.anchorMin = new Vector2(0.08f, 0.12f);
+            placeholderRect.anchorMax = new Vector2(0.92f, 0.88f);
+            placeholderRect.offsetMin = Vector2.zero;
+            placeholderRect.offsetMax = Vector2.zero;
+            AddImage(placeholder, new Color32(0x0d, 0x2a, 0x3a, 0xFF));
+
+            var text = CreateText(placeholder.transform, "PlaceholderText",
+                "굴착기 프리뷰\nUI 리소스 연결 예정", 22, ColTextMid);
+            text.alignment = TextAlignmentOptions.Center;
+            var textRect = text.GetComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+        }
+
+        static void CreateGrowthColumn(Transform parent)
+        {
+            var column = new GameObject("GrowthColumn");
+            column.transform.SetParent(parent, false);
+            column.AddComponent<RectTransform>();
+            var element = column.AddComponent<LayoutElement>();
+            element.preferredWidth = 460;
+            element.minWidth = 400;
+
+            var layout = column.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 12;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+
+            CreateExcavatorSubPanel(column.transform);
+            CreateGemUpgradeSubPanel(column.transform);
+        }
+
+        static void CreateCharacterScreen(Transform parent)
+        {
+            var layout = parent.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.padding = new RectOffset(8, 8, 8, 8);
+            layout.spacing = 12;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            CreateCharacterSelectSubPanel(parent);
+            CreateAbilityShopSubPanel(parent);
+        }
+
+        static void CreateCraftingScreen(Transform parent)
+        {
+            AddImage(parent.gameObject, ColBg);
+            var text = CreateText(parent, "ComingSoonText", "아이템 제작\n준비 중", 30, ColTextMid);
+            text.alignment = TextAlignmentOptions.Center;
+            var rect = text.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+        }
+
+        static void CreateBottomNavigation(Transform parent)
+        {
+            var navigation = CreateRow(parent, "BottomNavigation", 76);
+            AddImage(navigation, ColBg);
+            var layout = navigation.GetComponent<HorizontalLayoutGroup>();
+            layout.padding = new RectOffset(12, 12, 8, 8);
+            layout.spacing = 12;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = true;
+
+            CreateNavigationButton(navigation.transform, "UpgradesButton", "UPGRADES", true);
+            CreateNavigationButton(navigation.transform, "CharacterButton", "CHARACTER", false);
+            CreateNavigationButton(navigation.transform, "CraftingButton", "CRAFTING", false);
+        }
+
+        static void CreateNavigationButton(Transform parent, string name, string label, bool selected)
+        {
+            var buttonObject = new GameObject(name);
+            buttonObject.transform.SetParent(parent, false);
+            buttonObject.AddComponent<RectTransform>();
+            var element = buttonObject.AddComponent<LayoutElement>();
+            element.flexibleWidth = 1;
+
+            var image = buttonObject.AddComponent<Image>();
+            image.color = selected ? new Color32(0x08, 0x54, 0x70, 0xFF) : ColSubBg;
+            var button = buttonObject.AddComponent<Button>();
+            button.targetGraphic = image;
+
+            var text = CreateText(buttonObject.transform, "Text", label, 20, ColTextHi);
+            text.alignment = TextAlignmentOptions.Center;
+            text.fontStyle = FontStyles.Bold;
+            text.raycastTarget = false;
+            var rect = text.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
         }
 
         static void CreateCurrencyBadge(Transform parent, string name, string label,
@@ -509,15 +738,14 @@ namespace DrillCorp.Editor
 
         static void CreateStatDisplaySubPanel(Transform parent)
         {
-            var sub = CreateSubPanel(parent, "StatDisplaySubPanel", "현재 스탯");
+            var sub = CreateSubPanel(parent, "StatDisplaySubPanel", "현재 굴착기 스탯", 136f);
             var content = sub.transform.Find("Content").gameObject;
-            var vl = content.AddComponent<VerticalLayoutGroup>();
-            vl.spacing = 4;
-            vl.childControlWidth = true;
-            vl.childControlHeight = false;
-
-            var fitter = content.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            var hl = content.AddComponent<HorizontalLayoutGroup>();
+            hl.spacing = 10;
+            hl.childControlWidth = true;
+            hl.childControlHeight = true;
+            hl.childForceExpandWidth = true;
+            hl.childForceExpandHeight = true;
 
             // 샘플 스탯 행 — 실제는 런타임에 동적 생성
             string[] sampleStats = {
@@ -626,7 +854,7 @@ namespace DrillCorp.Editor
         // ═════════════════════════════════════════════════════
         static void AttachCharacterSelectUI(GameObject hub)
         {
-            var subPanel = hub.transform.Find("CharacterSelectSubPanel");
+            var subPanel = FindDeep(hub.transform, "CharacterSelectSubPanel");
             if (subPanel == null)
             {
                 Debug.LogWarning("[V2HubCanvas] CharacterSelectSubPanel을 찾을 수 없습니다.");

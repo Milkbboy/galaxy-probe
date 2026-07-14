@@ -99,26 +99,50 @@ namespace DrillCorp.OutGame
                 Destroy(c);
             }
 
-            // v2 표시 형식 — docs/v2.html L514-523
-            _valOre         = MakeRow("광석",          ColOre);
-            _valGem         = MakeRow("보석",          ColGem);
-            _valCharacter   = MakeRow("선택 캐릭터",   ColTextHi);
-            _valMaxHp       = MakeRow("최대 체력",     ColTextHi);
-            _valDmgReduce   = MakeRow("받는 피해",     ColTextHi);
-            _valMineRate    = MakeRow("채굴 속도",     ColTextHi);
-            _valMineTarget  = MakeRow("목표 채굴량",   ColTextHi);
-            _valGemDrop     = MakeRow("보석 출현 확률", ColTextHi);
-            _valGemSpeed    = MakeRow("채집 속도",     ColTextHi);
+            // 목업 하단의 4개 정보 묶음. 화면 전체는 고정하고 값만 패치한다.
+            var currencyGroup = MakeGroup("CurrencyGroup");
+            var characterGroup = MakeGroup("CharacterGroup");
+            var defenseGroup = MakeGroup("DefenseGroup");
+            var miningGroup = MakeGroup("MiningGroup");
+
+            _valOre         = MakeRow(currencyGroup, "광석",          ColOre);
+            _valGem         = MakeRow(currencyGroup, "보석",          ColGem);
+            _valCharacter   = MakeRow(characterGroup, "선택 캐릭터",   ColTextHi);
+            _valMaxHp       = MakeRow(characterGroup, "최대 체력",     ColTextHi);
+            _valDmgReduce   = MakeRow(defenseGroup, "받는 피해",       ColTextHi);
+            _valMineRate    = MakeRow(defenseGroup, "채굴 속도",       ColTextHi);
+            _valMineTarget  = MakeRow(miningGroup, "목표 채굴량",      ColTextHi);
+            _valGemDrop     = MakeRow(miningGroup, "보석 출현 확률",   ColTextHi);
+            _valGemSpeed    = MakeRow(miningGroup, "채집 속도",        ColTextHi);
 
             _builtOnce = true;
         }
 
-        private TextMeshProUGUI MakeRow(string label, Color valueColor)
+        private Transform MakeGroup(string name)
+        {
+            var group = new GameObject(name);
+            group.transform.SetParent(_content, false);
+            group.AddComponent<RectTransform>();
+
+            var layoutElement = group.AddComponent<LayoutElement>();
+            layoutElement.flexibleWidth = 1;
+            layoutElement.minWidth = 180;
+
+            var layout = group.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 3;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            return group.transform;
+        }
+
+        private TextMeshProUGUI MakeRow(Transform parent, string label, Color valueColor)
         {
             var row = new GameObject("Row_" + label);
-            row.transform.SetParent(_content, false);
-            row.AddComponent<RectTransform>().sizeDelta = new Vector2(0, 22);
-            row.AddComponent<LayoutElement>().preferredHeight = 22;
+            row.transform.SetParent(parent, false);
+            row.AddComponent<RectTransform>().sizeDelta = new Vector2(0, 28);
+            row.AddComponent<LayoutElement>().preferredHeight = 28;
 
             var img = row.AddComponent<Image>();
             img.color = ColRowBg;
