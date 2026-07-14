@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79c5c233e75b68842b74286020214952, type: 3}
+  m_Name: Boss_Spider
+  m_EditorClassIdentifier: Assembly-CSharp::DrillCorp.Data.BossData
+  BossId: spider
+  DisplayName: "\uAC70\uBBF8 \uBCF4\uC2A4"
+  MaxHp: 500
+  ContactDamagePerSecond: 30
+  ContactRange: 1.2
+  KillThreshold: 250
+  WalkDuration: 1.5
+  WalkRadius: 2.5
+  WalkSpeed: 2
+  IdleDuration: 2
+  PerchJitter: 1.5
+  JumpDurationMin: 0.5
+  JumpDurationMax: 1
+  AttackDuration: 2
+  AttackSpawnFraction: 0.5
+  ChildCountPerLanding: 3
+  ChildSpawnJitter: 1.5
+  TelegraphCooldownCycles: 2
+  TelegraphDuration: 2
+  InterruptHitsRequired: 8
+  PounceRadiusMultiplier: 0.5
+  PounceImpactDamage: 50
+  FlinchDuration: 0.6
+  TelegraphScalePulse: 0.1
+  TelegraphPulseFreq: 4
+  HpBarLowThreshold: 0.25

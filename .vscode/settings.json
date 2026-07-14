@@ -79,5 +79,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "drill-corp.slnx"
+    "dotnet.defaultSolution": "Drill-Corp.slnx"
 }

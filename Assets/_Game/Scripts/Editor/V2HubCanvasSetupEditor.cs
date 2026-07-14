@@ -17,6 +17,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.UI;
 using TMPro;
+using UnityEditor.SceneManagement;
 
 namespace DrillCorp.Editor
 {
@@ -40,6 +41,132 @@ namespace DrillCorp.Editor
 
         const string HUB_PANEL_NAME      = "HubPanel";
         const string RESULT_OVERLAY_NAME = "ResultOverlay";
+        const string HUB_BACKGROUND_PATH = "Assets/_Game/Sprites/UI/Hub/hub_background_space.png";
+        const string DRILL_PLATFORM_PATH = "Assets/_Game/Sprites/UI/Hub/drill_platform.png";
+        const string DRILL_PREVIEW_PATH  = "Assets/_Game/Sprites/UI/Hub/drill_preview.png";
+        const string UPGRADE_SECTION_FRAME_PATH = "Assets/_Game/Sprites/UI/Hub/Upgrade/panel_section_base.png";
+        const float WEAPON_PANEL_WIDTH = 500f;
+        const float WEAPON_PANEL_HEIGHT = 580f;
+        const float WEAPON_SCROLL_HEIGHT = 522f;
+        static readonly Vector4 UpgradeSectionFrameBorder = new Vector4(140, 140, 140, 140);
+
+        [InitializeOnLoadMethod]
+        static void ScheduleHubArtworkApply()
+        {
+            EditorApplication.delayCall += ApplyHubArtworkToOpenTitleScene;
+            EditorApplication.delayCall += ApplyUpgradeSectionFramesToOpenTitleScene;
+        }
+
+        [MenuItem("Tools/Drill-Corp/5. UI/업그레이드 섹션 프레임 적용")]
+        public static void ApplyUpgradeSectionFramesToOpenTitleScene()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                return;
+
+            var scene = EditorSceneManager.GetActiveScene();
+            if (!scene.IsValid() || scene.path != "Assets/_Game/Scenes/Title.unity")
+                return;
+
+            Transform hub = null;
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                hub = FindDeep(root.transform, HUB_PANEL_NAME);
+                if (hub != null)
+                    break;
+            }
+
+            if (hub == null)
+                return;
+
+            var frameSprite = LoadSlicedSpriteAtPath(
+                UPGRADE_SECTION_FRAME_PATH,
+                UpgradeSectionFrameBorder);
+            if (frameSprite == null)
+                return;
+
+            bool sceneWasDirty = scene.isDirty;
+            bool changed = false;
+            changed |= ApplyUpgradeSectionFrame(FindDeep(hub, "WeaponShopSubPanel")?.gameObject, frameSprite);
+            changed |= ApplyUpgradeSectionFrame(FindDeep(hub, "ExcavatorUpgradeSubPanel")?.gameObject, frameSprite);
+            changed |= ApplyUpgradeSectionFrame(FindDeep(hub, "GemUpgradeSubPanel")?.gameObject, frameSprite);
+
+            if (!changed)
+                return;
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            if (!sceneWasDirty)
+                EditorSceneManager.SaveScene(scene);
+
+            Debug.Log("[V2HubCanvas] 무기/굴착기/보석 업그레이드 섹션 프레임을 적용했습니다.");
+        }
+
+        [MenuItem("Tools/Drill-Corp/5. UI/허브 배경 및 굴착기 아트 적용")]
+        public static void ApplyHubArtworkToOpenTitleScene()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                return;
+
+            var scene = EditorSceneManager.GetActiveScene();
+            if (!scene.IsValid() || scene.path != "Assets/_Game/Scenes/Title.unity")
+                return;
+
+            Transform hub = null;
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                hub = FindDeep(root.transform, HUB_PANEL_NAME);
+                if (hub != null)
+                    break;
+            }
+
+            if (hub == null)
+                return;
+
+            var backgroundSprite = LoadSpriteAtPath(HUB_BACKGROUND_PATH);
+            var platformSprite = LoadSpriteAtPath(DRILL_PLATFORM_PATH);
+            var drillSprite = LoadSpriteAtPath(DRILL_PREVIEW_PATH);
+            if (backgroundSprite == null || platformSprite == null || drillSprite == null)
+                return;
+
+            var hubImage = hub.GetComponent<Image>();
+            var previewPanel = FindDeep(hub, "MachinePreviewPanel");
+            if (hubImage == null || previewPanel == null)
+                return;
+
+            var existingArtwork = previewPanel.Find("PreviewArtwork");
+            if (hubImage.sprite == backgroundSprite && existingArtwork != null)
+                return;
+
+            bool sceneWasDirty = scene.isDirty;
+
+            ConfigureSpriteImage(hubImage, backgroundSprite, preserveAspect: false);
+
+            var panelImage = previewPanel.GetComponent<Image>();
+            if (panelImage != null)
+            {
+                panelImage.sprite = null;
+                panelImage.color = Color.clear;
+                panelImage.raycastTarget = false;
+            }
+
+            if (existingArtwork == null)
+            {
+                CreatePreviewArtwork(previewPanel);
+                existingArtwork = previewPanel.Find("PreviewArtwork");
+            }
+
+            if (existingArtwork != null)
+                existingArtwork.SetSiblingIndex(0);
+
+            var legacyPlaceholder = previewPanel.Find("MachinePreviewPlaceholder");
+            if (legacyPlaceholder != null)
+                legacyPlaceholder.gameObject.SetActive(false);
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            if (!sceneWasDirty)
+                EditorSceneManager.SaveScene(scene);
+
+            Debug.Log("[V2HubCanvas] 허브 우주 배경과 중앙 굴착기 프리뷰 아트를 적용했습니다.");
+        }
 
         public static void BuildHubCanvas()
         {
@@ -193,7 +320,8 @@ namespace DrillCorp.Editor
         static GameObject CreateHubPanel(Transform canvasRoot)
         {
             var hub = CreatePanel(canvasRoot, HUB_PANEL_NAME);
-            AddImage(hub, new Color32(0x08, 0x0f, 0x18, 0xFF));
+            var background = AddImage(hub, Color.white);
+            ConfigureSpriteImage(background, LoadSpriteAtPath(HUB_BACKGROUND_PATH), preserveAspect: false);
 
             var hubVL = hub.AddComponent<VerticalLayoutGroup>();
             hubVL.padding = new RectOffset(20, 20, 16, 16);
@@ -299,7 +427,7 @@ namespace DrillCorp.Editor
             mainLayout.childControlWidth = true;
             mainLayout.childControlHeight = true;
             mainLayout.childForceExpandWidth = false;
-            mainLayout.childForceExpandHeight = true;
+            mainLayout.childForceExpandHeight = false;
 
             CreateWeaponScrollPanel(main.transform);
             CreateMachinePreviewPanel(main.transform);
@@ -312,11 +440,14 @@ namespace DrillCorp.Editor
             var panel = new GameObject("WeaponShopSubPanel");
             panel.transform.SetParent(parent, false);
             panel.AddComponent<RectTransform>();
-            AddImage(panel, ColBg);
+            ApplyUpgradeSectionFrame(panel);
 
             var element = panel.AddComponent<LayoutElement>();
-            element.preferredWidth = 500;
+            element.preferredWidth = WEAPON_PANEL_WIDTH;
             element.minWidth = 420;
+            element.minHeight = WEAPON_PANEL_HEIGHT;
+            element.preferredHeight = WEAPON_PANEL_HEIGHT;
+            element.flexibleHeight = 0;
 
             var panelLayout = panel.AddComponent<VerticalLayoutGroup>();
             panelLayout.padding = new RectOffset(12, 12, 10, 10);
@@ -335,8 +466,9 @@ namespace DrillCorp.Editor
             scrollObject.transform.SetParent(panel.transform, false);
             scrollObject.AddComponent<RectTransform>();
             var scrollElement = scrollObject.AddComponent<LayoutElement>();
-            scrollElement.flexibleHeight = 1;
-            scrollElement.minHeight = 240;
+            scrollElement.minHeight = WEAPON_SCROLL_HEIGHT;
+            scrollElement.preferredHeight = WEAPON_SCROLL_HEIGHT;
+            scrollElement.flexibleHeight = 0;
             var scroll = scrollObject.AddComponent<ScrollRect>();
             scroll.horizontal = false;
             scroll.vertical = true;
@@ -382,25 +514,36 @@ namespace DrillCorp.Editor
             var element = panel.AddComponent<LayoutElement>();
             element.flexibleWidth = 1;
             element.minWidth = 480;
-            AddImage(panel, new Color32(0x08, 0x18, 0x24, 0xFF));
+            element.flexibleHeight = 1;
+            AddImage(panel, Color.clear).raycastTarget = false;
 
-            var placeholder = new GameObject("MachinePreviewPlaceholder");
-            placeholder.transform.SetParent(panel.transform, false);
-            var placeholderRect = placeholder.AddComponent<RectTransform>();
-            placeholderRect.anchorMin = new Vector2(0.08f, 0.12f);
-            placeholderRect.anchorMax = new Vector2(0.92f, 0.88f);
-            placeholderRect.offsetMin = Vector2.zero;
-            placeholderRect.offsetMax = Vector2.zero;
-            AddImage(placeholder, new Color32(0x0d, 0x2a, 0x3a, 0xFF));
+            CreatePreviewArtwork(panel.transform);
+        }
 
-            var text = CreateText(placeholder.transform, "PlaceholderText",
-                "굴착기 프리뷰\nUI 리소스 연결 예정", 22, ColTextMid);
-            text.alignment = TextAlignmentOptions.Center;
-            var textRect = text.GetComponent<RectTransform>();
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = Vector2.zero;
-            textRect.offsetMax = Vector2.zero;
+        static void CreatePreviewArtwork(Transform parent)
+        {
+            var artwork = CreateStretchObject(parent, "PreviewArtwork");
+            CreatePreviewLayer(artwork.transform, "Platform", DRILL_PLATFORM_PATH);
+            CreatePreviewLayer(artwork.transform, "Drill", DRILL_PREVIEW_PATH);
+        }
+
+        static GameObject CreateStretchObject(Transform parent, string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            return go;
+        }
+
+        static void CreatePreviewLayer(Transform parent, string name, string spritePath)
+        {
+            var layer = CreateStretchObject(parent, name);
+            var image = AddImage(layer, Color.white);
+            ConfigureSpriteImage(image, LoadSpriteAtPath(spritePath), preserveAspect: true);
         }
 
         static void CreateGrowthColumn(Transform parent)
@@ -450,15 +593,22 @@ namespace DrillCorp.Editor
 
         static void CreateBottomNavigation(Transform parent)
         {
-            var navigation = CreateRow(parent, "BottomNavigation", 76);
+            const float navigationHeight = 64f;
+            var navigation = CreateRow(parent, "BottomNavigation", navigationHeight);
+            var navigationElement = navigation.GetComponent<LayoutElement>();
+            navigationElement.minHeight = navigationHeight;
+            navigationElement.preferredHeight = navigationHeight;
+            navigationElement.flexibleHeight = 0;
+
             AddImage(navigation, ColBg);
             var layout = navigation.GetComponent<HorizontalLayoutGroup>();
             layout.padding = new RectOffset(12, 12, 8, 8);
-            layout.spacing = 12;
+            layout.spacing = 18;
+            layout.childAlignment = TextAnchor.MiddleCenter;
             layout.childControlWidth = true;
             layout.childControlHeight = true;
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = true;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
 
             CreateNavigationButton(navigation.transform, "UpgradesButton", "UPGRADES", true);
             CreateNavigationButton(navigation.transform, "CharacterButton", "CHARACTER", false);
@@ -471,14 +621,19 @@ namespace DrillCorp.Editor
             buttonObject.transform.SetParent(parent, false);
             buttonObject.AddComponent<RectTransform>();
             var element = buttonObject.AddComponent<LayoutElement>();
-            element.flexibleWidth = 1;
+            element.minWidth = 240;
+            element.preferredWidth = 300;
+            element.flexibleWidth = 0;
+            element.minHeight = 48;
+            element.preferredHeight = 48;
+            element.flexibleHeight = 0;
 
             var image = buttonObject.AddComponent<Image>();
             image.color = selected ? new Color32(0x08, 0x54, 0x70, 0xFF) : ColSubBg;
             var button = buttonObject.AddComponent<Button>();
             button.targetGraphic = image;
 
-            var text = CreateText(buttonObject.transform, "Text", label, 20, ColTextHi);
+            var text = CreateText(buttonObject.transform, "Text", label, 16, ColTextHi);
             text.alignment = TextAlignmentOptions.Center;
             text.fontStyle = FontStyles.Bold;
             text.raycastTarget = false;
@@ -700,12 +855,14 @@ namespace DrillCorp.Editor
         static void CreateExcavatorSubPanel(Transform parent)
         {
             var sub = CreateSubPanel(parent, "ExcavatorUpgradeSubPanel", "굴착기 강화");
+            ApplyUpgradeSectionFrame(sub);
             AddVerticalItemContainer(sub.transform.Find("Content").gameObject);
         }
 
         static void CreateWeaponShopSubPanel(Transform parent)
         {
             var sub = CreateSubPanel(parent, "WeaponShopSubPanel", "무기 & 강화");
+            ApplyUpgradeSectionFrame(sub);
             var content = sub.transform.Find("Content").gameObject;
 
             // 행 단위 VLG. WeaponShopUI가 ceil(N/2) 행을 직접 만들어
@@ -733,6 +890,7 @@ namespace DrillCorp.Editor
         static void CreateGemUpgradeSubPanel(Transform parent)
         {
             var sub = CreateSubPanel(parent, "GemUpgradeSubPanel", "보석 채집");
+            ApplyUpgradeSectionFrame(sub);
             AddVerticalItemContainer(sub.transform.Find("Content").gameObject);
         }
 
@@ -1020,6 +1178,11 @@ namespace DrillCorp.Editor
         static Sprite LoadUISprite(string fileName)
         {
             string path = $"Assets/_Game/Sprites/UI/{fileName}.png";
+            return LoadSpriteAtPath(path);
+        }
+
+        static Sprite LoadSpriteAtPath(string path)
+        {
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
             if (sprite != null) return sprite;
 
@@ -1041,6 +1204,78 @@ namespace DrillCorp.Editor
             if (sprite == null)
                 Debug.LogWarning($"[V2HubCanvas] {path} 재임포트 후에도 Sprite 로드 실패.");
             return sprite;
+        }
+
+        static Sprite LoadSlicedSpriteAtPath(string path, Vector4 border)
+        {
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer == null)
+            {
+                Debug.LogWarning($"[V2HubCanvas] {path} 파일을 찾을 수 없습니다.");
+                return null;
+            }
+
+            var textureSettings = new TextureImporterSettings();
+            importer.ReadTextureSettings(textureSettings);
+
+            bool needsReimport = importer.textureType != TextureImporterType.Sprite
+                                 || importer.spriteImportMode != SpriteImportMode.Single
+                                 || textureSettings.spriteMeshType != SpriteMeshType.FullRect
+                                 || importer.spriteBorder != border
+                                 || !importer.alphaIsTransparency
+                                 || importer.mipmapEnabled;
+
+            if (needsReimport)
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spriteImportMode = SpriteImportMode.Single;
+                textureSettings.spriteMeshType = SpriteMeshType.FullRect;
+                importer.SetTextureSettings(textureSettings);
+                importer.spriteBorder = border;
+                importer.alphaIsTransparency = true;
+                importer.mipmapEnabled = false;
+                importer.SaveAndReimport();
+            }
+
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        }
+
+        static void ApplyUpgradeSectionFrame(GameObject panel)
+        {
+            var sprite = LoadSlicedSpriteAtPath(
+                UPGRADE_SECTION_FRAME_PATH,
+                UpgradeSectionFrameBorder);
+            ApplyUpgradeSectionFrame(panel, sprite);
+        }
+
+        static bool ApplyUpgradeSectionFrame(GameObject panel, Sprite sprite)
+        {
+            if (panel == null || sprite == null)
+                return false;
+
+            var image = panel.GetComponent<Image>();
+            if (image == null)
+                image = panel.AddComponent<Image>();
+
+            bool changed = image.sprite != sprite
+                           || image.type != Image.Type.Sliced
+                           || image.color != Color.white
+                           || image.raycastTarget;
+
+            image.sprite = sprite;
+            image.type = Image.Type.Sliced;
+            image.color = Color.white;
+            image.raycastTarget = false;
+            return changed;
+        }
+
+        static void ConfigureSpriteImage(Image image, Sprite sprite, bool preserveAspect)
+        {
+            image.sprite = sprite;
+            image.type = Image.Type.Simple;
+            image.color = Color.white;
+            image.preserveAspect = preserveAspect;
+            image.raycastTarget = false;
         }
 
         // ═════════════════════════════════════════════════════
